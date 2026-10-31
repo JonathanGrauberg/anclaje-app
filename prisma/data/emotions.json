@@ -1,0 +1,77 @@
+{
+  "_comment": "Rueda de las emociones: central → secundaria → terciarias. El seed genera ids estables (slugs) y los colores de los niveles 2 y 3 a partir del color de la familia, salvo que un nodo traiga su propio \"color\". Para renombrar un nodo sin romper registros, cambiá \"label\" y dejá \"id\" con el valor anterior.",
+  "families": [
+    {
+      "label": "Ira",
+      "color": "#F5A9BC",
+      "children": [
+        { "label": "Herido", "children": ["Apenado", "Devastado"] },
+        { "label": "Amenazado", "children": ["Atacado", "Celoso"] },
+        { "label": "Lleno de odio", "children": ["Resentido", "Ultrajado"] },
+        { "label": "Loco", "children": ["Furioso", "Rabioso"] },
+        { "label": "Agresivo", "children": ["Provocador", "Hostil"] },
+        { "label": "Frustrado", "children": ["Enfurecido", "Irritado"] },
+        { "label": "Distante", "children": ["Introvertido", "Desconfiado"] },
+        { "label": "Crítico", "children": ["Escéptico", "Sarcástico"] }
+      ]
+    },
+    {
+      "label": "Asco",
+      "color": "#A9D9B4",
+      "children": [
+        { "label": "Disconforme", "children": ["Moralista", "Reacio"] },
+        { "label": "Decepcionado", "children": ["Repugnante", "Revoltoso"] },
+        { "label": "Horrible", "children": ["Asco", "Odioso"] },
+        { "label": "Abstinencia", "children": ["Aversión", "Vacilante"] }
+      ]
+    },
+    {
+      "label": "Tristeza",
+      "color": "#C6B5E6",
+      "children": [
+        { "label": "Culpable", "children": ["Arrepentido", "Avergonzado"] },
+        { "label": "Abandonado", "children": ["Ignorado", "Victimizado"] },
+        { "label": "Desesperado", "children": ["Desvalido", "Vulnerable"] },
+        { "label": "Deprimido", "children": ["Melancólico", "Vacío"] },
+        { "label": "Solo", "children": ["Desamparado", "Aislado"] },
+        { "label": "Aburrido", "children": ["Apático", "Indiferente"] }
+      ]
+    },
+    {
+      "label": "Felicidad",
+      "color": "#FFC690",
+      "children": [
+        { "label": "Optimista", "children": ["Inspirado", "Abierto"] },
+        { "label": "Íntimo", "children": ["Bromista", "Sensible"] },
+        { "label": "Pacífico", "children": ["Esperanzado", "Cariñoso"] },
+        { "label": "Poderoso", "children": ["Provocativo", "Valiente"] },
+        { "label": "Aceptado", "children": ["Satisfecho", "Respetado"] },
+        { "label": "Orgulloso", "children": ["Seguro", "Importante"] },
+        { "label": "Interesado", "children": ["Curioso", "Entretenido"] },
+        { "label": "Alegre", "children": ["Eufórico", "Liberado"] }
+      ]
+    },
+    {
+      "label": "Sorpresa",
+      "color": "#F9E08A",
+      "children": [
+        { "label": "Entusiasmado", "children": ["Enérgico", "Entusiasta"] },
+        { "label": "Asombrado", "children": ["Impresionado", "Estupefacto"] },
+        { "label": "Confundido", "children": ["Perplejo", "Desilusionado"] },
+        { "label": "Sorprendido", "children": ["Abatido", "Conmocionado"] }
+      ]
+    },
+    {
+      "label": "Miedo",
+      "color": "#C8CED8",
+      "children": [
+        { "label": "Humillado", "children": ["Ridiculizado", "Irrespetado"] },
+        { "label": "Rechazado", "children": ["Alienado", "Marginado"] },
+        { "label": "Sumiso", "children": ["Insignificante", "Inútil"] },
+        { "label": "Inseguro", "children": ["Inferior", "Insuficiente"] },
+        { "label": "Ansioso", "children": ["Preocupado", "Agobiado"] },
+        { "label": "Asustado", "children": ["Espantado", "Aterrado"] }
+      ]
+    }
+  ]
+}

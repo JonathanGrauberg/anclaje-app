@@ -1,0 +1,816 @@
+// Modelo de datos de Sentir.
+// Convención: los campos que terminan en `Enc` guardan texto cifrado con src/lib/crypto.ts
+// (AES-256-GCM). Nunca se guarda texto plano en ellos.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────────────────────────────────────
+// Enums
+// ─────────────────────────────────────────────────────────────
+
+enum Role {
+  PATIENT
+  PROFESSIONAL
+  ADMIN
+}
+
+enum Visibility {
+  PRIVATE
+  SHARED
+}
+
+enum ShareIntention {
+  DISCUSS_IN_SESSION // "Quiero hablarlo en sesión"
+  WANT_FEEDBACK // "Me gustaría una devolución"
+  JUST_FYI // "Solo para que lo veas"
+}
+
+enum CareLinkStatus {
+  ACTIVE
+  REVOKED
+}
+
+enum CbtStatus {
+  DRAFT
+  COMPLETE
+}
+
+enum EntryType {
+  JOURNAL
+  EMOTION
+  CBT
+  TASK
+  ASSESSMENT
+  RESOURCE
+}
+
+enum CopingCardType {
+  TECHNIQUE
+  PHRASE
+  ACTIVITY
+  CONTACT
+  HELPLINE
+}
+
+enum CopingTechnique {
+  BREATHING
+  GROUNDING
+  OTHER
+}
+
+enum AuthorKind {
+  PROFESSIONAL
+  PATIENT
+}
+
+enum ResourceKind {
+  PDF
+  IMAGE
+  LINK
+  TEXT
+}
+
+enum AssessmentStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum QuestionType {
+  SINGLE_CHOICE
+  MULTIPLE_CHOICE
+  LIKERT
+  SLIDER
+  PERCENTAGE
+  YES_NO
+  NUMBER
+  SHORT_TEXT
+  LONG_TEXT
+  DATE
+  INFO // sección / título / texto informativo
+}
+
+enum ScoringMethod {
+  SUM
+  AVERAGE
+  WEIGHTED_SUM
+}
+
+enum CriticalOperator {
+  GTE
+  GT
+  EQ
+  LTE
+  LT
+}
+
+enum ResponseStatus {
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum DigestFrequency {
+  DAILY
+  WEEKLY
+  NEVER
+}
+
+// ─────────────────────────────────────────────────────────────
+// Auth (modelos que usa Better Auth: user, session, account, verification)
+// ─────────────────────────────────────────────────────────────
+
+model User {
+  id            String   @id
+  name          String
+  email         String   @unique
+  emailVerified Boolean  @default(false)
+  image         String?
+  role          Role     @default(PATIENT)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  sessions            Session[]
+  accounts            Account[]
+  patientProfile      PatientProfile?
+  professionalProfile ProfessionalProfile?
+  pushSubscriptions   PushSubscription[]
+  reminderSettings    ReminderSettings?
+  auditLogs           AuditLog[]
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+// ─────────────────────────────────────────────────────────────
+// Perfiles y vínculo
+// ─────────────────────────────────────────────────────────────
+
+model ProfessionalProfile {
+  id              String          @id @default(cuid())
+  userId          String          @unique
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  displayName     String
+  licenseNumber   String?
+  digestFrequency DigestFrequency @default(NEVER)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  links           CareLink[]
+  invitations     Invitation[]
+  feedbacks       Feedback[]
+  quickReplies    QuickReply[]
+  clinicalNotes   ClinicalNote[]
+  resources       Resource[]
+  tasks           Task[]
+  assessments     Assessment[]
+  assignments     AssessmentAssignment[]
+  externalResults ExternalResult[]
+  emotionOverride EmotionNodeOverride[]
+}
+
+model PatientProfile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  displayName String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  links               CareLink[]
+  sharingDefaults     SharingDefaults?
+  emotionEntries      EmotionEntry[]
+  journalEntries      JournalEntry[]
+  cbtRecords          CbtRecord[]
+  sessionTopics       SessionTopic[]
+  feedbacks           Feedback[]
+  clinicalNotes       ClinicalNote[]
+  copingPlan          CopingPlan?
+  resourceAssignments ResourceAssignment[]
+  tasks               Task[]
+  assignments         AssessmentAssignment[]
+  responses           AssessmentResponse[]
+  externalResults     ExternalResult[]
+  invitationsUsed     Invitation[]
+}
+
+/// Vínculo profesional–paciente. Con status ACTIVE la profesional ve lo compartido.
+model CareLink {
+  id                String              @id @default(cuid())
+  patientId         String
+  patient           PatientProfile      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  professionalId    String
+  professional      ProfessionalProfile @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  status            CareLinkStatus      @default(ACTIVE)
+  consentVersion    String
+  consentAcceptedAt DateTime
+  createdAt         DateTime            @default(now())
+  revokedAt         DateTime?
+
+  @@unique([patientId, professionalId])
+  @@index([professionalId, status])
+}
+
+model Invitation {
+  id             String              @id @default(cuid())
+  code           String              @unique
+  professionalId String
+  professional   ProfessionalProfile @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  expiresAt      DateTime
+  usedAt         DateTime?
+  usedById       String?
+  usedBy         PatientProfile?     @relation(fields: [usedById], references: [id], onDelete: SetNull)
+  createdAt      DateTime            @default(now())
+}
+
+/// Visibilidad por defecto de cada módulo (override por entrada).
+model SharingDefaults {
+  id        String         @id @default(cuid())
+  patientId String         @unique
+  patient   PatientProfile @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  journal   Visibility     @default(PRIVATE)
+  emotions  Visibility     @default(SHARED)
+  cbt       Visibility     @default(SHARED)
+  updatedAt DateTime       @updatedAt
+}
+
+// ─────────────────────────────────────────────────────────────
+// Rueda de las emociones
+// ─────────────────────────────────────────────────────────────
+
+/// Nodos de la rueda. id = slug estable ("miedo", "miedo.ansioso", "miedo.ansioso.preocupado").
+model EmotionNode {
+  id        String        @id
+  parentId  String?
+  parent    EmotionNode?  @relation("EmotionTree", fields: [parentId], references: [id])
+  children  EmotionNode[] @relation("EmotionTree")
+  level     Int // 1 = central, 2 = secundaria, 3 = terciaria
+  label     String
+  color     String // hex pastel
+  sortOrder Int           @default(0)
+  active    Boolean       @default(true)
+
+  entryItems     EmotionEntryItem[]
+  journalLinks   JournalEntryEmotion[]
+  cbtEmotions    CbtRecordEmotion[]
+  overrides      EmotionNodeOverride[]
+
+  @@index([parentId])
+}
+
+/// A futuro: una profesional renombra un nodo para sus pacientes (ej. "Abstinencia" → "Retraimiento").
+model EmotionNodeOverride {
+  id             String              @id @default(cuid())
+  professionalId String
+  professional   ProfessionalProfile @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  nodeId         String
+  node           EmotionNode         @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+  label          String
+
+  @@unique([professionalId, nodeId])
+}
+
+/// Un registro de la rueda (puede tener varias emociones).
+model EmotionEntry {
+  id         String          @id @default(cuid())
+  patientId  String
+  patient    PatientProfile  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  occurredAt DateTime        @default(now())
+  noteEnc    String?
+  visibility Visibility
+  intention  ShareIntention?
+  sharedAt   DateTime?
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+
+  items EmotionEntryItem[]
+
+  @@index([patientId, occurredAt])
+}
+
+model EmotionEntryItem {
+  id         String       @id @default(cuid())
+  entryId    String
+  entry      EmotionEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  nodeId     String
+  node       EmotionNode  @relation(fields: [nodeId], references: [id])
+  intensity  Int // 1–10
+  bodyZones  String[]
+
+  @@index([nodeId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// Diario íntimo
+// ─────────────────────────────────────────────────────────────
+
+model JournalEntry {
+  id         String          @id @default(cuid())
+  patientId  String
+  patient    PatientProfile  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  titleEnc   String?
+  bodyEnc    String
+  isDraft    Boolean         @default(true)
+  visibility Visibility      @default(PRIVATE)
+  intention  ShareIntention?
+  sharedAt   DateTime?
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+
+  emotions JournalEntryEmotion[]
+
+  @@index([patientId, createdAt])
+}
+
+model JournalEntryEmotion {
+  journalEntryId String
+  journalEntry   JournalEntry @relation(fields: [journalEntryId], references: [id], onDelete: Cascade)
+  nodeId         String
+  node           EmotionNode  @relation(fields: [nodeId], references: [id])
+
+  @@id([journalEntryId, nodeId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// Autorregistro TCC
+// ─────────────────────────────────────────────────────────────
+
+model CognitiveDistortion {
+  id          String  @id // slug
+  name        String
+  description String
+  example     String?
+  sortOrder   Int     @default(0)
+  active      Boolean @default(true)
+
+  records CbtRecordDistortion[]
+}
+
+model CbtRecord {
+  id             String          @id @default(cuid())
+  patientId      String
+  patient        PatientProfile  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  status         CbtStatus       @default(DRAFT)
+  currentStep    Int             @default(1)
+  occurredAt     DateTime        @default(now())
+  situationEnc   String?
+  thoughtEnc     String?
+  beliefBefore   Int? // 0–100
+  bodyZones      String[]
+  behaviorEnc    String?
+  alternativeEnc String?
+  beliefAfter    Int? // 0–100
+  visibility     Visibility
+  intention      ShareIntention?
+  sharedAt       DateTime?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  distortions CbtRecordDistortion[]
+  emotions    CbtRecordEmotion[]
+
+  @@index([patientId, occurredAt])
+}
+
+model CbtRecordDistortion {
+  cbtRecordId  String
+  cbtRecord    CbtRecord           @relation(fields: [cbtRecordId], references: [id], onDelete: Cascade)
+  distortionId String
+  distortion   CognitiveDistortion @relation(fields: [distortionId], references: [id])
+
+  @@id([cbtRecordId, distortionId])
+}
+
+model CbtRecordEmotion {
+  id              String    @id @default(cuid())
+  cbtRecordId     String
+  cbtRecord       CbtRecord @relation(fields: [cbtRecordId], references: [id], onDelete: Cascade)
+  nodeId          String
+  node            EmotionNode @relation(fields: [nodeId], references: [id])
+  intensityBefore Int // 1–10
+  intensityAfter  Int? // 1–10
+
+  @@unique([cbtRecordId, nodeId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// Para la próxima sesión
+// ─────────────────────────────────────────────────────────────
+
+model SessionTopic {
+  id          String         @id @default(cuid())
+  patientId   String
+  patient     PatientProfile @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  textEnc     String
+  sourceType  EntryType?
+  sourceId    String?
+  discussedAt DateTime?
+  createdAt   DateTime       @default(now())
+
+  @@index([patientId, discussedAt])
+}
+
+// ─────────────────────────────────────────────────────────────
+// Devoluciones y notas (fase 2)
+// ─────────────────────────────────────────────────────────────
+
+/// Devolución de la profesional sobre una entrada compartida. La ve el paciente.
+model Feedback {
+  id               String              @id @default(cuid())
+  professionalId   String
+  professional     ProfessionalProfile @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  patientId        String
+  patient          PatientProfile      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  targetType       EntryType
+  targetId         String
+  bodyEnc          String
+  resourceId       String?
+  resource         Resource?           @relation(fields: [resourceId], references: [id], onDelete: SetNull)
+  discussInSession Boolean             @default(false)
+  readAt           DateTime?
+  createdAt        DateTime            @default(now())
+
+  @@index([patientId, targetType, targetId])
+}
+
+model QuickReply {
+  id             String              @id @default(cuid())
+  professionalId String
+  professional   ProfessionalProfile @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  title          String
+  body           String
+  createdAt      DateTime            @default(now())
+}
+
+/// Nota clínica privada: solo la ve su autora.
+model ClinicalNote {
+  id             String              @id @default(cuid())
+  professionalId String
+  professional   ProfessionalProfile @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  patientId      String
+  patient        PatientProfile      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  bodyEnc        String
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  @@index([professionalId, patientId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// Plan de calma
+// ─────────────────────────────────────────────────────────────
+
+model CopingPlan {
+  id        String         @id @default(cuid())
+  patientId String         @unique
+  patient   PatientProfile @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  updatedAt DateTime       @updatedAt
+
+  cards CopingCard[]
+}
+
+model CopingCard {
+  id        String           @id @default(cuid())
+  planId    String
+  plan      CopingPlan       @relation(fields: [planId], references: [id], onDelete: Cascade)
+  type      CopingCardType
+  technique CopingTechnique?
+  title     String
+  body      String?
+  phone     String?
+  whatsapp  Boolean          @default(false)
+  author    AuthorKind       @default(PROFESSIONAL)
+  sortOrder Int              @default(0)
+  createdAt DateTime         @default(now())
+}
+
+// ─────────────────────────────────────────────────────────────
+// Biblioteca y tareas (fases 2–3)
+// ─────────────────────────────────────────────────────────────
+
+model Resource {
+  id             String              @id @default(cuid())
+  professionalId String
+  professional   ProfessionalProfile @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  kind           ResourceKind
+  title          String
+  description    String?
+  category       String?
+  tags           String[]
+  url            String?
+  storageKey     String?
+  bodyText       String?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  assignments ResourceAssignment[]
+  feedbacks   Feedback[]
+  tasks       Task[]
+}
+
+model ResourceAssignment {
+  id         String         @id @default(cuid())
+  resourceId String
+  resource   Resource       @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  patientId  String
+  patient    PatientProfile @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  assignedAt DateTime       @default(now())
+  viewedAt   DateTime?
+
+  @@unique([resourceId, patientId])
+}
+
+model Task {
+  id                String              @id @default(cuid())
+  professionalId    String
+  professional      ProfessionalProfile @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  patientId         String
+  patient           PatientProfile      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  title             String
+  description       String?
+  resourceId        String?
+  resource          Resource?           @relation(fields: [resourceId], references: [id], onDelete: SetNull)
+  dueAt             DateTime?
+  completedAt       DateTime?
+  patientCommentEnc String?
+  createdAt         DateTime            @default(now())
+
+  @@index([patientId, completedAt])
+}
+
+// ─────────────────────────────────────────────────────────────
+// Evaluaciones (fase 3)
+// ─────────────────────────────────────────────────────────────
+
+model Assessment {
+  id          String               @id @default(cuid())
+  ownerId     String? // null = plantilla del sistema
+  owner       ProfessionalProfile? @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  isTemplate  Boolean              @default(false)
+  sourceNote  String? // licencia / origen
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  versions AssessmentVersion[]
+}
+
+model AssessmentVersion {
+  id               String           @id @default(cuid())
+  assessmentId     String
+  assessment       Assessment       @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  version          Int
+  status           AssessmentStatus @default(DRAFT)
+  instructions     String?
+  referencePeriod  String?
+  scoringMethod    ScoringMethod    @default(SUM)
+  patientSeesScore Boolean          @default(false)
+  closingMessage   String?
+  publishedAt      DateTime?
+  createdAt        DateTime         @default(now())
+
+  sections    AssessmentSection[]
+  questions   Question[]
+  subscales   Subscale[]
+  ranges      ScoreRange[]
+  assignments AssessmentAssignment[]
+  responses   AssessmentResponse[]
+
+  @@unique([assessmentId, version])
+}
+
+model AssessmentSection {
+  id          String            @id @default(cuid())
+  versionId   String
+  version     AssessmentVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  sortOrder   Int
+  title       String?
+  description String?
+
+  questions Question[]
+}
+
+model Question {
+  id               String            @id @default(cuid())
+  versionId        String
+  version          AssessmentVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  sectionId        String?
+  section          AssessmentSection? @relation(fields: [sectionId], references: [id], onDelete: SetNull)
+  sortOrder        Int
+  type             QuestionType
+  text             String
+  helpText         String?
+  required         Boolean           @default(true)
+  scored           Boolean           @default(true)
+  reverse          Boolean           @default(false)
+  weight           Float             @default(1)
+  subscaleId       String?
+  subscale         Subscale?         @relation(fields: [subscaleId], references: [id], onDelete: SetNull)
+  scaleBlockKey    String? // ítems que comparten un "bloque de escala" Likert
+  criticalOperator CriticalOperator?
+  criticalValue    Float?
+  config           Json? // min, max, step, etiquetas extremas…
+
+  options QuestionOption[]
+  answers Answer[]
+}
+
+model QuestionOption {
+  id         String   @id @default(cuid())
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  label      String
+  value      Float
+  sortOrder  Int
+}
+
+model Subscale {
+  id        String            @id @default(cuid())
+  versionId String
+  version   AssessmentVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  name      String
+  method    ScoringMethod     @default(SUM)
+
+  questions Question[]
+  ranges    ScoreRange[]
+}
+
+model ScoreRange {
+  id         String            @id @default(cuid())
+  versionId  String
+  version    AssessmentVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  subscaleId String? // null = total
+  subscale   Subscale?         @relation(fields: [subscaleId], references: [id], onDelete: Cascade)
+  min        Float
+  max        Float
+  label      String
+  color      String
+  text       String?
+}
+
+model AssessmentAssignment {
+  id             String              @id @default(cuid())
+  versionId      String
+  version        AssessmentVersion   @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  patientId      String
+  patient        PatientProfile      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  professionalId String
+  professional   ProfessionalProfile @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  recurrenceDays Int? // null = una vez
+  nextDueAt      DateTime?
+  active         Boolean             @default(true)
+  createdAt      DateTime            @default(now())
+
+  responses AssessmentResponse[]
+}
+
+model AssessmentResponse {
+  id                  String                @id @default(cuid())
+  assignmentId        String?
+  assignment          AssessmentAssignment? @relation(fields: [assignmentId], references: [id], onDelete: SetNull)
+  versionId           String
+  version             AssessmentVersion     @relation(fields: [versionId], references: [id])
+  patientId           String
+  patient             PatientProfile        @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  status              ResponseStatus        @default(IN_PROGRESS)
+  startedAt           DateTime              @default(now())
+  completedAt         DateTime?
+  totalScore          Float?
+  subscaleScores      Json?
+  interpretation      String?
+  criticalQuestionIds String[]
+  reviewedAt          DateTime?
+
+  answers Answer[]
+
+  @@index([patientId, completedAt])
+}
+
+model Answer {
+  id          String             @id @default(cuid())
+  responseId  String
+  response    AssessmentResponse @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  questionId  String
+  question    Question           @relation(fields: [questionId], references: [id])
+  valueNumber Float?
+  optionIds   String[]
+  textEnc     String?
+  valueDate   DateTime?
+
+  @@unique([responseId, questionId])
+}
+
+model ExternalResult {
+  id             String              @id @default(cuid())
+  patientId      String
+  patient        PatientProfile      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  professionalId String
+  professional   ProfessionalProfile @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  name           String
+  score          Float?
+  interpretation String?
+  takenAt        DateTime
+  storageKey     String?
+  notesEnc       String?
+  createdAt      DateTime            @default(now())
+}
+
+// ─────────────────────────────────────────────────────────────
+// Sistema
+// ─────────────────────────────────────────────────────────────
+
+model CrisisLine {
+  id          String  @id @default(cuid())
+  name        String
+  phone       String
+  description String?
+  region      String?
+  sortOrder   Int     @default(0)
+  active      Boolean @default(true)
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String
+  actor      User     @relation(fields: [actorId], references: [id], onDelete: Cascade)
+  action     String // "view" | "create" | "update" | "delete" | "export"
+  entityType String
+  entityId   String?
+  patientId  String?
+  meta       Json?
+  createdAt  DateTime @default(now())
+
+  @@index([patientId, createdAt])
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+}
+
+model ReminderSettings {
+  id      String  @id @default(cuid())
+  userId  String  @unique
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  enabled Boolean @default(false)
+  time    String  @default("20:00") // HH:mm en America/Argentina/Buenos_Aires
+  days    Int[] // 0 = domingo … 6 = sábado
+}

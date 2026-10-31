@@ -1,0 +1,17 @@
+# Postgres para desarrollo. Usa el puerto 5433 para no chocar con un Postgres del sistema.
+# Alternativa sin Docker: `npm run db:up` (ver README).
+services:
+  db:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: sentir
+      POSTGRES_PASSWORD: sentir
+      POSTGRES_DB: sentir
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - sentir-db:/var/lib/postgresql
+
+volumes:
+  sentir-db:

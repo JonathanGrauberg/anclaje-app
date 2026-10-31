@@ -1,0 +1,62 @@
+[
+  {
+    "id": "catastrofizacion",
+    "name": "Catastrofización",
+    "description": "Imaginar que va a pasar lo peor y que no lo vas a poder soportar.",
+    "example": "\"Si me equivoco en la presentación, se termina mi carrera.\""
+  },
+  {
+    "id": "lectura-de-mente",
+    "name": "Lectura de mente",
+    "description": "Dar por hecho lo que otra persona piensa, sin pruebas.",
+    "example": "\"Seguro piensa que soy un desastre.\""
+  },
+  {
+    "id": "adivinacion-del-futuro",
+    "name": "Adivinación del futuro",
+    "description": "Predecir que algo va a salir mal como si ya fuera un hecho.",
+    "example": "\"No me van a llamar, ya sé.\""
+  },
+  {
+    "id": "todo-o-nada",
+    "name": "Pensamiento todo-o-nada",
+    "description": "Ver las cosas en blanco o negro, sin puntos intermedios.",
+    "example": "\"Si no sale perfecto, es un fracaso.\""
+  },
+  {
+    "id": "sobregeneralizacion",
+    "name": "Sobregeneralización",
+    "description": "Sacar una conclusión general a partir de una sola situación.",
+    "example": "\"Siempre me pasa lo mismo, nunca nada me sale bien.\""
+  },
+  {
+    "id": "filtro-mental",
+    "name": "Filtro mental / descalificar lo positivo",
+    "description": "Quedarte solo con lo negativo y restarle valor a lo que salió bien.",
+    "example": "\"Me felicitaron, pero lo dijeron por compromiso.\""
+  },
+  {
+    "id": "razonamiento-emocional",
+    "name": "Razonamiento emocional",
+    "description": "Creer que algo es verdad porque lo sentís así.",
+    "example": "\"Me siento inútil, entonces soy inútil.\""
+  },
+  {
+    "id": "deberia",
+    "name": "\"Debería\"",
+    "description": "Exigencias rígidas sobre cómo tendrías que ser vos, los demás o el mundo.",
+    "example": "\"Debería poder con todo sin ayuda.\""
+  },
+  {
+    "id": "etiquetado",
+    "name": "Etiquetado",
+    "description": "Ponerte (o ponerle a otra persona) una etiqueta global por una conducta puntual.",
+    "example": "\"Soy un fracasado.\""
+  },
+  {
+    "id": "personalizacion",
+    "name": "Personalización / culpa",
+    "description": "Sentirte responsable de algo que no depende solo de vos, o culpar a otros de todo.",
+    "example": "\"Está de mal humor por algo que hice yo.\""
+  }
+]

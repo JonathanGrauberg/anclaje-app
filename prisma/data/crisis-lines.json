@@ -1,0 +1,29 @@
+{
+  "_comment": "Líneas de ayuda iniciales. VERIFICAR antes de usar en producción: los números pueden cambiar. Se editan desde la tabla CrisisLine (UI de admin pendiente).",
+  "lines": [
+    {
+      "name": "Emergencias",
+      "phone": "911",
+      "description": "Si estás en peligro ahora.",
+      "region": "Todo el país"
+    },
+    {
+      "name": "SAME — Emergencias médicas",
+      "phone": "107",
+      "description": "Emergencias médicas y de salud mental.",
+      "region": "Todo el país"
+    },
+    {
+      "name": "Asistencia al Suicida",
+      "phone": "135",
+      "description": "Línea gratuita, atiende las 24 h.",
+      "region": "CABA y Gran Buenos Aires"
+    },
+    {
+      "name": "Asistencia al Suicida (resto del país)",
+      "phone": "0800-345-1435",
+      "description": "Línea gratuita, atiende las 24 h.",
+      "region": "Todo el país"
+    }
+  ]
+}
