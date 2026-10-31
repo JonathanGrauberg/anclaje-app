@@ -304,12 +304,61 @@ async function seedTemplates() {
   console.log(`✓ Plantillas: ${TEMPLATES.map((t) => t.title).join(", ")}`);
 }
 
+/** Historial de la rueda para la demo (para ver "Mis patrones"). Solo si Sofía casi no tiene. */
+async function seedDemoHistory() {
+  const patient = await prisma.patientProfile.findFirst({
+    where: { user: { email: "paciente@demo.sentir.test" } },
+    select: { id: true, _count: { select: { emotionEntries: true } } },
+  });
+  if (!patient || patient._count.emotionEntries >= 10) return;
+  const nodes = await prisma.emotionNode.findMany({
+    where: { active: true, level: { gte: 2 } },
+    select: { id: true },
+    orderBy: { id: "asc" },
+  });
+  // Pseudoaleatorio con semilla fija: el seed da siempre lo mismo.
+  let x = 42;
+  const rnd = () => (x = (x * 1103515245 + 12345) % 2 ** 31) / 2 ** 31;
+  const preferred = nodes.filter((_, i) => i % 7 === 0); // unas pocas emociones que se repiten
+  const now = Date.now();
+  let created = 0;
+  for (let day = 60; day >= 1; day--) {
+    if (rnd() < 0.35) continue; // no todos los días hay registro
+    const hour = [8, 13, 19, 22, 23][Math.floor(rnd() * 5)];
+    const occurredAt = new Date(now - day * 86_400_000);
+    occurredAt.setUTCHours(hour + 3, Math.floor(rnd() * 60), 0, 0); // hora de Buenos Aires
+    const pool = rnd() < 0.7 ? preferred : nodes;
+    const count = rnd() < 0.3 ? 2 : 1;
+    const picked = new Set<string>();
+    while (picked.size < count) picked.add(pool[Math.floor(rnd() * pool.length)].id);
+    const visibility = rnd() < 0.8 ? "SHARED" : "PRIVATE";
+    await prisma.emotionEntry.create({
+      data: {
+        patientId: patient.id,
+        occurredAt,
+        bodyZones: [],
+        visibility,
+        sharedAt: visibility === "SHARED" ? occurredAt : null,
+        items: {
+          create: [...picked].map((nodeId) => ({
+            nodeId,
+            intensity: Math.max(1, Math.min(10, Math.round(3 + rnd() * 5 + (day < 20 ? 0 : 1)))),
+          })),
+        },
+      },
+    });
+    created++;
+  }
+  console.log(`✓ Historial demo de la rueda: ${created} registros`);
+}
+
 async function main() {
   await seedEmotions();
   await seedDistortions();
   await seedCrisisLines();
   await seedTemplates();
   await seedDemoUsers();
+  await seedDemoHistory();
 }
 
 main()

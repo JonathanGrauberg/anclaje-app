@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { EmotionChip } from "@/components/emotion-chip";
 import { Badge, EmptyState } from "@/components/ui/misc";
 import type { ShareIntention } from "@/generated/prisma/client";
-import { findLinkedPatient, sessionTopicsWhere } from "@/lib/access";
+import { findLinkedPatient, sessionTopicsWhere, sharedEmotionWhere } from "@/lib/access";
 import { audit } from "@/lib/audit";
 import { INTENTION_LABELS, INTENTIONS } from "@/lib/constants";
 import { decrypt, decryptOptional } from "@/lib/crypto";
@@ -16,6 +16,9 @@ import { getEmotionTree } from "@/lib/queries/common";
 import { getTimeline, type TimelineKind } from "@/lib/queries/pro";
 import { requireProfessional } from "@/lib/session";
 import { cn } from "@/lib/utils";
+import { PatternsView, RangeFilter } from "@/components/charts/patterns-view";
+import { ScoreChart } from "@/components/charts/pattern-charts";
+import { getPatterns, getScoreSeries, parseRange } from "@/lib/queries/patterns";
 import { AssessmentsPanel } from "./assessments-panel";
 import { CopingEditor } from "./coping-editor";
 import { NotesPanel } from "./notes-panel";
@@ -30,6 +33,7 @@ const TABS = [
   { id: "plan", label: "Plan de calma" },
   { id: "tareas", label: "Tareas" },
   { id: "evaluaciones", label: "Evaluaciones" },
+  { id: "patrones", label: "Patrones" },
 ] as const;
 type TabId = (typeof TABS)[number]["id"];
 
@@ -115,6 +119,14 @@ export default async function PatientRecordPage({
       {tab === "notas" && <NotesTab professionalId={professional.id} patientId={patient.id} />}
       {tab === "plan" && <PlanTab patientId={patient.id} />}
       {tab === "tareas" && <TasksTab professionalId={professional.id} patientId={patient.id} />}
+      {tab === "patrones" && (
+        <PatternsTab
+          professionalId={professional.id}
+          patientId={patient.id}
+          days={parseRange(sp.dias)}
+          base={`${base}?tab=patrones`}
+        />
+      )}
       {tab === "evaluaciones" && (
         <AssessmentsTab professionalId={professional.id} patientId={patient.id} />
       )}
@@ -430,5 +442,59 @@ async function AssessmentsTab({
         storageKey: x.storageKey,
       }))}
     />
+  );
+}
+
+async function PatternsTab({
+  professionalId,
+  patientId,
+  days,
+  base,
+}: {
+  professionalId: string;
+  patientId: string;
+  days: number;
+  base: string;
+}) {
+  // Solo lo que el paciente compartió (rueda) y las evaluaciones que asignó esta profesional.
+  const [patterns, scores] = await Promise.all([
+    getPatterns({ AND: [sharedEmotionWhere(professionalId), { patientId }] }, days),
+    getScoreSeries(professionalId, patientId),
+  ]);
+  return (
+    <div className="flex flex-col gap-6">
+      <section aria-labelledby="pt-wheel" className="flex flex-col gap-4">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 id="pt-wheel" className="text-lg font-semibold">
+              Rueda de las emociones
+            </h2>
+            <p className="text-muted-foreground text-sm">
+              Solo los registros que compartió ({patterns.total} en el período).
+            </p>
+          </div>
+          <RangeFilter base={base} days={days} />
+        </div>
+        {patterns.total === 0 ? (
+          <EmptyState title="No compartió registros de la rueda en este período" />
+        ) : (
+          <PatternsView patterns={patterns} who="pro" />
+        )}
+      </section>
+      <section aria-labelledby="pt-scores" className="flex flex-col gap-4">
+        <h2 id="pt-scores" className="text-lg font-semibold">
+          Evolución de evaluaciones
+        </h2>
+        {scores.length === 0 ? (
+          <EmptyState title="Todavía no hay evaluaciones con puntaje" />
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2">
+            {scores.map((s) => (
+              <ScoreChart key={s.assessmentId} series={s} />
+            ))}
+          </div>
+        )}
+      </section>
+    </div>
   );
 }
