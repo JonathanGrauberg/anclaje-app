@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   MessageSquareQuote,
   UserPlus,
+  type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -15,9 +16,9 @@ const nav = [
   { href: "/pro", label: "Pacientes", icon: LayoutDashboard },
   { href: "/pro/invitaciones", label: "Invitar paciente", icon: UserPlus },
   { href: "/pro/respuestas-rapidas", label: "Respuestas rápidas", icon: MessageSquareQuote },
-  { href: null, label: "Biblioteca", icon: BookOpen },
-  { href: null, label: "Evaluaciones", icon: ClipboardList },
-] as const;
+  { href: "/pro/biblioteca", label: "Biblioteca", icon: BookOpen },
+  { href: "/pro/evaluaciones", label: "Evaluaciones", icon: ClipboardList },
+] as { href: string | null; label: string; icon: LucideIcon }[];
 
 export function ProNav() {
   const pathname = usePathname();

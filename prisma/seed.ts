@@ -10,6 +10,7 @@ import { buildEmotionRows } from "../src/lib/emotions/build";
 import crisisLines from "./data/crisis-lines.json";
 import distortions from "./data/distortions.json";
 import emotions from "./data/emotions.json";
+import { TEMPLATES } from "./data/templates";
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }),
@@ -227,10 +228,87 @@ async function seedDemoUsers() {
   console.log("✓ Invitación demo: /vincular/" + DEMO_INVITE_CODE);
 }
 
+// Plantillas del sistema (PHQ-9, GAD-7): estructura y puntaje, ítems como TODO.
+async function seedTemplates() {
+  for (const t of TEMPLATES) {
+    const exists = await prisma.assessment.findFirst({ where: { ownerId: null, title: t.title } });
+    if (exists) continue;
+    const a = await prisma.assessment.create({
+      data: {
+        title: t.title,
+        description: t.description,
+        sourceNote: t.sourceNote,
+        isTemplate: true,
+      },
+    });
+    const v = await prisma.assessmentVersion.create({
+      data: {
+        assessmentId: a.id,
+        version: 1,
+        status: "PUBLISHED",
+        publishedAt: new Date(),
+        referencePeriod: t.referencePeriod,
+        instructions: "TODO: copiar las instrucciones de la versión validada.",
+        scoringMethod: "SUM",
+      },
+    });
+    for (let i = 1; i <= t.items; i++) {
+      const qid = `tpl-${t.slug}-q${i}`;
+      const critical = t.criticalItem?.index === i;
+      await prisma.question.create({
+        data: {
+          id: qid,
+          versionId: v.id,
+          sortOrder: i - 1,
+          type: "LIKERT",
+          text: `TODO: ítem ${i} — copiar la redacción de la versión validada`,
+          criticalOperator: critical ? "GTE" : null,
+          criticalValue: critical ? t.criticalItem!.minValue : null,
+          options: {
+            create: [0, 1, 2, 3].map((value) => ({
+              id: `${qid}-o${value}`,
+              label: `TODO: opción ${value}`,
+              value,
+              sortOrder: value,
+            })),
+          },
+        },
+      });
+    }
+    if (t.extraUnscoredItem) {
+      const qid = `tpl-${t.slug}-dif`;
+      await prisma.question.create({
+        data: {
+          id: qid,
+          versionId: v.id,
+          sortOrder: t.items,
+          type: "SINGLE_CHOICE",
+          text: "TODO: pregunta de dificultad funcional (no suma al puntaje)",
+          scored: false,
+          required: false,
+          options: {
+            create: [0, 1, 2, 3].map((value) => ({
+              id: `${qid}-o${value}`,
+              label: `TODO: opción ${value}`,
+              value,
+              sortOrder: value,
+            })),
+          },
+        },
+      });
+    }
+    await prisma.scoreRange.createMany({
+      data: t.ranges.map((r) => ({ versionId: v.id, ...r })),
+    });
+  }
+  console.log(`✓ Plantillas: ${TEMPLATES.map((t) => t.title).join(", ")}`);
+}
+
 async function main() {
   await seedEmotions();
   await seedDistortions();
   await seedCrisisLines();
+  await seedTemplates();
   await seedDemoUsers();
 }
 
