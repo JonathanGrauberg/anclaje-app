@@ -7,8 +7,21 @@ import { SignInForm } from "./sign-in-form";
 export const metadata: Metadata = { title: "Ingresar" };
 
 export default async function SignInPage({ searchParams }: PageProps<"/ingresar">) {
-  const next = safeNext((await searchParams).next);
+  const sp = await searchParams;
+  const next = safeNext(sp.next);
   const session = await getSession();
   if (session) redirect(next ?? homeForRole((session.user.role ?? "PATIENT") as Role));
-  return <SignInForm next={next} />;
+  return (
+    <>
+      {sp.cuenta === "borrada" && (
+        <p
+          role="status"
+          className="bg-primary-soft text-primary mx-auto mt-6 max-w-sm rounded-2xl p-4 text-sm"
+        >
+          Listo, tu cuenta y todos tus datos se borraron. Gracias por haber usado Sentir.
+        </p>
+      )}
+      <SignInForm next={next} />
+    </>
+  );
 }
