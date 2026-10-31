@@ -1,0 +1,104 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* Paleta calma y cálida. Los componentes usan tokens, no colores sueltos, así el modo oscuro
+   (por preferencia del sistema) funciona en todos lados. */
+:root {
+  --background: #faf7f2;
+  --foreground: #2a2833;
+  --card: #ffffff;
+  --card-foreground: #2a2833;
+  --muted: #f1ece4;
+  --muted-foreground: #66626f;
+  --border: #e6dfd4;
+  --input: #ddd5c9;
+  --ring: #46756a;
+  --primary: #46756a;
+  --primary-foreground: #ffffff;
+  --primary-soft: #e3efea;
+  --accent: #f6e7dc;
+  --accent-foreground: #7a4630;
+  --danger: #b4443a;
+  --danger-foreground: #ffffff;
+  --danger-soft: #fbe6e2;
+  --success: #3f7a4f;
+  --wheel-text: #2a2833;
+  --wheel-stroke: #faf7f2;
+  --radius: 1rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #16151b;
+    --foreground: #ece8e2;
+    --card: #201e27;
+    --card-foreground: #ece8e2;
+    --muted: #2a2832;
+    --muted-foreground: #a9a4b2;
+    --border: #34313d;
+    --input: #403c4a;
+    --ring: #8fc4b5;
+    --primary: #8fc4b5;
+    --primary-foreground: #14231f;
+    --primary-soft: #23332f;
+    --accent: #3a2c27;
+    --accent-foreground: #f2c9b4;
+    --danger: #f08b80;
+    --danger-foreground: #2a0f0c;
+    --danger-soft: #3a1f1d;
+    --success: #8fcf9f;
+    --wheel-text: #22212a;
+    --wheel-stroke: #16151b;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-soft: var(--primary-soft);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
+  --color-danger-soft: var(--danger-soft);
+  --color-success: var(--success);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 0.25rem);
+  --radius-2xl: calc(var(--radius) + 0.5rem);
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    background: var(--background);
+    color: var(--foreground);
+  }
+  :focus-visible {
+    outline: 3px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
