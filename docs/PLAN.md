@@ -40,18 +40,24 @@ Leyenda: ✅ hecho · 🟡 parcial · ⬜ pendiente
 - 🟡 "Mi plan de calma", "Mis tareas", "Mis patrones": pantallas con estado vacío (se completan en
   fases 2–4). El plan de calma ya muestra líneas de ayuda y una respiración guiada básica.
 
-## Fase 2 — Vínculo + panel profesional ⬜
+## Fase 2 — Vínculo + panel profesional ✅
 
-- Invitación por código/link con expiración; aceptar + consentimiento informado (fecha + versión)
-- Desvincularse; configuración de permisos por módulo (`SharingDefaults`) con override por entrada
-- Dashboard profesional: lista de pacientes, "pide atención" (devoluciones pendientes, tareas
-  vencidas, evaluaciones sin revisar), alertas de ítems críticos
-- Ficha del paciente: línea de tiempo filtrable de lo compartido
-- Devoluciones (+ respuestas rápidas, adjuntar recurso, "lo vemos en sesión")
-- Notas clínicas privadas cifradas
-- Editor del plan de calma (fichas) + fichas propias del paciente
-- Tareas con fecha límite; el paciente las tilda y comenta
-- Log de auditoría en cada lectura/modificación de dato clínico por parte de la profesional
+- ✅ Invitación por código/link (`/vincular/CODIGO`, un solo uso, vence a los 7 días); aceptar +
+  consentimiento informado (se guarda versión y fecha en `CareLink`)
+- ✅ Desvincularse (Ajustes); permisos por defecto por módulo (`SharingDefaults`) con override
+  por entrada
+- ✅ Dashboard profesional: lista de pacientes y "pide atención" (pedidos de devolución sin
+  responder, tareas vencidas, intensidades ≥ 8 en los últimos 7 días)
+- 🟡 "Evaluaciones sin revisar" y "alertas de ítems críticos" de cuestionarios: llegan con la fase 3
+- ✅ Ficha del paciente: línea de tiempo filtrable (tipo + intención) de lo compartido, temas de la
+  próxima sesión (la profesional también los puede marcar como hablados)
+- ✅ Devoluciones con respuestas rápidas (editables), "lo vemos en sesión" y adjuntar recurso
+  (el selector aparece cuando haya recursos: biblioteca en fase 3). El paciente las ve en
+  "Devoluciones", debajo de la entrada y con aviso en el inicio; se marca la lectura
+- ✅ Notas clínicas privadas cifradas (solo su autora)
+- ✅ Editor del plan de calma (fichas, orden) + fichas propias del paciente
+- ✅ Tareas con fecha límite; el paciente las tilda y comenta (comentario cifrado)
+- ✅ Log de auditoría en cada lectura/modificación de dato clínico por parte de la profesional
 
 ## Fase 3 — Biblioteca + evaluaciones ⬜
 

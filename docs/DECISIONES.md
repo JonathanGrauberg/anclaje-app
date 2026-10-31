@@ -109,11 +109,39 @@ salvo que se indique lo contrario.
   "compartidas": se le avisa que la verá cuando se vincule. Al aceptar el consentimiento (fase 2)
   conviene mostrar cuántas entradas compartidas hay y permitir revisarlas.
 
-## Vinculación (fase 2, propuesta)
+## Vinculación (fase 2)
 
 - Al desvincularse, la profesional pierde acceso a **todas** las entradas del paciente (pasadas y
   futuras). Lo que ella haya escrito en sus notas clínicas propias se conserva, porque es su
-  registro profesional.
+  registro profesional (puede editar notas viejas, no crear nuevas sin vínculo activo).
+- Las devoluciones que el paciente ya recibió siguen visibles para él después de desvincularse.
+- Códigos de invitación: 8 caracteres sin ambiguos (sin 0/O, 1/I/L), de un solo uso, 7 días.
+  Se reclaman con un `updateMany` condicional dentro de una transacción para que no se usen dos
+  veces. Probar códigos está limitado a 10 intentos cada 10 minutos por paciente (límite en memoria:
+  en producción con varias instancias conviene Redis).
+- El link `/vincular/CODIGO` es público: muestra quién invita y el consentimiento. Para aceptar hay
+  que entrar o crear cuenta; ingresar/registrarse aceptan `?next=` (solo rutas internas, sin `//`).
+- Re-vincularse con la misma profesional reactiva el `CareLink` existente y guarda la nueva versión y
+  fecha de consentimiento.
+- **El texto del consentimiento es un borrador** (`src/lib/consent.ts`, versión `2026-10-v1`): lo
+  tiene que revisar la profesional y asesoría legal. Si cambia, se sube la versión.
+
+## Panel profesional (fase 2)
+
+- "Pide atención" = entradas compartidas con intención "Me gustaría una devolución" que todavía no
+  tienen devolución de esta profesional + tareas vencidas + intensidades ≥ 8 en registros compartidos
+  de los últimos 7 días. Lo que tiene alerta de intensidad va primero.
+- Un paciente puede tener varias profesionales: cada una ve solo sus propias devoluciones, notas y
+  tareas. El plan de calma es uno por paciente y lo editan todas las profesionales vinculadas.
+- Las fichas del plan tienen autor: la profesional edita y borra las suyas, el paciente las suyas.
+  La profesional puede reordenar todas (el orden es el que ve el paciente).
+- La profesional puede marcar temas de "para la próxima sesión" como hablados (queda auditado).
+- Auditoría: se registra `view` al abrir la ficha (con la pestaña) y cada entrada compartida, y
+  `create`/`update`/`delete` de devoluciones, notas, fichas del plan, tareas, invitaciones y temas.
+  Del lado del paciente se audita aceptar el consentimiento y desvincularse.
+- Leer una devolución (en "Devoluciones" o debajo de la entrada) la marca como leída; la profesional
+  ve "leída hoy, 18:58" o "todavía no la leyó".
+- Respuestas rápidas: no se cifran (son plantillas de la profesional, sin datos del paciente).
 
 ## Urgencias
 

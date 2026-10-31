@@ -54,11 +54,15 @@ Abrí http://localhost:3000.
 
 Contraseña de todos: `sentir-demo-2026`
 
-| Rol         | Email                        |
-| ----------- | ---------------------------- |
-| Paciente    | `paciente@demo.sentir.test`  |
-| Profesional | `psicologa@demo.sentir.test` |
-| Admin       | `admin@demo.sentir.test`     |
+| Rol                    | Email                        |
+| ---------------------- | ---------------------------- |
+| Paciente (vinculada)   | `paciente@demo.sentir.test`  |
+| Paciente (sin vínculo) | `paciente2@demo.sentir.test` |
+| Profesional            | `psicologa@demo.sentir.test` |
+| Admin                  | `admin@demo.sentir.test`     |
+
+Para probar la invitación + consentimiento, entrá como `paciente2` y abrí
+http://localhost:3000/vincular/PRUEBA26. Cada `npm run db:seed` deja ese código sin usar otra vez.
 
 El magic link ("Prefiero que me manden un link") se imprime en la consola del servidor en desarrollo.
 
