@@ -126,7 +126,7 @@ export function EmotionWheel({ tree, selected, onToggle }: Props) {
           placeholder="Buscá una emoción (ej.: ansio…)"
           autoComplete="off"
           className="border-input bg-card placeholder:text-muted-foreground/80 focus-visible:border-ring focus-visible:ring-ring/25 h-12 w-full rounded-full border pr-10 pl-12 text-base focus-visible:ring-3 focus-visible:outline-none"
-          aria-controls={`${searchId}-results`}
+          aria-controls={results.length > 0 ? `${searchId}-results` : undefined}
         />
         {query && (
           <button

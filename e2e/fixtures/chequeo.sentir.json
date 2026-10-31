@@ -1,0 +1,127 @@
+{
+  "format": "sentir.assessment",
+  "formatVersion": 1,
+  "title": "Chequeo E2E",
+  "description": null,
+  "sourceNote": null,
+  "instructions": null,
+  "referencePeriod": null,
+  "scoringMethod": "SUM",
+  "patientSeesScore": false,
+  "closingMessage": "Gracias por tomarte este tiempo.",
+  "subscales": [],
+  "ranges": [],
+  "questions": [
+    {
+      "key": "9c278188b1884c45a8564c73",
+      "type": "LIKERT",
+      "text": "Me sentí con poca energía",
+      "helpText": null,
+      "required": true,
+      "scored": true,
+      "reverse": false,
+      "weight": 1,
+      "subscaleKey": null,
+      "blockKey": "db864c3df8a542668839096e",
+      "criticalOperator": "GTE",
+      "criticalValue": 1,
+      "config": {},
+      "options": [
+        {
+          "key": "5e886e75e47245edbc14a651",
+          "label": "Nunca",
+          "value": 0
+        },
+        {
+          "key": "c08640db158b4138b8b3be1e",
+          "label": "A veces",
+          "value": 1
+        },
+        {
+          "key": "fe881815127645d495d12d1e",
+          "label": "Seguido",
+          "value": 2
+        },
+        {
+          "key": "6f40f26889884c289beebc38",
+          "label": "Siempre",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "key": "749d0d31cfcc4ff79de71a61",
+      "type": "LIKERT",
+      "text": "Me costó dormir",
+      "helpText": null,
+      "required": true,
+      "scored": true,
+      "reverse": false,
+      "weight": 1,
+      "subscaleKey": null,
+      "blockKey": "db864c3df8a542668839096e",
+      "criticalOperator": null,
+      "criticalValue": null,
+      "config": {},
+      "options": [
+        {
+          "key": "8ebe5637072345b985d4a666",
+          "label": "Nunca",
+          "value": 0
+        },
+        {
+          "key": "6501175c2ed743babdc50779",
+          "label": "A veces",
+          "value": 1
+        },
+        {
+          "key": "c56bfbc0d78f4f8aa2280839",
+          "label": "Seguido",
+          "value": 2
+        },
+        {
+          "key": "28e6ead76a6143cd8e236dfa",
+          "label": "Siempre",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "key": "ca76f829d0e44f7299ca17ae",
+      "type": "LIKERT",
+      "text": "Disfruté de algo",
+      "helpText": null,
+      "required": true,
+      "scored": true,
+      "reverse": true,
+      "weight": 1,
+      "subscaleKey": null,
+      "blockKey": "db864c3df8a542668839096e",
+      "criticalOperator": null,
+      "criticalValue": null,
+      "config": {},
+      "options": [
+        {
+          "key": "9fdd2c08214e4ad1a80fb068",
+          "label": "Nunca",
+          "value": 0
+        },
+        {
+          "key": "c5de17355be74b568b144ebd",
+          "label": "A veces",
+          "value": 1
+        },
+        {
+          "key": "26bc8518b7c740e0a9fa1ba3",
+          "label": "Seguido",
+          "value": 2
+        },
+        {
+          "key": "b7da43a67f7e474bb5af13b1",
+          "label": "Siempre",
+          "value": 3
+        }
+      ]
+    }
+  ]
+}

@@ -15,7 +15,7 @@ export default async function PatientLayout({ children }: LayoutProps<"/app">) {
     <div className="flex flex-1 flex-col">
       <header className="bg-background/85 supports-[backdrop-filter]:bg-background/70 sticky top-0 z-30 border-b border-transparent backdrop-blur">
         <div className="mx-auto flex h-14 max-w-2xl items-center justify-between px-4">
-          <Link href="/app" className="rounded-full" aria-label="Inicio">
+          <Link href="/app" className="rounded-full">
             <Logo withText />
           </Link>
           <div className="flex items-center gap-1">

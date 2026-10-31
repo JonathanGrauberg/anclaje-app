@@ -21,7 +21,7 @@ export function Logo({ className, withText = false }: { className?: string; with
         <circle cx="32" cy="32" r="7" fill="var(--card)" />
       </svg>
       {withText && <span className="text-lg font-semibold tracking-tight">Sentir</span>}
-      <span className="sr-only">Sentir</span>
+      {!withText && <span className="sr-only">Sentir</span>}
     </span>
   );
 }
