@@ -12,6 +12,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { greeting } from "@/lib/dates";
 import { countUnreadFeedback } from "@/lib/queries/feedback";
+import { dueAssignmentsWhere } from "@/lib/queries/patient";
 import { prisma } from "@/lib/db";
 import { requirePatient } from "@/lib/session";
 import { cn } from "@/lib/utils";
@@ -20,7 +21,7 @@ export const metadata: Metadata = { title: "Inicio" };
 
 export default async function PatientHome() {
   const { user, patient } = await requirePatient();
-  const [pendingTopics, cbtDraft, unreadFeedback, pendingTasks] = await Promise.all([
+  const [pendingTopics, cbtDraft, unreadFeedback, openTasks, dueAssessments] = await Promise.all([
     prisma.sessionTopic.count({ where: { patientId: patient.id, discussedAt: null } }),
     prisma.cbtRecord.findFirst({
       where: { patientId: patient.id, status: "DRAFT" },
@@ -29,8 +30,10 @@ export default async function PatientHome() {
     }),
     countUnreadFeedback(patient.id),
     prisma.task.count({ where: { patientId: patient.id, completedAt: null } }),
+    prisma.assessmentAssignment.count({ where: dueAssignmentsWhere(patient.id) }),
   ]);
   const name = patient.displayName ?? user.name;
+  const pendingTasks = openTasks + dueAssessments;
 
   const tiles = [
     {

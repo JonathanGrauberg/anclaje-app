@@ -1,6 +1,7 @@
 import {
   AlertTriangle,
   CalendarClock,
+  ClipboardCheck,
   MessageCircleHeart,
   MessageSquareText,
   Users,
@@ -21,7 +22,12 @@ export default async function ProfessionalHome() {
   const { professional } = await requireProfessional();
   const patients = await getPatientsWithAttention(professional.id);
   const needAttention = patients.filter(
-    (p) => p.highIntensityAt || p.pendingFeedback || p.overdueTasks,
+    (p) =>
+      p.criticalAssessmentAt ||
+      p.highIntensityAt ||
+      p.pendingFeedback ||
+      p.overdueTasks ||
+      p.unreviewedAssessments,
   );
 
   return (
@@ -95,6 +101,12 @@ function AttentionRow({ patient: p }: { patient: PatientAttention }) {
       className="bg-card hover:border-primary/40 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border p-4 transition-colors"
     >
       <span className="font-semibold">{p.name}</span>
+      {p.criticalAssessmentAt && (
+        <span className="text-danger flex items-center gap-1.5 text-sm font-medium">
+          <AlertTriangle className="size-4" aria-hidden />
+          Ítem crítico en una evaluación ({formatRelative(p.criticalAssessmentAt)})
+        </span>
+      )}
       {p.highIntensityAt && (
         <span className="text-danger flex items-center gap-1.5 text-sm font-medium">
           <AlertTriangle className="size-4" aria-hidden />
@@ -105,6 +117,13 @@ function AttentionRow({ patient: p }: { patient: PatientAttention }) {
         <span className="flex items-center gap-1.5 text-sm">
           <MessageSquareText className="text-primary size-4" aria-hidden />
           {p.pendingFeedback} {p.pendingFeedback === 1 ? "pide" : "piden"} devolución
+        </span>
+      )}
+      {p.unreviewedAssessments > 0 && (
+        <span className="flex items-center gap-1.5 text-sm">
+          <ClipboardCheck className="text-primary size-4" aria-hidden />
+          {p.unreviewedAssessments}{" "}
+          {p.unreviewedAssessments === 1 ? "evaluación sin revisar" : "evaluaciones sin revisar"}
         </span>
       )}
       {p.overdueTasks > 0 && (
@@ -123,7 +142,7 @@ function PatientCard({ patient: p }: { patient: PatientAttention }) {
       <Card
         className={cn(
           "hover:border-primary/40 h-full transition-colors",
-          p.highIntensityAt && "border-danger/40",
+          (p.highIntensityAt || p.criticalAssessmentAt) && "border-danger/40",
         )}
       >
         <CardContent className="flex flex-col gap-3">

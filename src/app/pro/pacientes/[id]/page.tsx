@@ -16,6 +16,7 @@ import { getEmotionTree } from "@/lib/queries/common";
 import { getTimeline, type TimelineKind } from "@/lib/queries/pro";
 import { requireProfessional } from "@/lib/session";
 import { cn } from "@/lib/utils";
+import { AssessmentsPanel } from "./assessments-panel";
 import { CopingEditor } from "./coping-editor";
 import { NotesPanel } from "./notes-panel";
 import { TasksPanel } from "./tasks-panel";
@@ -28,6 +29,7 @@ const TABS = [
   { id: "notas", label: "Notas clínicas" },
   { id: "plan", label: "Plan de calma" },
   { id: "tareas", label: "Tareas" },
+  { id: "evaluaciones", label: "Evaluaciones" },
 ] as const;
 type TabId = (typeof TABS)[number]["id"];
 
@@ -113,6 +115,9 @@ export default async function PatientRecordPage({
       {tab === "notas" && <NotesTab professionalId={professional.id} patientId={patient.id} />}
       {tab === "plan" && <PlanTab patientId={patient.id} />}
       {tab === "tareas" && <TasksTab professionalId={professional.id} patientId={patient.id} />}
+      {tab === "evaluaciones" && (
+        <AssessmentsTab professionalId={professional.id} patientId={patient.id} />
+      )}
     </div>
   );
 }
@@ -356,6 +361,73 @@ async function TasksTab({
         completedAt: t.completedAt?.toISOString() ?? null,
         overdue: !t.completedAt && t.dueAt !== null && t.dueAt < now,
         comment: decryptOptional(t.patientCommentEnc),
+      }))}
+    />
+  );
+}
+
+async function AssessmentsTab({
+  professionalId,
+  patientId,
+}: {
+  professionalId: string;
+  patientId: string;
+}) {
+  // Respuestas visibles: solo las de evaluaciones que asignó esta profesional.
+  const [available, assignments, responses, externals] = await Promise.all([
+    prisma.assessment.findMany({
+      where: { ownerId: professionalId, versions: { some: { status: "PUBLISHED" } } },
+      orderBy: { title: "asc" },
+      select: { id: true, title: true },
+    }),
+    prisma.assessmentAssignment.findMany({
+      where: { professionalId, patientId, active: true },
+      orderBy: { createdAt: "desc" },
+      include: {
+        version: { select: { version: true, assessment: { select: { title: true } } } },
+        responses: { where: { status: "IN_PROGRESS" }, select: { id: true }, take: 1 },
+      },
+    }),
+    prisma.assessmentResponse.findMany({
+      where: { patientId, status: "COMPLETED", assignment: { professionalId } },
+      orderBy: { completedAt: "desc" },
+      take: 50,
+      include: { version: { select: { assessment: { select: { title: true } } } } },
+    }),
+    prisma.externalResult.findMany({
+      where: { professionalId, patientId },
+      orderBy: { takenAt: "desc" },
+    }),
+  ]);
+  return (
+    <AssessmentsPanel
+      patientId={patientId}
+      available={available}
+      assignments={assignments.map((a) => ({
+        id: a.id,
+        title: a.version.assessment.title,
+        version: a.version.version,
+        recurrenceDays: a.recurrenceDays,
+        nextDueAt: a.nextDueAt?.toISOString() ?? null,
+        inProgress: a.responses.length > 0,
+      }))}
+      responses={responses.map((r) => ({
+        id: r.id,
+        title: r.version.assessment.title,
+        completedAt: r.completedAt!.toISOString(),
+        totalScore: r.totalScore,
+        interpretation: r.interpretation,
+        critical: r.criticalQuestionIds.length > 0,
+        reviewed: r.reviewedAt !== null,
+      }))}
+      externals={externals.map((x) => ({
+        id: x.id,
+        name: x.name,
+        score: x.score,
+        interpretation: x.interpretation,
+        takenAt: x.takenAt.toISOString(),
+        notes: decryptOptional(x.notesEnc),
+        storageKey: x.storageKey,
       }))}
     />
   );

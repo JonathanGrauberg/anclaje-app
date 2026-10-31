@@ -116,6 +116,24 @@ export async function getPatientsWithAttention(pid: string, now = new Date()) {
       ),
     ]);
 
+  // Evaluaciones respondidas sin revisar (de las que asignó ella), y si alguna tiene ítem crítico.
+  const unreviewed = await prisma.assessmentResponse.findMany({
+    where: {
+      patientId: { in: ids },
+      status: "COMPLETED",
+      reviewedAt: null,
+      assignment: { professionalId: pid },
+    },
+    select: { patientId: true, criticalQuestionIds: true, completedAt: true },
+  });
+  const unreviewedBy = new Map<string, number>();
+  const criticalBy = new Map<string, Date>();
+  for (const r of unreviewed) {
+    unreviewedBy.set(r.patientId, (unreviewedBy.get(r.patientId) ?? 0) + 1);
+    if (r.criticalQuestionIds.length && r.completedAt && !criticalBy.has(r.patientId))
+      criticalBy.set(r.patientId, r.completedAt);
+  }
+
   const answered = new Set(feedbacks.map((f) => f.targetId));
   const pending = new Map<string, number>();
   for (const e of [...journals, ...emotions, ...cbts]) {
@@ -138,9 +156,12 @@ export async function getPatientsWithAttention(pid: string, now = new Date()) {
       overdueTasks: overdueBy.get(p.id) ?? 0,
       openTopics: topicsBy.get(p.id) ?? 0,
       highIntensityAt: highBy.get(p.id) ?? null,
+      unreviewedAssessments: unreviewedBy.get(p.id) ?? 0,
+      criticalAssessmentAt: criticalBy.get(p.id) ?? null,
     }))
     .sort(
       (a, b) =>
+        Number(!!b.criticalAssessmentAt) - Number(!!a.criticalAssessmentAt) ||
         Number(!!b.highIntensityAt) - Number(!!a.highIntensityAt) ||
         b.pendingFeedback + b.overdueTasks - (a.pendingFeedback + a.overdueTasks) ||
         a.name.localeCompare(b.name, "es"),
