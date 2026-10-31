@@ -181,6 +181,51 @@ salvo que se indique lo contrario.
 - Los recursos de la biblioteca (títulos, fichas de texto) **no se cifran**: son material de la
   profesional, sin datos del paciente. Abrirlo marca la asignación como vista.
 
+## Patrones, avisos y datos (fase 4)
+
+- **Gráficos**: una serie por gráfico, color primario (las emociones llevan además el punto de
+  color de la rueda, nunca solo color), tooltip y siempre "Ver como tabla". Períodos 30 días /
+  3 meses / 1 año; más de un mes se agrupa por semana. Días sin registros quedan como hueco (no se
+  inventan valores). Todo en hora de Buenos Aires. Textos sin juicio: "no hay valores buenos ni
+  malos".
+- La profesional ve una pestaña **Patrones** con los mismos gráficos **solo de lo compartido**
+  (`sharedEmotionWhere`) y la evolución de puntajes de las evaluaciones **que ella asignó**.
+- Para la demo, el seed agrega ~2 meses de registros de la rueda a Sofía (sin textos).
+- **PWA**: manifest + íconos generados del logo. El service worker **no cachea nada con datos**:
+  solo la página "Sin conexión" e íconos; las navegaciones van siempre a la red. Si no hay red se
+  muestra esa página con el 911 y el 135.
+- **Avisos push**: solo recordatorios para el paciente, opt-in, un dispositivo o varios. Como mucho
+  uno por día, en la hora y días que elige (ventana de 2 h por si el cron se atrasa). El texto es
+  genérico y amable, rota entre tres, y **nunca incluye datos del paciente** (se ve en la pantalla
+  bloqueada). Sin rachas ni "hace N días que no registrás". Suscripciones vencidas (404/410) se
+  borran solas.
+- **Resumen por email** de la profesional (diario / semanal los lunes / nunca, por defecto nunca),
+  desde las 8. Solo cuenta cosas (devoluciones pedidas, evaluaciones sin revisar, ítems críticos,
+  intensidad alta, tareas vencidas) **sin nombres ni contenido**. Si no hay nada, no se manda.
+- Tareas programadas por HTTP (`/api/cron/[job]`, `Authorization: Bearer CRON_SECRET`, comparación
+  en tiempo constante) para no depender de la plataforma. Son idempotentes (`lastSentAt`,
+  `lastDigestAt`): se marca antes de enviar para no reintentar en loop.
+- Emails por SMTP genérico (nodemailer): sirve con cualquier proveedor. Sin `SMTP_URL` en dev van a
+  la consola; en producción es un error.
+- **Exportar mis datos** (Ley 25.326, derecho de acceso): JSON (`format: "sentir.patient-export"`)
+  y PDF legible, descifrados y con nombres de emociones. Incluye todo lo que el paciente escribió o
+  recibió (rueda, diario, autorregistros, temas, devoluciones, plan de calma, tareas, material,
+  cuestionarios). **No incluye** las notas clínicas (son de la profesional) ni los resultados
+  externos (el paciente no los ve en la app). Queda en el AuditLog.
+- **Borrar cuenta**: solo pacientes, con contraseña + escribir "BORRAR". Se borra todo en cascada
+  (incluidas las notas clínicas y devoluciones sobre ese paciente) y los archivos asociados. Quedan
+  los registros de auditoría de accesos de la profesional (solo ids). **A revisar con asesoría
+  legal**: la profesional puede tener obligación de conservar su historia clínica (Ley 26.529) por
+  fuera de la app. Las cuentas profesionales se dan de baja con el equipo.
+- Storage S3/R2 implementado (`STORAGE_DRIVER=s3`): bucket privado, cifrado en reposo (SSE AES256),
+  los archivos se siguen sirviendo solo por `/api/files` con permisos.
+- **Accesibilidad**: axe (WCAG 2.1 AA) corre en E2E sobre todas las pantallas en claro y oscuro.
+  Arreglos: el verde primario pasó de `#46756a` a `#426f64` (contraste 4.4 → 4.8 sobre el verde
+  suave), el link del logo usa su texto visible como nombre, y la búsqueda de la rueda no apunta a
+  una lista que no existe. Falta una pasada manual con lector de pantalla.
+- E2E: el ingreso tiene límite de 5 intentos por minuto, así que los tests ingresan una vez por rol
+  y reusan la sesión (`e2e/.auth`, fuera de git).
+
 ## Urgencias
 
 - Las líneas de ayuda están en `prisma/data/crisis-lines.json` (seed) y en la tabla `CrisisLine`,

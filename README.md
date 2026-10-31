@@ -50,6 +50,28 @@ npm run dev
 
 Abrí http://localhost:3000.
 
+### Avisos, emails y tareas programadas (opcional en dev)
+
+- **Avisos push**: `npm run gen:vapid` y pegá las claves en `.env`. Se activan en Ajustes → Avisos.
+  En iPhone hace falta instalar la app (Compartir → Agregar a inicio).
+- **Emails**: sin `SMTP_URL` se imprimen en la consola del servidor (magic link y resumen).
+- **Tareas programadas**: recordatorios y resumen por email. En producción, un cron externo (Vercel
+  Cron, GitHub Actions…) hace `POST /api/cron/recordatorios` y `POST /api/cron/resumen` cada 5–15
+  minutos con `Authorization: Bearer $CRON_SECRET`. En dev: `npm run cron` (con `npm run dev`
+  corriendo).
+
+### Tests E2E
+
+```bash
+npx playwright install chromium   # una sola vez
+npm run db:seed
+npm run test:e2e                  # levanta `npm run dev` si no está corriendo
+```
+
+Incluyen ingreso, privacidad (diario privado), evaluación con ítem crítico de punta a punta, crear
+cuenta → exportar → borrar, y una revisión automática de accesibilidad (axe, WCAG 2.1 AA) de todas
+las pantallas en modo claro y oscuro.
+
 ### Usuarios demo
 
 Contraseña de todos: `sentir-demo-2026`
@@ -77,6 +99,9 @@ El magic link ("Prefiero que me manden un link") se imprime en la consola del se
 | `npm run dev`       | Servidor de desarrollo                 |
 | `npm run build`     | Build de producción                    |
 | `npm run test`      | Tests de lógica (Vitest)               |
+| `npm run test:e2e`  | Tests E2E + accesibilidad (Playwright) |
+| `npm run cron`      | Tareas programadas en dev              |
+| `npm run gen:vapid` | Claves para avisos push                |
 | `npm run lint`      | ESLint                                 |
 | `npm run typecheck` | Tipos de rutas + `tsc`                 |
 | `npm run format`    | Prettier                               |

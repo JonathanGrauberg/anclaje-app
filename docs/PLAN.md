@@ -75,7 +75,7 @@ Leyenda: ✅ hecho · 🟡 parcial · ⬜ pendiente
 - Pendiente para fase 4: driver de storage S3/R2 (la interfaz ya está), gráficos de evolución de
   puntajes.
 
-## Fase 4 — Patrones y pulido ⬜
+## Fase 4 — Patrones y pulido ✅
 
 - Gráficos (Recharts) paciente y profesional
 - PWA instalable (manifest + service worker), Web Push y recordatorios sin gamificación
@@ -83,3 +83,13 @@ Leyenda: ✅ hecho · 🟡 parcial · ⬜ pendiente
 - Exportar datos (JSON + PDF) y borrar cuenta
 - Tests E2E con Playwright de flujos críticos
 - Revisión de accesibilidad AA
+- También: driver de storage S3/R2, envío de emails (magic link) por SMTP
+
+## Pendientes para producción
+
+- Revisar con asesoría legal el texto del consentimiento y la política de borrado/conservación
+- Verificar los números de las líneas de ayuda
+- Configurar SMTP, VAPID, `CRON_SECRET`, bucket S3/R2 privado y un cron externo
+- Pantalla de admin (líneas de ayuda, plantillas)
+- Probar avisos push en dispositivos reales (Android, iPhone con la app instalada)
+- Pasada manual con lector de pantalla (VoiceOver/TalkBack) y solo teclado
