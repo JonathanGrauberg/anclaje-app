@@ -23,6 +23,15 @@ type SaveState = "idle" | "dirty" | "saving" | "saved" | "error";
 
 const AUTOSAVE_MS = 1500;
 
+type FormatAction = "bold" | "italic" | "h" | "ul" | "ol";
+const TOOLBAR = [
+  { label: "Negrita", icon: Bold, action: "bold" },
+  { label: "Cursiva", icon: Italic, action: "italic" },
+  { label: "Título", icon: Heading, action: "h" },
+  { label: "Lista", icon: List, action: "ul" },
+  { label: "Lista numerada", icon: ListOrdered, action: "ol" },
+] as const satisfies { label: string; icon: unknown; action: FormatAction }[];
+
 export function JournalEditor({
   tree,
   initial,
@@ -156,13 +165,11 @@ export function JournalEditor({
     });
   }
 
-  const toolbar = [
-    { label: "Negrita", icon: Bold, run: () => wrap("**") },
-    { label: "Cursiva", icon: Italic, run: () => wrap("*") },
-    { label: "Título", icon: Heading, run: () => prefixLines("h") },
-    { label: "Lista", icon: List, run: () => prefixLines("ul") },
-    { label: "Lista numerada", icon: ListOrdered, run: () => prefixLines("ol") },
-  ];
+  function applyFormat(action: FormatAction) {
+    if (action === "bold") wrap("**");
+    else if (action === "italic") wrap("*");
+    else prefixLines(action);
+  }
 
   const status =
     state === "saving"
@@ -220,12 +227,12 @@ export function JournalEditor({
       ) : (
         <div className="bg-card focus-within:border-ring focus-within:ring-ring/25 overflow-hidden rounded-2xl border focus-within:ring-3">
           <div role="toolbar" aria-label="Formato" className="flex gap-1 border-b px-2 py-1.5">
-            {toolbar.map(({ label, icon: Icon, run }) => (
+            {TOOLBAR.map(({ label, icon: Icon, action }) => (
               <button
                 key={label}
                 type="button"
                 onMouseDown={(e) => e.preventDefault()}
-                onClick={run}
+                onClick={() => applyFormat(action)}
                 aria-label={label}
                 title={label}
                 className="text-muted-foreground hover:bg-muted hover:text-foreground rounded-lg p-2"
