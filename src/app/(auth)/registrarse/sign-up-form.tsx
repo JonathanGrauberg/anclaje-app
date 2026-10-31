@@ -11,7 +11,7 @@ import { FieldError, Input, Label } from "@/components/ui/input";
 import { signUp } from "@/lib/auth-client";
 import { signUpSchema, type SignUpInput } from "@/lib/validation/auth";
 
-export function SignUpForm() {
+export function SignUpForm({ next }: { next: string | null }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const form = useForm<SignUpInput>({ resolver: zodResolver(signUpSchema) });
@@ -31,7 +31,7 @@ export function SignUpForm() {
       );
       return;
     }
-    router.replace("/app");
+    router.replace(next ?? "/app");
     router.refresh();
   }
 
@@ -83,7 +83,7 @@ export function SignUpForm() {
         <p className="text-muted-foreground text-center text-sm">
           ¿Ya tenés cuenta?{" "}
           <Link
-            href="/ingresar"
+            href={next ? `/ingresar?next=${encodeURIComponent(next)}` : "/ingresar"}
             className="text-primary font-medium underline-offset-4 hover:underline"
           >
             Ingresá

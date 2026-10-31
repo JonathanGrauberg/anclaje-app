@@ -12,7 +12,7 @@ import { FieldError, Input, Label } from "@/components/ui/input";
 import { signIn } from "@/lib/auth-client";
 import { signInSchema, type SignInInput } from "@/lib/validation/auth";
 
-export function SignInForm() {
+export function SignInForm({ next }: { next: string | null }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [magicSent, setMagicSent] = useState(false);
@@ -30,7 +30,7 @@ export function SignInForm() {
       );
       return;
     }
-    router.replace("/");
+    router.replace(next ?? "/");
     router.refresh();
   }
 
@@ -38,7 +38,10 @@ export function SignInForm() {
     setError(null);
     const ok = await form.trigger("email");
     if (!ok) return;
-    const { error } = await signIn.magicLink({ email: form.getValues("email"), callbackURL: "/" });
+    const { error } = await signIn.magicLink({
+      email: form.getValues("email"),
+      callbackURL: next ?? "/",
+    });
     if (error) {
       setError(
         error.status === 429
@@ -96,7 +99,7 @@ export function SignInForm() {
         <p className="text-muted-foreground text-center text-sm">
           ¿No tenés cuenta?{" "}
           <Link
-            href="/registrarse"
+            href={next ? `/registrarse?next=${encodeURIComponent(next)}` : "/registrarse"}
             className="text-primary font-medium underline-offset-4 hover:underline"
           >
             Creala acá
