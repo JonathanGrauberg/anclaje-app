@@ -1,10 +1,17 @@
 import "server-only";
+import {
+  DeleteObjectCommand,
+  GetObjectCommand,
+  NoSuchKey,
+  PutObjectCommand,
+  S3Client,
+} from "@aws-sdk/client-s3";
 import { randomBytes } from "node:crypto";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 // Capa de almacenamiento de archivos. En dev: disco local (carpeta `storage/`, fuera de git).
-// En producción: S3 / R2 (TODO fase 4: implementar `s3Driver` con @aws-sdk/client-s3).
+// En producción: S3 o compatible (Cloudflare R2, MinIO…), con el bucket PRIVADO y cifrado en reposo.
 // Los archivos NUNCA se sirven estáticos: pasan por /api/files, que chequea permisos.
 
 export type StoredFile = { data: Buffer; contentType: string };
@@ -75,12 +82,70 @@ function localDriver(root: string): StorageDriver {
   };
 }
 
+/** S3 o compatible. Para R2: S3_ENDPOINT=https://<cuenta>.r2.cloudflarestorage.com y S3_REGION=auto. */
+function s3Driver(): StorageDriver {
+  const bucket = process.env.S3_BUCKET;
+  if (!bucket) throw new Error("Falta S3_BUCKET");
+  const client = new S3Client({
+    region: process.env.S3_REGION ?? "auto",
+    endpoint: process.env.S3_ENDPOINT || undefined,
+    forcePathStyle: process.env.S3_FORCE_PATH_STYLE === "true",
+    credentials:
+      process.env.S3_ACCESS_KEY_ID && process.env.S3_SECRET_ACCESS_KEY
+        ? {
+            accessKeyId: process.env.S3_ACCESS_KEY_ID,
+            secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+          }
+        : undefined,
+  });
+  const check = (key: string) => {
+    if (!isValidKey(key)) throw new Error("Clave de archivo inválida");
+    return key;
+  };
+  return {
+    async put(key, data, contentType) {
+      await client.send(
+        new PutObjectCommand({
+          Bucket: bucket,
+          Key: check(key),
+          Body: data,
+          ContentType: contentType,
+          ServerSideEncryption: process.env.S3_SSE === "none" ? undefined : "AES256",
+        }),
+      );
+    },
+    async get(key) {
+      try {
+        const res = await client.send(new GetObjectCommand({ Bucket: bucket, Key: check(key) }));
+        if (!res.Body) return null;
+        const data = Buffer.from(await res.Body.transformToByteArray());
+        const ext = key.split(".").pop()!;
+        return { data, contentType: EXT_TO_TYPE[ext] ?? "application/octet-stream" };
+      } catch (e) {
+        if (e instanceof NoSuchKey || (e as { name?: string }).name === "NoSuchKey") return null;
+        throw e;
+      }
+    },
+    async delete(key) {
+      await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: check(key) }));
+    },
+  };
+}
+
 let driver: StorageDriver | null = null;
 
 export function storage(): StorageDriver {
   if (driver) return driver;
   const kind = process.env.STORAGE_DRIVER ?? "local";
-  if (kind !== "local") throw new Error(`STORAGE_DRIVER=${kind} todavía no está implementado`);
-  driver = localDriver(path.resolve(process.env.STORAGE_LOCAL_DIR ?? "storage"));
+  if (kind === "s3") driver = s3Driver();
+  else if (kind === "local")
+    // La carpeta se resuelve en runtime: que el build no intente empaquetarla.
+    driver = localDriver(
+      path.resolve(
+        /* turbopackIgnore: true */ process.cwd(),
+        process.env.STORAGE_LOCAL_DIR ?? "storage",
+      ),
+    );
+  else throw new Error(`STORAGE_DRIVER desconocido: ${kind}`);
   return driver;
 }
