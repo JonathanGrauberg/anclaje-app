@@ -59,7 +59,7 @@ Leyenda: ✅ hecho · 🟡 parcial · ⬜ pendiente
 - ✅ Tareas con fecha límite; el paciente las tilda y comenta (comentario cifrado)
 - ✅ Log de auditoría en cada lectura/modificación de dato clínico por parte de la profesional
 
-## Fase 3 — Biblioteca + evaluaciones ⬜
+## Fase 3 — Biblioteca + evaluaciones ✅
 
 - Biblioteca: PDFs/imágenes/links/fichas de texto; capa `storage` (local en dev, S3/R2 en prod);
   asignación y "visto"; visor PDF embebido
@@ -72,6 +72,8 @@ Leyenda: ✅ hecho · 🟡 parcial · ⬜ pendiente
   plan de calma + líneas si se activa un ítem crítico
 - Importar: plantillas PHQ-9 y GAD-7 (estructura completa, textos de ítems como TODO), PDF,
   resultado externo, JSON propio. Aviso de licencias.
+- Pendiente para fase 4: driver de storage S3/R2 (la interfaz ya está), gráficos de evolución de
+  puntajes.
 
 ## Fase 4 — Patrones y pulido ⬜
 

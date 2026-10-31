@@ -143,6 +143,44 @@ salvo que se indique lo contrario.
   ve "leída hoy, 18:58" o "todavía no la leyó".
 - Respuestas rápidas: no se cifran (son plantillas de la profesional, sin datos del paciente).
 
+## Biblioteca y evaluaciones (fase 3)
+
+- **Formato de evaluación único** (`AssessmentDoc`, `src/lib/validation/assessment.ts`): lo usan el
+  armador, el guardado, la exportación/importación JSON (`format: "sentir.assessment"`) y las
+  plantillas. Las `key` del documento son los ids de preguntas, opciones y subescalas en la DB; al
+  duplicar, versionar o importar se regeneran.
+- Guardar un borrador reemplaza sus preguntas (borra y re-crea): mientras es borrador no tiene
+  respuestas atadas. **Una versión publicada no se modifica nunca**: para cambiarla se crea la versión
+  N+1 (copia en borrador); al publicarla, la anterior queda archivada. Las asignaciones nuevas usan la
+  última publicada; las respuestas quedan atadas a la versión que respondieron.
+- Las secciones se modelan como preguntas tipo "Título / texto informativo" (INFO); el modelo
+  `AssessmentSection` queda sin usar.
+- **Bloque Likert** = preguntas Likert consecutivas con el mismo `blockKey` y opciones compartidas
+  (editar las opciones de una cambia todo el bloque). El paciente ve el bloque en una sola pantalla.
+- Puntaje: el valor invertido es `mín + máx − valor`; el ítem crítico se evalúa sobre el valor
+  **sin invertir** (lo que eligió el paciente); los rangos son inclusivos. El paciente ve su puntaje
+  solo si la evaluación lo habilita (por defecto no).
+- Ítem crítico: al enviar, el paciente ve su plan de calma y las líneas de ayuda con un texto
+  tranquilo; la profesional ve "Ítem crítico en una evaluación" primero en "Pide atención".
+- Las respuestas las ve **solo la profesional que asignó** la evaluación (se audita cada vista).
+- Asignación única o recurrente (cada 7/14/30 días): al completar una recurrente se programa la
+  próxima; la profesional puede cancelarla. Si se desvinculan, deja de aparecerle al paciente.
+- **Plantillas PHQ-9 y GAD-7 sin redacción de ítems**: traen estructura, opciones 0–3, rangos e
+  ítem crítico (PHQ-9 ítem 9 ≥ 1) con textos `TODO`. Publicar está bloqueado mientras haya `TODO`
+  en preguntas, opciones o instrucciones. Se muestra aviso de licencias/autorización.
+- "Importar PDF" se interpretó como **resultado externo**: test tomado fuera de la app con
+  instrumento, fecha, puntaje, interpretación, notas (cifradas) y PDF/imagen escaneado opcional. El
+  paciente no lo ve.
+- Archivos: capa `src/lib/storage` con driver local (`storage/`, fuera del repo) y S3/R2 pendiente
+  (fase 4). Máx. 10 MB; el tipo se detecta por los primeros bytes (PDF, PNG, JPG, WEBP), no por la
+  extensión. Se sirven solo por `/api/files/...` con permiso verificado en cada pedido,
+  `Cache-Control: no-store`, CSP `default-src 'none'` y `X-Frame-Options: SAMEORIGIN` (para el visor
+  embebido).
+- En el celular el PDF se abre con un botón (los navegadores móviles no muestran PDFs embebidos); en
+  pantallas grandes se ve embebido.
+- Los recursos de la biblioteca (títulos, fichas de texto) **no se cifran**: son material de la
+  profesional, sin datos del paciente. Abrirlo marca la asignación como vista.
+
 ## Urgencias
 
 - Las líneas de ayuda están en `prisma/data/crisis-lines.json` (seed) y en la tabla `CrisisLine`,

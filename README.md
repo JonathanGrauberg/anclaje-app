@@ -64,6 +64,10 @@ Contraseña de todos: `sentir-demo-2026`
 Para probar la invitación + consentimiento, entrá como `paciente2` y abrí
 http://localhost:3000/vincular/PRUEBA26. Cada `npm run db:seed` deja ese código sin usar otra vez.
 
+Para ver evaluaciones: como `psicologa`, en **Evaluaciones** armá una (o importá un JSON), publicala
+y asignala desde la ficha de Sofía → pestaña Evaluaciones. Después entrá como `paciente` → **Mis
+tareas**.
+
 El magic link ("Prefiero que me manden un link") se imprime en la consola del servidor en desarrollo.
 
 ## Comandos
@@ -84,6 +88,9 @@ El magic link ("Prefiero que me manden un link") se imprime en la consola del se
 - Rueda de las emociones: `prisma/data/emotions.json`
 - Distorsiones cognitivas: `prisma/data/distortions.json`
 - Líneas de ayuda: `prisma/data/crisis-lines.json` (**verificar los números antes de usar en producción**)
+- Plantillas de evaluaciones (PHQ-9, GAD-7): `prisma/data/templates.ts`. Traen estructura y puntaje,
+  **no la redacción de los ítems** (quedan como `TODO`; no se pueden publicar hasta reemplazarlos por
+  el texto de la versión validada que tengas autorizada).
 
 Después de editarlos, `npm run db:seed` (es idempotente).
 
@@ -91,4 +98,6 @@ Después de editarlos, `npm run db:seed` (es idempotente).
 
 Los textos libres (diario, autorregistros, notas, temas de sesión) se guardan cifrados con
 AES-256-GCM a nivel aplicación. **Si perdés `ENCRYPTION_KEYS`, esos datos no se pueden recuperar.**
+Los archivos subidos (PDF/imagen) se guardan en `storage/` (fuera del repo) y solo se sirven por
+`/api/files/...`, que verifica permisos en cada pedido.
 Para rotar la clave, agregá una nueva (`1:<vieja>,2:<nueva>`) y poné `ENCRYPTION_KEY_VERSION="2"`.
