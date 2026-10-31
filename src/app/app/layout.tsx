@@ -1,3 +1,4 @@
+import { Settings } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { HelpButton } from "@/components/patient/help-button";
@@ -17,7 +18,16 @@ export default async function PatientLayout({ children }: LayoutProps<"/app">) {
           <Link href="/app" className="rounded-full" aria-label="Inicio">
             <Logo withText />
           </Link>
-          <SignOutButton />
+          <div className="flex items-center gap-1">
+            <Link
+              href="/app/ajustes"
+              aria-label="Ajustes"
+              className="hover:bg-muted flex size-10 items-center justify-center rounded-full"
+            >
+              <Settings className="size-5" aria-hidden />
+            </Link>
+            <SignOutButton />
+          </div>
         </div>
       </header>
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 pt-4 pb-28">{children}</main>

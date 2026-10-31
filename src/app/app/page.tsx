@@ -6,10 +6,12 @@ import {
   ListChecks,
   MessageCircleHeart,
   NotebookPen,
+  Sparkles,
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { greeting } from "@/lib/dates";
+import { countUnreadFeedback } from "@/lib/queries/feedback";
 import { prisma } from "@/lib/db";
 import { requirePatient } from "@/lib/session";
 import { cn } from "@/lib/utils";
@@ -18,13 +20,15 @@ export const metadata: Metadata = { title: "Inicio" };
 
 export default async function PatientHome() {
   const { user, patient } = await requirePatient();
-  const [pendingTopics, cbtDraft] = await Promise.all([
+  const [pendingTopics, cbtDraft, unreadFeedback, pendingTasks] = await Promise.all([
     prisma.sessionTopic.count({ where: { patientId: patient.id, discussedAt: null } }),
     prisma.cbtRecord.findFirst({
       where: { patientId: patient.id, status: "DRAFT" },
       orderBy: { updatedAt: "desc" },
       select: { id: true },
     }),
+    countUnreadFeedback(patient.id),
+    prisma.task.count({ where: { patientId: patient.id, completedAt: null } }),
   ]);
   const name = patient.displayName ?? user.name;
 
@@ -57,7 +61,9 @@ export default async function PatientHome() {
     {
       href: "/app/tareas",
       title: "Mis tareas y evaluaciones",
-      text: "Lo que te propuso tu psicóloga.",
+      text: pendingTasks
+        ? `${pendingTasks} ${pendingTasks === 1 ? "pendiente" : "pendientes"}, a tu ritmo`
+        : "Lo que te propuso tu psicóloga.",
       icon: ListChecks,
       tone: "bg-[#FBF0CF] text-[#6B5414] dark:bg-[#3A331F] dark:text-[#F2DD9C]",
     },
@@ -83,6 +89,18 @@ export default async function PatientHome() {
         <p className="text-muted-foreground">{greeting()},</p>
         <h1 className="text-3xl font-semibold tracking-tight">{name}. ¿Cómo venís hoy?</h1>
       </section>
+
+      {unreadFeedback > 0 && (
+        <Link
+          href="/app/devoluciones"
+          className="bg-primary-soft text-primary flex items-center gap-3 rounded-3xl p-4 font-medium"
+        >
+          <Sparkles className="size-6 shrink-0" aria-hidden />
+          {unreadFeedback === 1
+            ? "Tu psicóloga te dejó una devolución"
+            : `Tu psicóloga te dejó ${unreadFeedback} devoluciones`}
+        </Link>
+      )}
 
       <Link
         href="/app/rueda"
@@ -118,6 +136,12 @@ export default async function PatientHome() {
         className="text-muted-foreground flex items-center justify-center gap-2 text-sm underline-offset-4 hover:underline"
       >
         <ClipboardCheck className="size-4" aria-hidden /> Ver lo que registré
+      </Link>
+      <Link
+        href="/app/devoluciones"
+        className="text-muted-foreground -mt-4 flex items-center justify-center gap-2 text-sm underline-offset-4 hover:underline"
+      >
+        <MessageCircleHeart className="size-4" aria-hidden /> Devoluciones de mi psicóloga
       </Link>
     </div>
   );

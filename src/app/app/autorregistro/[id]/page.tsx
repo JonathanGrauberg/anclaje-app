@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AddToSessionButton } from "@/components/patient/add-to-session";
 import { DeleteButton } from "@/components/patient/delete-button";
+import { FeedbackList } from "@/components/patient/feedback-list";
 import { ShareEditor } from "@/components/patient/share-editor";
 import { Button } from "@/components/ui/button";
 import { deleteCbtRecord, updateCbtShare } from "@/lib/actions/cbt";
@@ -12,6 +13,7 @@ import { formatDateTime, toLocalInputValue } from "@/lib/dates";
 import { buildEmotionIndex, intensityWord } from "@/lib/emotions/tree";
 import { getOwnCbtRecord } from "@/lib/queries/cbt";
 import { getDistortions, getEmotionTree } from "@/lib/queries/common";
+import { readPatientFeedbacks } from "@/lib/queries/feedback";
 import { hasActiveLink } from "@/lib/queries/patient";
 import { requirePatient } from "@/lib/session";
 import { CbtWizard } from "./cbt-wizard";
@@ -54,6 +56,7 @@ export default async function CbtRecordPage({ params }: PageProps<"/app/autorreg
     );
   }
 
+  const feedbacks = await readPatientFeedbacks(patient.id, { type: "CBT", id: record.id });
   const index = buildEmotionIndex(tree);
   const distortionNames = distortions
     .filter((d) => record.distortionIds.includes(d.id))
@@ -152,6 +155,15 @@ export default async function CbtRecordPage({ params }: PageProps<"/app/autorreg
         <Section title="Otra mirada">
           <p className="whitespace-pre-wrap">{record.alternative}</p>
         </Section>
+      )}
+
+      {feedbacks.length > 0 && (
+        <section aria-labelledby="fb-title" className="flex flex-col gap-3">
+          <h2 id="fb-title" className="text-lg font-semibold">
+            Devolución de tu psicóloga
+          </h2>
+          <FeedbackList feedbacks={feedbacks} />
+        </section>
       )}
 
       <div className="-ml-2 flex flex-wrap gap-2">

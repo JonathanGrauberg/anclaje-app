@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import { requirePatient } from "@/lib/session";
 import { telHref } from "@/lib/utils";
 import { BreathingExercise, Grounding } from "./calm-tools";
+import { AddOwnCard, DeleteOwnCard } from "./own-card-tools";
 
 export const metadata: Metadata = { title: "Mi plan de calma" };
 
@@ -53,7 +54,10 @@ export default async function CalmPlanPage() {
                 key={c.id}
                 className="bg-accent text-accent-foreground rounded-3xl p-5 text-lg font-medium"
               >
-                “{c.title}”
+                <div className="flex items-start justify-between gap-2">
+                  <span>“{c.title}”</span>
+                  {c.author === "PATIENT" && <DeleteOwnCard id={c.id} title={c.title} />}
+                </div>
                 {c.body && <span className="mt-1 block text-sm font-normal">{c.body}</span>}
               </li>
             ))}
@@ -71,7 +75,10 @@ export default async function CalmPlanPage() {
           <ul className="grid gap-2 sm:grid-cols-2">
             {activities.map((c) => (
               <li key={c.id} className="bg-card rounded-2xl border p-4">
-                <p className="font-medium">{c.title}</p>
+                <div className="flex items-start justify-between gap-2">
+                  <p className="font-medium">{c.title}</p>
+                  {c.author === "PATIENT" && <DeleteOwnCard id={c.id} title={c.title} />}
+                </div>
                 {c.body && <p className="text-muted-foreground mt-1 text-sm">{c.body}</p>}
               </li>
             ))}
@@ -94,7 +101,8 @@ export default async function CalmPlanPage() {
                   <p className="font-medium">{c.title}</p>
                   {c.body && <p className="text-muted-foreground text-sm">{c.body}</p>}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex items-center gap-2">
+                  {c.author === "PATIENT" && <DeleteOwnCard id={c.id} title={c.title} />}
                   <a
                     href={telHref(c.phone!)}
                     className="bg-primary-soft text-primary flex size-11 items-center justify-center rounded-full"
@@ -126,6 +134,8 @@ export default async function CalmPlanPage() {
           respiración y el grounding siempre están acá.
         </p>
       )}
+
+      <AddOwnCard />
 
       <section aria-labelledby="lines-title" className="flex flex-col gap-3">
         <h2 id="lines-title" className="text-lg font-semibold">
