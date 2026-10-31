@@ -205,6 +205,7 @@ model ProfessionalProfile {
   displayName     String
   licenseNumber   String?
   digestFrequency DigestFrequency @default(NEVER)
+  lastDigestAt    DateTime?
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
 
@@ -302,10 +303,10 @@ model EmotionNode {
   sortOrder Int           @default(0)
   active    Boolean       @default(true)
 
-  entryItems     EmotionEntryItem[]
-  journalLinks   JournalEntryEmotion[]
-  cbtEmotions    CbtRecordEmotion[]
-  overrides      EmotionNodeOverride[]
+  entryItems   EmotionEntryItem[]
+  journalLinks JournalEntryEmotion[]
+  cbtEmotions  CbtRecordEmotion[]
+  overrides    EmotionNodeOverride[]
 
   @@index([parentId])
 }
@@ -342,12 +343,12 @@ model EmotionEntry {
 }
 
 model EmotionEntryItem {
-  id         String       @id @default(cuid())
-  entryId    String
-  entry      EmotionEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
-  nodeId     String
-  node       EmotionNode  @relation(fields: [nodeId], references: [id])
-  intensity  Int // 1–10
+  id        String       @id @default(cuid())
+  entryId   String
+  entry     EmotionEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  nodeId    String
+  node      EmotionNode  @relation(fields: [nodeId], references: [id])
+  intensity Int // 1–10
 
   @@index([nodeId])
 }
@@ -434,9 +435,9 @@ model CbtRecordDistortion {
 }
 
 model CbtRecordEmotion {
-  id              String    @id @default(cuid())
+  id              String      @id @default(cuid())
   cbtRecordId     String
-  cbtRecord       CbtRecord @relation(fields: [cbtRecordId], references: [id], onDelete: Cascade)
+  cbtRecord       CbtRecord   @relation(fields: [cbtRecordId], references: [id], onDelete: Cascade)
   nodeId          String
   node            EmotionNode @relation(fields: [nodeId], references: [id])
   intensityBefore Int // 1–10
@@ -644,21 +645,21 @@ model AssessmentSection {
 }
 
 model Question {
-  id               String            @id @default(cuid())
+  id               String             @id @default(cuid())
   versionId        String
-  version          AssessmentVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  version          AssessmentVersion  @relation(fields: [versionId], references: [id], onDelete: Cascade)
   sectionId        String?
   section          AssessmentSection? @relation(fields: [sectionId], references: [id], onDelete: SetNull)
   sortOrder        Int
   type             QuestionType
   text             String
   helpText         String?
-  required         Boolean           @default(true)
-  scored           Boolean           @default(true)
-  reverse          Boolean           @default(false)
-  weight           Float             @default(1)
+  required         Boolean            @default(true)
+  scored           Boolean            @default(true)
+  reverse          Boolean            @default(false)
+  weight           Float              @default(1)
   subscaleId       String?
-  subscale         Subscale?         @relation(fields: [subscaleId], references: [id], onDelete: SetNull)
+  subscale         Subscale?          @relation(fields: [subscaleId], references: [id], onDelete: SetNull)
   scaleBlockKey    String? // ítems que comparten un "bloque de escala" Likert
   criticalOperator CriticalOperator?
   criticalValue    Float?
@@ -807,10 +808,11 @@ model PushSubscription {
 }
 
 model ReminderSettings {
-  id      String  @id @default(cuid())
-  userId  String  @unique
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  enabled Boolean @default(false)
-  time    String  @default("20:00") // HH:mm en America/Argentina/Buenos_Aires
-  days    Int[] // 0 = domingo … 6 = sábado
+  id         String    @id @default(cuid())
+  userId     String    @unique
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  enabled    Boolean   @default(false)
+  time       String    @default("20:00") // HH:mm en America/Argentina/Buenos_Aires
+  days       Int[] // 0 = domingo … 6 = sábado
+  lastSentAt DateTime?
 }

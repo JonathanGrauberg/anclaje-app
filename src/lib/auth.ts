@@ -1,8 +1,11 @@
 import { betterAuth } from "better-auth";
+import { APIError } from "better-auth/api";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
 import { magicLink } from "better-auth/plugins";
 import { prisma } from "@/lib/db";
+import { sendEmail } from "@/lib/email";
+import { storage } from "@/lib/storage";
 
 const isProd = process.env.NODE_ENV === "production";
 
@@ -23,6 +26,29 @@ export const auth = betterAuth({
     additionalFields: {
       // El rol nunca lo elige el usuario: el registro público siempre crea pacientes.
       role: { type: "string", required: false, defaultValue: "PATIENT", input: false },
+    },
+    // Borrar cuenta: solo pacientes, siempre con contraseña (lo valida la acción deleteMyAccount).
+    // Todo lo del paciente se borra en cascada desde la DB; acá se borran los archivos asociados.
+    deleteUser: {
+      enabled: true,
+      beforeDelete: async (user) => {
+        if (((user as { role?: string }).role ?? "PATIENT") !== "PATIENT") {
+          throw new APIError("FORBIDDEN", {
+            message: "Las cuentas profesionales se dan de baja con el equipo de Sentir.",
+          });
+        }
+        const files = await prisma.externalResult.findMany({
+          where: { patient: { userId: user.id }, storageKey: { not: null } },
+          select: { storageKey: true },
+        });
+        await Promise.all(
+          files.map((f) =>
+            storage()
+              .delete(f.storageKey!)
+              .catch(() => {}),
+          ),
+        );
+      },
     },
   },
 
@@ -67,9 +93,11 @@ export const auth = betterAuth({
       disableSignUp: true,
       expiresIn: 60 * 10,
       sendMagicLink: async ({ email, url }) => {
-        // TODO(fase 4): enviar por email con un proveedor real.
-        if (isProd) throw new Error("Falta configurar el envío de emails");
-        console.info(`\n✉️  Magic link para ${email}:\n${url}\n`);
+        await sendEmail({
+          to: email,
+          subject: "Tu link para entrar a Sentir",
+          text: `Hola. Tocá este link para entrar a Sentir (vence en 10 minutos):\n\n${url}\n\nSi no lo pediste, ignorá este email.`,
+        });
       },
     }),
     nextCookies(), // tiene que ir último

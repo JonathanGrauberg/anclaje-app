@@ -4,16 +4,18 @@ import { PageHeader } from "@/components/ui/misc";
 import { formatDate } from "@/lib/dates";
 import { prisma } from "@/lib/db";
 import { requirePatient } from "@/lib/session";
+import { DataSection } from "./data-section";
+import { RemindersForm } from "./reminders-form";
 import { CodeEntry, SharingDefaultsForm, UnlinkButton } from "./settings-forms";
 
 export const metadata: Metadata = { title: "Ajustes" };
 
 export default async function SettingsPage({ searchParams }: PageProps<"/app/ajustes">) {
-  const { patient } = await requirePatient();
+  const { user, patient } = await requirePatient();
   const justLinked = (await searchParams).vinculado === "1";
   const shared = { patientId: patient.id, visibility: "SHARED" as const };
 
-  const [links, sharedCounts] = await Promise.all([
+  const [links, sharedCounts, reminder] = await Promise.all([
     prisma.careLink.findMany({
       where: { patientId: patient.id, status: "ACTIVE" },
       orderBy: { createdAt: "asc" },
@@ -26,6 +28,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/app/aju
           prisma.cbtRecord.count({ where: { ...shared, status: "COMPLETE" } }),
         ])
       : null,
+    prisma.reminderSettings.findUnique({ where: { userId: user.id } }),
   ]);
   const defaults = patient.sharingDefaults ?? {
     journal: "PRIVATE",
@@ -102,6 +105,32 @@ export default async function SettingsPage({ searchParams }: PageProps<"/app/aju
         <SharingDefaultsForm
           initial={{ journal: defaults.journal, emotions: defaults.emotions, cbt: defaults.cbt }}
         />
+      </section>
+
+      <section aria-labelledby="rem-title" className="flex flex-col gap-3">
+        <div>
+          <h2 id="rem-title" className="text-lg font-semibold">
+            Avisos
+          </h2>
+          <p className="text-muted-foreground text-sm">
+            Si te sirve un recordatorio para registrar cómo estás. Sin rachas ni reproches.
+          </p>
+        </div>
+        <RemindersForm
+          vapidKey={process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? null}
+          initial={{
+            enabled: reminder?.enabled ?? false,
+            time: reminder?.time ?? "20:00",
+            days: reminder?.days ?? [0, 1, 2, 3, 4, 5, 6],
+          }}
+        />
+      </section>
+
+      <section aria-labelledby="data-title" className="flex flex-col gap-3">
+        <h2 id="data-title" className="text-lg font-semibold">
+          Mis datos
+        </h2>
+        <DataSection />
       </section>
     </div>
   );

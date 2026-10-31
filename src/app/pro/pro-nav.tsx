@@ -5,6 +5,7 @@ import {
   ClipboardList,
   LayoutDashboard,
   MessageSquareQuote,
+  Settings,
   UserPlus,
   type LucideIcon,
 } from "lucide-react";
@@ -18,6 +19,7 @@ const nav = [
   { href: "/pro/respuestas-rapidas", label: "Respuestas rápidas", icon: MessageSquareQuote },
   { href: "/pro/biblioteca", label: "Biblioteca", icon: BookOpen },
   { href: "/pro/evaluaciones", label: "Evaluaciones", icon: ClipboardList },
+  { href: "/pro/ajustes", label: "Ajustes", icon: Settings },
 ] as { href: string | null; label: string; icon: LucideIcon }[];
 
 export function ProNav() {
