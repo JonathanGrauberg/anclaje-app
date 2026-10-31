@@ -11,6 +11,15 @@ salvo que se indique lo contrario.
   Zod 4, React 19.
 - **Framer Motion → `motion`**: Framer Motion se renombró a `motion` (mismo equipo y API,
   `import { motion } from "motion/react"`).
+- **Cache Components desactivado**: Next 16 lo trae activado por defecto, pero obliga a envolver en
+  `<Suspense>` toda lectura de cookies/sesión. Como toda la app es privada y por usuario, no aporta y
+  complica; se desactivó (`next.config.ts`). Se puede adoptar más adelante ruta por ruta.
+- **Modo oscuro**: sigue la preferencia del sistema (`prefers-color-scheme`). Todavía no hay selector
+  manual.
+- **Proxy (ex middleware)**: solo hace un chequeo optimista de la cookie de sesión. La verificación
+  real de sesión y rol está en cada layout (`requirePatient` / `requireProfessional`) y en cada Server
+  Action (`patientForAction`).
+- **Horas en formato 24 h** ("18:05"), más natural en Argentina que "6:05 p. m.".
 - **shadcn/ui**: los componentes se escriben a mano en `src/components/ui` siguiendo el patrón de
   shadcn (Radix + Tailwind + `cva`), así se pueden ajustar al estilo cálido de la app. Se puede seguir
   usando `npx shadcn add` para sumar componentes (hay `components.json`).
@@ -72,7 +81,33 @@ salvo que se indique lo contrario.
 - La configuración por defecto de visibilidad sale de `SharingDefaults` del paciente (rueda:
   compartido). Se puede cambiar por entrada antes de guardar.
 - Al registrar emociones de la rueda se puede elegir intención, igual que en el resto.
-- Zonas del cuerpo: chips (no silueta) en esta fase. Se guardan como slugs.
+- Zonas del cuerpo: chips (no silueta) en esta fase. Se guardan como slugs **por registro** (no por
+  emoción): pedirlas por cada emoción hacía el registro más lento que 15 segundos.
+- **Interacción**: tocar una familia o una secundaria abre el anillo siguiente; tocar una terciaria la
+  elige. Para quedarse en un nivel intermedio ("es Miedo, no sé más fino") se toca el centro de la
+  rueda o el botón "Es esto: …". Tocar de nuevo la familia abierta la cierra.
+- **Layout**: el segundo anillo se abre centrado en la familia (45–50° por sector) y el tercero
+  centrado en la secundaria, como pétalos. Sin nada abierto, la rueda se ve más grande y "se aleja"
+  al abrir un anillo.
+- **Accesibilidad**: cada sector es un botón (Tab + Enter/Espacio, Escape vuelve un nivel), con
+  `aria-pressed`/`aria-expanded`, región `aria-live` y la búsqueda por texto como alternativa.
+- La intensidad arranca en 5 para que el registro sea rápido.
+
+## Autorregistro TCC
+
+- El borrador vive en el servidor (cifrado) desde el primer paso: "Empezar" crea un `CbtRecord` en
+  `DRAFT` y se autoguarda en cada cambio y cada cambio de paso (`currentStep`), así se puede retomar
+  desde otro dispositivo.
+- Para terminarlo se piden como mínimo situación y pensamiento; el resto es opcional.
+- Un autorregistro terminado queda de solo lectura (se puede cambiar quién lo ve o borrarlo).
+- Una profesional solo ve autorregistros `COMPLETE` y compartidos; `sharedAt` se fija al terminar.
+- La creencia antes/después arranca "sin marcar" (no se inventa un 50 %).
+
+## Compartir sin vínculo
+
+- Si el paciente todavía no tiene profesional vinculada, igual puede marcar entradas como
+  "compartidas": se le avisa que la verá cuando se vincule. Al aceptar el consentimiento (fase 2)
+  conviene mostrar cuántas entradas compartidas hay y permitir revisarlas.
 
 ## Vinculación (fase 2, propuesta)
 
