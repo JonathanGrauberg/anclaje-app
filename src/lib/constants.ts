@@ -28,6 +28,10 @@ export const BODY_ZONES = [
 export type BodyZoneId = (typeof BODY_ZONES)[number]["id"];
 export const BODY_ZONE_IDS = BODY_ZONES.map((z) => z.id) as [BodyZoneId, ...BodyZoneId[]];
 
+export function bodyZoneLabels(ids: string[]) {
+  return ids.map((id) => BODY_ZONES.find((z) => z.id === id)?.label ?? id);
+}
+
 export const HIGH_INTENSITY = 8;
 
 export const DISCLAIMER =

@@ -8,6 +8,7 @@ const dateTimeFmt = new Intl.DateTimeFormat(LOCALE, {
   month: "short",
   hour: "2-digit",
   minute: "2-digit",
+  hourCycle: "h23",
 });
 
 const dateFmt = new Intl.DateTimeFormat(LOCALE, {
@@ -21,6 +22,7 @@ const timeFmt = new Intl.DateTimeFormat(LOCALE, {
   timeZone: TIME_ZONE,
   hour: "2-digit",
   minute: "2-digit",
+  hourCycle: "h23",
 });
 
 export const formatDateTime = (d: Date) => dateTimeFmt.format(d);

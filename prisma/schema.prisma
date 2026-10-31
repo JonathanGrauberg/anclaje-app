@@ -328,6 +328,7 @@ model EmotionEntry {
   patientId  String
   patient    PatientProfile  @relation(fields: [patientId], references: [id], onDelete: Cascade)
   occurredAt DateTime        @default(now())
+  bodyZones  String[]
   noteEnc    String?
   visibility Visibility
   intention  ShareIntention?
@@ -347,7 +348,6 @@ model EmotionEntryItem {
   nodeId     String
   node       EmotionNode  @relation(fields: [nodeId], references: [id])
   intensity  Int // 1–10
-  bodyZones  String[]
 
   @@index([nodeId])
 }

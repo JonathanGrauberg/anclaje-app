@@ -102,3 +102,15 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Rueda de las emociones: el foco de teclado se dibuja sobre el sector. */
+.wheel-seg .wheel-focus {
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.wheel-seg:focus-visible .wheel-focus {
+  opacity: 1;
+}
+.wheel-seg:focus-visible {
+  outline: none;
+}
