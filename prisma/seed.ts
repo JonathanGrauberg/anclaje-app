@@ -16,7 +16,8 @@ const prisma = new PrismaClient({
 });
 
 const DEMO_PASSWORD = "sentir-demo-2026";
-const CONSENT_VERSION = "2026-10-v1";
+const CONSENT_VERSION = "2026-10-v1"; // igual que src/lib/consent.ts
+const DEMO_INVITE_CODE = "PRUEBA26"; // se muestra como PRUE-BA26
 
 async function seedEmotions() {
   const rows = buildEmotionRows(emotions);
@@ -118,7 +119,7 @@ async function seedDemoUsers() {
     },
   });
 
-  // Plan de calma de ejemplo (en la fase 2 lo arma la profesional desde su panel).
+  // Plan de calma de ejemplo (la profesional lo edita desde la ficha del paciente).
   const plan = await prisma.copingPlan.upsert({
     where: { patientId: patient.id },
     update: {},
@@ -168,10 +169,62 @@ async function seedDemoUsers() {
     });
   }
 
+  // Respuestas rápidas de ejemplo para las devoluciones.
+  if ((await prisma.quickReply.count({ where: { professionalId: professional.id } })) === 0) {
+    await prisma.quickReply.createMany({
+      data: [
+        {
+          professionalId: professional.id,
+          title: "Gracias por compartir",
+          body: "Gracias por compartirlo. Me ayuda mucho a entender cómo venís.",
+        },
+        {
+          professionalId: professional.id,
+          title: "Lo vemos en sesión",
+          body: "Me parece importante lo que contás. Lo charlamos con calma en la próxima sesión.",
+        },
+        {
+          professionalId: professional.id,
+          title: "Buen registro",
+          body: "Muy bien que hayas podido frenar y registrarlo. Ese es justamente el ejercicio.",
+        },
+      ],
+    });
+  }
+
+  // Una tarea de ejemplo.
+  if ((await prisma.task.count({ where: { patientId: patient.id } })) === 0) {
+    await prisma.task.create({
+      data: {
+        professionalId: professional.id,
+        patientId: patient.id,
+        title: "Registrar en la rueda una vez por día",
+        description: "Cuando notes un cambio de ánimo. No hace falta escribir mucho.",
+        dueAt: new Date(Date.now() + 6 * 86_400_000),
+      },
+    });
+  }
+
+  // Segundo paciente SIN vínculo, para probar la invitación + consentimiento.
+  const otherUser = await upsertUser("paciente2@demo.sentir.test", "Tomás", "PATIENT");
+  await prisma.patientProfile.upsert({
+    where: { userId: otherUser.id },
+    update: {},
+    create: { userId: otherUser.id, displayName: "Tomás", sharingDefaults: { create: {} } },
+  });
+  // Invitación demo renovable: cada seed la deja sin usar y con 7 días por delante.
+  const expiresAt = new Date(Date.now() + 7 * 86_400_000);
+  await prisma.invitation.upsert({
+    where: { code: DEMO_INVITE_CODE },
+    update: { usedAt: null, usedById: null, expiresAt },
+    create: { code: DEMO_INVITE_CODE, professionalId: professional.id, expiresAt },
+  });
+
   console.log("✓ Usuarios demo (contraseña: " + DEMO_PASSWORD + ")");
   console.log(
-    "    paciente@demo.sentir.test · psicologa@demo.sentir.test · admin@demo.sentir.test",
+    "    paciente@demo.sentir.test · paciente2@demo.sentir.test (sin vínculo) · psicologa@demo.sentir.test · admin@demo.sentir.test",
   );
+  console.log("✓ Invitación demo: /vincular/" + DEMO_INVITE_CODE);
 }
 
 async function main() {

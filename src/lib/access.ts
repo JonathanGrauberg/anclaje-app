@@ -1,5 +1,6 @@
 import "server-only";
 import type { Prisma } from "@/generated/prisma/client";
+import { prisma } from "@/lib/db";
 
 // Única fuente de verdad de "qué puede ver una profesional".
 // Solo entradas COMPARTIDAS (y terminadas) de pacientes con vínculo ACTIVO con ella.
@@ -28,4 +29,50 @@ export function sessionTopicsWhere(professionalId: string): Prisma.SessionTopicW
 
 export function linkedPatientsWhere(professionalId: string): Prisma.PatientProfileWhereInput {
   return activeLinkTo(professionalId);
+}
+
+/** Paciente con vínculo ACTIVO con esta profesional, o null. */
+export async function findLinkedPatient(professionalId: string, patientId: string) {
+  return prisma.patientProfile.findFirst({
+    where: { id: patientId, ...activeLinkTo(professionalId) },
+    select: {
+      id: true,
+      displayName: true,
+      user: { select: { name: true, email: true } },
+      links: {
+        where: { professionalId, status: "ACTIVE" },
+        select: { createdAt: true, consentVersion: true, consentAcceptedAt: true },
+      },
+    },
+  });
+}
+
+export type LinkedPatient = NonNullable<Awaited<ReturnType<typeof findLinkedPatient>>>;
+
+/**
+ * Entrada compartida visible para la profesional. Devuelve su patientId o null.
+ * Se usa antes de escribir una devolución: nunca sobre algo privado o de otro paciente.
+ */
+export async function findSharedTarget(
+  professionalId: string,
+  type: "JOURNAL" | "EMOTION" | "CBT",
+  id: string,
+) {
+  const select = { patientId: true } as const;
+  const found =
+    type === "JOURNAL"
+      ? await prisma.journalEntry.findFirst({
+          where: { id, ...sharedJournalWhere(professionalId) },
+          select,
+        })
+      : type === "EMOTION"
+        ? await prisma.emotionEntry.findFirst({
+            where: { id, ...sharedEmotionWhere(professionalId) },
+            select,
+          })
+        : await prisma.cbtRecord.findFirst({
+            where: { id, ...sharedCbtWhere(professionalId) },
+            select,
+          });
+  return found?.patientId ?? null;
 }

@@ -13,3 +13,10 @@ export function normalize(text: string) {
 export function telHref(phone: string) {
   return `tel:${phone.replace(/[^\d+]/g, "")}`;
 }
+
+/** Ruta interna segura para redirigir después de ingresar ("/vincular/..."). Evita open redirects. */
+export function safeNext(value: string | string[] | undefined) {
+  const v = Array.isArray(value) ? value[0] : value;
+  if (!v || !v.startsWith("/") || v.startsWith("//") || v.includes("\\")) return null;
+  return v;
+}

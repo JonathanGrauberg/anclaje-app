@@ -60,3 +60,14 @@ export async function patientForAction() {
   if (!patient) throw new Error("No autorizado");
   return patient;
 }
+
+/** Para Server Actions del lado profesional: sesión + perfil, sin redirect. */
+export async function professionalForAction() {
+  const session = await getSession();
+  if (!session || (session.user.role ?? "PATIENT") === "PATIENT") throw new Error("No autorizado");
+  const professional = await prisma.professionalProfile.findUnique({
+    where: { userId: session.user.id },
+  });
+  if (!professional) throw new Error("No autorizado");
+  return { userId: session.user.id, professional };
+}
