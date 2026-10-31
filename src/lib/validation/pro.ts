@@ -97,3 +97,40 @@ export const taskProgressSchema = z.object({
   comment: z.string().trim().max(2000, "Máximo 2000 caracteres").optional(),
 });
 export type TaskProgressInput = z.input<typeof taskProgressSchema>;
+
+export const RESOURCE_KINDS = ["PDF", "IMAGE", "LINK", "TEXT"] as const;
+export type ResourceKindValue = (typeof RESOURCE_KINDS)[number];
+
+export const resourceSchema = z
+  .object({
+    id: id.optional(),
+    kind: z.enum(RESOURCE_KINDS),
+    title: z.string().trim().min(1, "Poné un título").max(200),
+    description: z.string().trim().max(1000).optional(),
+    category: z.string().trim().max(60).optional(),
+    tags: z.array(z.string().trim().min(1).max(30)).max(10).default([]),
+    url: z.string().trim().max(2000).optional(),
+    storageKey: z.string().max(200).optional(),
+    bodyText: z.string().max(50_000).optional(),
+  })
+  .superRefine((r, ctx) => {
+    if (r.kind === "LINK" && !/^https:\/\/[^\s]+$/i.test(r.url ?? ""))
+      ctx.addIssue({
+        code: "custom",
+        path: ["url"],
+        message: "Pegá un link que empiece con https://",
+      });
+    if (r.kind === "TEXT" && !r.bodyText?.trim())
+      ctx.addIssue({ code: "custom", path: ["bodyText"], message: "Escribí el contenido" });
+    if ((r.kind === "PDF" || r.kind === "IMAGE") && !r.storageKey)
+      ctx.addIssue({ code: "custom", path: ["storageKey"], message: "Subí el archivo" });
+  })
+  .transform((r) => ({
+    ...r,
+    description: r.description || null,
+    category: r.category || null,
+    url: r.kind === "LINK" ? r.url! : null,
+    storageKey: r.kind === "PDF" || r.kind === "IMAGE" ? r.storageKey! : null,
+    bodyText: r.kind === "TEXT" ? r.bodyText! : null,
+  }));
+export type ResourceInput = z.input<typeof resourceSchema>;

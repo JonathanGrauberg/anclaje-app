@@ -44,7 +44,17 @@ const nextConfig: NextConfig = {
     },
   },
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    // Los archivos protegidos (/api/files) se pueden embeber solo en la propia app (visor de PDF).
+    const fileHeaders = securityHeaders
+      .filter((h) => h.key !== "X-Frame-Options" && h.key !== "Content-Security-Policy")
+      .concat([
+        { key: "X-Frame-Options", value: "SAMEORIGIN" },
+        { key: "Content-Security-Policy", value: "default-src 'none'; frame-ancestors 'self'" },
+      ]);
+    return [
+      { source: "/((?!api/files/).*)", headers: securityHeaders },
+      { source: "/api/files/:path*", headers: fileHeaders },
+    ];
   },
 };
 
