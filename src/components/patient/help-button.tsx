@@ -6,10 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetClose, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { DISCLAIMER } from "@/lib/constants";
 import type { CrisisLineDTO } from "@/lib/queries/common";
-
-export function telHref(phone: string) {
-  return `tel:${phone.replace(/[^\d+]/g, "")}`;
-}
+import { telHref } from "@/lib/utils";
 
 export function CrisisLineList({ lines }: { lines: CrisisLineDTO[] }) {
   return (
