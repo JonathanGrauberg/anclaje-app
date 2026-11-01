@@ -85,11 +85,19 @@ Leyenda: ✅ hecho · 🟡 parcial · ⬜ pendiente
 - Revisión de accesibilidad AA
 - También: driver de storage S3/R2, envío de emails (magic link) por SMTP
 
+## Administración ✅
+
+- Panel `/admin` (sin datos clínicos): resumen de uso, alta de profesionales con contraseña
+  temporal, líneas de ayuda, plantillas del sistema, auditoría
+- `npm run crear:usuario` para el primer admin; cambio de contraseña en Ajustes (los tres lados)
+- Seed sin usuarios demo fuera de localhost; migraciones por `DIRECT_DATABASE_URL`
+
 ## Pendientes para producción
 
 - Revisar con asesoría legal el texto del consentimiento y la política de borrado/conservación
 - Verificar los números de las líneas de ayuda
 - Configurar SMTP, VAPID, `CRON_SECRET`, bucket S3/R2 privado y un cron externo
-- Pantalla de admin (líneas de ayuda, plantillas)
+- Baja de cuentas profesionales (hoy manual)
+- Límite de intentos persistente (Redis/Upstash): el actual es en memoria por instancia
 - Probar avisos push en dispositivos reales (Android, iPhone con la app instalada)
 - Pasada manual con lector de pantalla (VoiceOver/TalkBack) y solo teclado

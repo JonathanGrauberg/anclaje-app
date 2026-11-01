@@ -50,6 +50,22 @@ npm run dev
 
 Abrí http://localhost:3000.
 
+El seed carga los usuarios demo solo si la base es local (`localhost`). Para forzarlo o evitarlo:
+`SEED_DEMO=true` / `SEED_DEMO=false`.
+
+### Cuentas del equipo
+
+El registro público solo crea pacientes. Las profesionales las da de alta un admin desde
+**/admin → Profesionales**. El primer admin se crea por consola:
+
+```bash
+npm run crear:usuario -- --rol admin --email vos@tu-dominio --nombre "Tu Nombre"
+npm run crear:usuario -- --rol profesional --email lic@tu-dominio --nombre "Lic. X" --matricula "MN 123"
+```
+
+Imprime una contraseña temporal una sola vez; se cambia en **Ajustes → Contraseña**. Con
+`--con-perfil-profesional` un admin también puede atender pacientes.
+
 ### Avisos, emails y tareas programadas (opcional en dev)
 
 - **Avisos push**: `npm run gen:vapid` y pegá las claves en `.env`. Se activan en Ajustes → Avisos.
@@ -83,6 +99,9 @@ Contraseña de todos: `sentir-demo-2026`
 | Profesional            | `psicologa@demo.sentir.test` |
 | Admin                  | `admin@demo.sentir.test`     |
 
+El admin entra a **/admin** (profesionales, líneas de ayuda, plantillas, auditoría). No ve datos
+clínicos.
+
 Para probar la invitación + consentimiento, entrá como `paciente2` y abrí
 http://localhost:3000/vincular/PRUEBA26. Cada `npm run db:seed` deja ese código sin usar otra vez.
 
@@ -94,19 +113,20 @@ El magic link ("Prefiero que me manden un link") se imprime en la consola del se
 
 ## Comandos
 
-| Comando             | Qué hace                               |
-| ------------------- | -------------------------------------- |
-| `npm run dev`       | Servidor de desarrollo                 |
-| `npm run build`     | Build de producción                    |
-| `npm run test`      | Tests de lógica (Vitest)               |
-| `npm run test:e2e`  | Tests E2E + accesibilidad (Playwright) |
-| `npm run cron`      | Tareas programadas en dev              |
-| `npm run gen:vapid` | Claves para avisos push                |
-| `npm run lint`      | ESLint                                 |
-| `npm run typecheck` | Tipos de rutas + `tsc`                 |
-| `npm run format`    | Prettier                               |
-| `npm run db:reset`  | Borra la DB, aplica migraciones y seed |
-| `npm run db:studio` | Prisma Studio                          |
+| Comando                 | Qué hace                               |
+| ----------------------- | -------------------------------------- |
+| `npm run dev`           | Servidor de desarrollo                 |
+| `npm run build`         | Build de producción                    |
+| `npm run test`          | Tests de lógica (Vitest)               |
+| `npm run test:e2e`      | Tests E2E + accesibilidad (Playwright) |
+| `npm run cron`          | Tareas programadas en dev              |
+| `npm run crear:usuario` | Alta de admin/profesional por consola  |
+| `npm run gen:vapid`     | Claves para avisos push                |
+| `npm run lint`          | ESLint                                 |
+| `npm run typecheck`     | Tipos de rutas + `tsc`                 |
+| `npm run format`        | Prettier                               |
+| `npm run db:reset`      | Borra la DB, aplica migraciones y seed |
+| `npm run db:studio`     | Prisma Studio                          |
 
 ## Datos editables
 

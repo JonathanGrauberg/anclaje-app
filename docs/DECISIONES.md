@@ -226,7 +226,31 @@ salvo que se indique lo contrario.
 - E2E: el ingreso tiene límite de 5 intentos por minuto, así que los tests ingresan una vez por rol
   y reusan la sesión (`e2e/.auth`, fuera de git).
 
+## Administración y despliegue
+
+- **El admin no ve datos clínicos.** El panel `/admin` muestra solo conteos agregados, cuentas
+  profesionales, líneas de ayuda, plantillas y el log de auditoría (quién, qué tipo de dato, cuándo;
+  nunca contenido). De los pacientes la auditoría muestra un id corto, no el nombre. Si un admin
+  también atiende, tiene perfil profesional y usa `/pro` con las mismas reglas que cualquier
+  profesional (solo sus pacientes vinculados).
+- **Cuentas del equipo con contraseña temporal.** El registro público solo crea pacientes. Las
+  profesionales las crea un admin (o `npm run crear:usuario`, para el primer admin): se genera una
+  contraseña temporal que se muestra una sola vez y se pasa por un canal seguro; se cambia en
+  Ajustes. El admin puede generar una nueva (cierra las sesiones de esa profesional); no aplica a
+  otros admins. No se envía por email a propósito: el email no es un canal seguro para eso.
+- **Baja de profesionales: manual por ahora.** Borrar una profesional borraría en cascada sus
+  vínculos, devoluciones y notas; antes hay que decidir qué pasa con sus pacientes. Queda fuera del
+  panel hasta definir el proceso.
+- **Plantillas del sistema:** el admin sube un JSON de Sentir y queda publicada como plantilla
+  (`ownerId = null`). Las profesionales hacen una copia propia al usarla, así que borrar la
+  plantilla no afecta esas copias. No se puede borrar si alguien la respondió directamente.
+- **Seed:** los usuarios demo (contraseña conocida) solo se cargan si la base es local, salvo
+  `SEED_DEMO=true`. En producción el seed carga solo rueda, distorsiones, líneas y plantillas.
+- **Migraciones con URL directa:** con un pooler (Neon/Supabase) las migraciones van por
+  `DIRECT_DATABASE_URL`; la app usa `DATABASE_URL` (con pooler).
+
 ## Urgencias
 
 - Las líneas de ayuda están en `prisma/data/crisis-lines.json` (seed) y en la tabla `CrisisLine`,
-  editables desde admin (UI de admin pendiente). **Verificar los números antes de usar en producción.**
+  editables desde **/admin → Líneas de ayuda**. **Verificar los números antes de usar en producción.**
+  Siempre tiene que quedar al menos una activa (no se puede borrar ni desactivar la última).
