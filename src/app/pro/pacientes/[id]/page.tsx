@@ -1,4 +1,4 @@
-import { AlertTriangle, MessageSquareText } from "lucide-react";
+import { AlertTriangle, CalendarDays, MessageSquareText } from "lucide-react";
 import { BackLink } from "@/components/back-link";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -10,9 +10,10 @@ import { findLinkedPatient, sessionTopicsWhere, sharedEmotionWhere } from "@/lib
 import { audit } from "@/lib/audit";
 import { INTENTION_LABELS, INTENTIONS } from "@/lib/constants";
 import { decrypt, decryptOptional } from "@/lib/crypto";
-import { formatDate, formatRelative } from "@/lib/dates";
+import { formatAppointmentShort, formatDate, formatRelative } from "@/lib/dates";
 import { prisma } from "@/lib/db";
 import { buildEmotionIndex } from "@/lib/emotions/tree";
+import { getNextAppointments } from "@/lib/queries/appointments";
 import { getEmotionTree } from "@/lib/queries/common";
 import { getTimeline, type TimelineKind } from "@/lib/queries/pro";
 import { requireProfessional } from "@/lib/session";
@@ -76,6 +77,9 @@ export default async function PatientRecordPage({
   const name = patient.displayName ?? patient.user.name;
   const link = patient.links[0];
   const base = `/pro/pacientes/${patient.id}`;
+  const nextAppointment = (await getNextAppointments(professional.id, [patient.id])).get(
+    patient.id,
+  );
 
   return (
     <div className="flex flex-col gap-6">
@@ -85,6 +89,20 @@ export default async function PatientRecordPage({
         <p className="text-muted-foreground mt-1 text-sm">
           Vinculado desde {formatDate(link.createdAt)} · consentimiento {link.consentVersion}{" "}
           aceptado el {formatDate(link.consentAcceptedAt)}
+        </p>
+        <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+          <span className="flex items-center gap-1.5 font-medium">
+            <CalendarDays className="text-primary size-4" aria-hidden />
+            {nextAppointment
+              ? `Próximo turno: ${formatAppointmentShort(nextAppointment)}`
+              : "Sin turno agendado"}
+          </span>
+          <Link
+            href={`/pro/agenda?paciente=${patient.id}`}
+            className="text-primary underline underline-offset-2"
+          >
+            {nextAppointment ? "Ver agenda" : "Agendar turno"}
+          </Link>
         </p>
       </div>
 

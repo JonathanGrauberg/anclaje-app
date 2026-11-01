@@ -82,6 +82,22 @@ export async function unlinkProfessional(linkId: string) {
       data: { status: "REVOKED", revokedAt: new Date() },
     });
     if (res.count === 0) return fail("No encontramos ese vínculo");
+    // Los turnos futuros con esa profesional se cancelan.
+    const link = await prisma.careLink.findUnique({
+      where: { id: linkId },
+      select: { professionalId: true },
+    });
+    if (link) {
+      await prisma.appointment.updateMany({
+        where: {
+          patientId: patient.id,
+          professionalId: link.professionalId,
+          status: "SCHEDULED",
+          startsAt: { gte: new Date() },
+        },
+        data: { status: "CANCELLED", cancelledBy: "PATIENT", cancelledAt: new Date() },
+      });
+    }
     await audit({
       actorId: patient.userId,
       action: "update",

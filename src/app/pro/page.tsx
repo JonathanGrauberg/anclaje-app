@@ -1,6 +1,7 @@
 import {
   AlertTriangle,
   CalendarClock,
+  CalendarDays,
   ClipboardCheck,
   MessageCircleHeart,
   MessageSquareText,
@@ -11,7 +12,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState, PageHeader } from "@/components/ui/misc";
-import { formatDate, formatRelative } from "@/lib/dates";
+import { formatAppointmentShort, formatDate, formatRelative } from "@/lib/dates";
+import { getNextAppointments } from "@/lib/queries/appointments";
 import { getPatientsWithAttention, type PatientAttention } from "@/lib/queries/pro";
 import { requireProfessional } from "@/lib/session";
 import { cn } from "@/lib/utils";
@@ -21,6 +23,10 @@ export const metadata: Metadata = { title: "Pacientes" };
 export default async function ProfessionalHome() {
   const { professional } = await requireProfessional();
   const patients = await getPatientsWithAttention(professional.id);
+  const nextAppointments = await getNextAppointments(
+    professional.id,
+    patients.map((p) => p.id),
+  );
   const needAttention = patients.filter(
     (p) =>
       p.criticalAssessmentAt ||
@@ -83,7 +89,7 @@ export default async function ProfessionalHome() {
             <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {patients.map((p) => (
                 <li key={p.id}>
-                  <PatientCard patient={p} />
+                  <PatientCard patient={p} nextAppointment={nextAppointments.get(p.id)} />
                 </li>
               ))}
             </ul>
@@ -136,7 +142,13 @@ function AttentionRow({ patient: p }: { patient: PatientAttention }) {
   );
 }
 
-function PatientCard({ patient: p }: { patient: PatientAttention }) {
+function PatientCard({
+  patient: p,
+  nextAppointment,
+}: {
+  patient: PatientAttention;
+  nextAppointment?: Date;
+}) {
   return (
     <Link href={`/pro/pacientes/${p.id}`} className="block h-full">
       <Card
@@ -155,6 +167,12 @@ function PatientCard({ patient: p }: { patient: PatientAttention }) {
                   ? `Vinculado desde ${formatDate(p.linkedAt)}`
                   : "Sin actividad compartida"}
             </p>
+            {nextAppointment && (
+              <p className="text-primary mt-1 flex items-center gap-1.5 text-sm font-medium">
+                <CalendarDays className="size-4" aria-hidden />
+                Próximo turno: {formatAppointmentShort(nextAppointment)}
+              </p>
+            )}
           </div>
           <dl className="grid grid-cols-3 gap-2 text-sm">
             <Stat label="Devoluciones" value={p.pendingFeedback} />

@@ -1,5 +1,6 @@
 import {
   BookHeart,
+  CalendarDays,
   ChartLine,
   ClipboardCheck,
   HeartHandshake,
@@ -10,7 +11,8 @@ import {
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { greeting } from "@/lib/dates";
+import { formatLongDay, formatTime, greeting } from "@/lib/dates";
+import { getPatientAppointments } from "@/lib/queries/appointments";
 import { countUnreadFeedback } from "@/lib/queries/feedback";
 import { dueAssignmentsWhere } from "@/lib/queries/patient";
 import { prisma } from "@/lib/db";
@@ -21,17 +23,20 @@ export const metadata: Metadata = { title: "Inicio" };
 
 export default async function PatientHome() {
   const { user, patient } = await requirePatient();
-  const [pendingTopics, cbtDraft, unreadFeedback, openTasks, dueAssessments] = await Promise.all([
-    prisma.sessionTopic.count({ where: { patientId: patient.id, discussedAt: null } }),
-    prisma.cbtRecord.findFirst({
-      where: { patientId: patient.id, status: "DRAFT" },
-      orderBy: { updatedAt: "desc" },
-      select: { id: true },
-    }),
-    countUnreadFeedback(patient.id),
-    prisma.task.count({ where: { patientId: patient.id, completedAt: null } }),
-    prisma.assessmentAssignment.count({ where: dueAssignmentsWhere(patient.id) }),
-  ]);
+  const [pendingTopics, cbtDraft, unreadFeedback, openTasks, dueAssessments, appointments] =
+    await Promise.all([
+      prisma.sessionTopic.count({ where: { patientId: patient.id, discussedAt: null } }),
+      prisma.cbtRecord.findFirst({
+        where: { patientId: patient.id, status: "DRAFT" },
+        orderBy: { updatedAt: "desc" },
+        select: { id: true },
+      }),
+      countUnreadFeedback(patient.id),
+      prisma.task.count({ where: { patientId: patient.id, completedAt: null } }),
+      prisma.assessmentAssignment.count({ where: dueAssignmentsWhere(patient.id) }),
+      getPatientAppointments(patient.id, 5),
+    ]);
+  const nextAppointment = appointments.find((a) => a.status === "SCHEDULED");
   const name = patient.displayName ?? user.name;
   const pendingTasks = openTasks + dueAssessments;
 
@@ -92,6 +97,18 @@ export default async function PatientHome() {
         <p className="text-muted-foreground">{greeting()},</p>
         <h1 className="text-3xl font-semibold tracking-tight">{name}. ¿Cómo venís hoy?</h1>
       </section>
+
+      {nextAppointment && (
+        <Link href="/app/turnos" className="bg-card flex items-center gap-3 rounded-3xl border p-4">
+          <CalendarDays className="text-primary size-6 shrink-0" aria-hidden />
+          <span className="flex flex-col">
+            <span className="text-muted-foreground text-sm">Tu próximo turno</span>
+            <span className="font-semibold first-letter:uppercase">
+              {formatLongDay(nextAppointment.startsAt)}, {formatTime(nextAppointment.startsAt)}
+            </span>
+          </span>
+        </Link>
+      )}
 
       {unreadFeedback > 0 && (
         <Link

@@ -65,6 +65,16 @@ enum CopingTechnique {
   OTHER
 }
 
+enum AppointmentModality {
+  IN_PERSON
+  ONLINE
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  CANCELLED
+}
+
 enum AuthorKind {
   PROFESSIONAL
   PATIENT
@@ -220,6 +230,7 @@ model ProfessionalProfile {
   assignments     AssessmentAssignment[]
   externalResults ExternalResult[]
   emotionOverride EmotionNodeOverride[]
+  appointments    Appointment[]
 }
 
 model PatientProfile {
@@ -245,6 +256,7 @@ model PatientProfile {
   responses           AssessmentResponse[]
   externalResults     ExternalResult[]
   invitationsUsed     Invitation[]
+  appointments        Appointment[]
 }
 
 /// Vínculo profesional–paciente. Con status ACTIVE la profesional ve lo compartido.
@@ -816,4 +828,27 @@ model ReminderSettings {
   time       String    @default("20:00") // HH:mm en America/Argentina/Buenos_Aires
   days       Int[] // 0 = domingo … 6 = sábado
   lastSentAt DateTime?
+}
+
+/// Turno de sesión. Lo crea la profesional; el paciente lo ve y puede avisar que no va.
+/// No guarda contenido clínico: solo fecha, modalidad y lugar/link.
+model Appointment {
+  id             String              @id @default(cuid())
+  professionalId String
+  professional   ProfessionalProfile @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  patientId      String
+  patient        PatientProfile      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  startsAt       DateTime
+  durationMin    Int                 @default(50)
+  modality       AppointmentModality @default(IN_PERSON)
+  place          String? // dirección o link de la videollamada
+  status         AppointmentStatus   @default(SCHEDULED)
+  cancelledBy    AuthorKind?
+  cancelledAt    DateTime?
+  seriesId       String? // turnos creados juntos como semanales
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  @@index([professionalId, startsAt])
+  @@index([patientId, startsAt])
 }

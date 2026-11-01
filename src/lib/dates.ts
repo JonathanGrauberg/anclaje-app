@@ -73,3 +73,24 @@ export function toLocalInputValue(d: Date) {
 export function fromLocalInputValue(value: string) {
   return new Date(`${value}:00-03:00`);
 }
+
+const longDayFmt = new Intl.DateTimeFormat(LOCALE, {
+  timeZone: TIME_ZONE,
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+});
+
+/** "jueves, 6 de noviembre" */
+export const formatLongDay = (d: Date) => longDayFmt.format(d);
+
+/** Clave de día en Buenos Aires (AAAA-MM-DD), para agrupar. */
+export const dayKey = (d: Date) =>
+  new Intl.DateTimeFormat("en-CA", { timeZone: TIME_ZONE }).format(d);
+
+/** "hoy, 18:00" · "mañana, 9:30" · "jue 6 nov, 18:00" (para turnos, que están en el futuro). */
+export function formatAppointmentShort(d: Date, now = new Date()) {
+  if (dayKey(d) === dayKey(now)) return `hoy, ${formatTime(d)}`;
+  if (dayKey(d) === dayKey(new Date(now.getTime() + 86_400_000))) return `mañana, ${formatTime(d)}`;
+  return formatDateTime(d);
+}
