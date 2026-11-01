@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import { test as setup } from "@playwright/test";
-import { PATIENT, PATIENT_2, PRO, STATE, signIn } from "./helpers";
+import { ADMIN, PATIENT, PATIENT_2, PRO, STATE, signIn } from "./helpers";
 
 // Una sesión por rol. Si la guardada sigue valiendo se reusa: el ingreso tiene un límite de
 // intentos por minuto y correr los tests seguido lo agotaría.
@@ -8,6 +8,7 @@ for (const [key, email] of [
   ["patient", PATIENT],
   ["patient2", PATIENT_2],
   ["pro", PRO],
+  ["admin", ADMIN],
 ] as const) {
   setup(`sesión de ${email}`, async ({ browser }) => {
     if (existsSync(STATE[key])) {

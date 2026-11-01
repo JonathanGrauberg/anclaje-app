@@ -19,7 +19,7 @@ export async function requireUser() {
 }
 
 export function homeForRole(role: Role) {
-  return role === "PATIENT" ? "/app" : "/pro";
+  return role === "PATIENT" ? "/app" : role === "ADMIN" ? "/admin" : "/pro";
 }
 
 /** Usuario paciente + su perfil. Redirige si no corresponde. */
@@ -40,8 +40,15 @@ export const requireProfessional = cache(async () => {
   const user = await requireUser();
   if (user.role === "PATIENT") redirect("/app");
   const professional = await prisma.professionalProfile.findUnique({ where: { userId: user.id } });
-  if (!professional) redirect("/ingresar?error=sin-perfil");
+  if (!professional) redirect(user.role === "ADMIN" ? "/admin" : "/ingresar?error=sin-perfil");
   return { user, professional };
+});
+
+/** Administración: solo rol ADMIN. El admin NO ve datos clínicos (ver docs/DECISIONES.md). */
+export const requireAdmin = cache(async () => {
+  const user = await requireUser();
+  if (user.role !== "ADMIN") redirect(homeForRole(user.role));
+  return user;
 });
 
 /**
@@ -70,4 +77,11 @@ export async function professionalForAction() {
   });
   if (!professional) throw new Error("No autorizado");
   return { userId: session.user.id, professional };
+}
+
+/** Para Server Actions de administración. */
+export async function adminForAction() {
+  const session = await getSession();
+  if (!session || session.user.role !== "ADMIN") throw new Error("No autorizado");
+  return session.user;
 }

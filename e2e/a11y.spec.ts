@@ -48,6 +48,20 @@ for (const scheme of ["light", "dark"] as const) {
       }
     });
 
+    test.describe("administración", () => {
+      test.use({ storageState: STATE.admin });
+      for (const url of [
+        "/admin",
+        "/admin/profesionales",
+        "/admin/lineas",
+        "/admin/plantillas",
+        "/admin/auditoria",
+        "/admin/ajustes",
+      ]) {
+        test(url, async ({ page }) => check(page, url));
+      }
+    });
+
     test.describe("profesional", () => {
       test.use({ storageState: STATE.pro });
       for (const url of [

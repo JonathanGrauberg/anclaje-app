@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   MessageSquareQuote,
   Settings,
+  ShieldCheck,
   UserPlus,
   type LucideIcon,
 } from "lucide-react";
@@ -22,8 +23,11 @@ const nav = [
   { href: "/pro/ajustes", label: "Ajustes", icon: Settings },
 ] as { href: string | null; label: string; icon: LucideIcon }[];
 
-export function ProNav() {
+export function ProNav({ isAdmin = false }: { isAdmin?: boolean }) {
   const pathname = usePathname();
+  const items = isAdmin
+    ? [...nav, { href: "/admin", label: "Administración", icon: ShieldCheck }]
+    : nav;
   const isActive = (href: string) =>
     href === "/pro"
       ? pathname === "/pro" || pathname.startsWith("/pro/pacientes")
@@ -34,7 +38,7 @@ export function ProNav() {
       aria-label="Principal"
       className="flex gap-1 overflow-x-auto px-3 pb-3 md:flex-col md:pb-0"
     >
-      {nav.map(({ href, label, icon: Icon }) =>
+      {items.map(({ href, label, icon: Icon }) =>
         href === null ? (
           <span
             key={label}

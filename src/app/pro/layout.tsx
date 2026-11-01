@@ -5,7 +5,7 @@ import { requireProfessional } from "@/lib/session";
 import { ProNav } from "./pro-nav";
 
 export default async function ProfessionalLayout({ children }: LayoutProps<"/pro">) {
-  const { professional } = await requireProfessional();
+  const { user, professional } = await requireProfessional();
 
   return (
     <div className="flex flex-1 flex-col md:flex-row">
@@ -18,7 +18,7 @@ export default async function ProfessionalLayout({ children }: LayoutProps<"/pro
             <SignOutButton />
           </div>
         </div>
-        <ProNav />
+        <ProNav isAdmin={user.role === "ADMIN"} />
         <div className="hidden px-5 py-6 md:block">
           <p className="text-sm font-medium">{professional.displayName}</p>
           <SignOutButton />

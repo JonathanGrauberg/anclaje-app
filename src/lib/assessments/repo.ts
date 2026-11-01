@@ -140,14 +140,28 @@ export async function writeDoc(tx: Tx, versionId: string, doc: AssessmentDoc) {
   return version;
 }
 
-/** Crea una evaluación nueva de la profesional con una versión 1 en borrador. */
-export async function createAssessmentFromDoc(ownerId: string, doc: AssessmentDoc) {
+/**
+ * Crea una evaluación nueva de la profesional con una versión 1 en borrador.
+ * Con `ownerId: null` es una plantilla del sistema y queda publicada.
+ */
+export async function createAssessmentFromDoc(ownerId: string | null, doc: AssessmentDoc) {
+  const template = ownerId === null;
   return prisma.$transaction(async (tx) => {
     const assessment = await tx.assessment.create({
-      data: { ownerId, title: doc.title, description: doc.description, sourceNote: doc.sourceNote },
+      data: {
+        ownerId,
+        isTemplate: template,
+        title: doc.title,
+        description: doc.description,
+        sourceNote: doc.sourceNote,
+      },
     });
     const version = await tx.assessmentVersion.create({
-      data: { assessmentId: assessment.id, version: 1 },
+      data: {
+        assessmentId: assessment.id,
+        version: 1,
+        ...(template && { status: "PUBLISHED" as const, publishedAt: new Date() }),
+      },
     });
     await writeDoc(tx, version.id, doc);
     return assessment;
