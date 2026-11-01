@@ -66,8 +66,12 @@ npm run crear:usuario -- --rol profesional --email lic@tu-dominio --nombre "Lic.
 Imprime una contraseña temporal una sola vez; se cambia en **Ajustes → Contraseña**. Con
 `--con-perfil-profesional` un admin también puede atender pacientes.
 
-### Avisos, emails y tareas programadas (opcional en dev)
+### Emails, avisos y tareas programadas (opcional en dev)
 
+- **Emails de la cuenta** (recuperar contraseña, link para entrar): sin `SMTP_URL` se imprimen en la
+  consola del servidor. En producción alcanza con el plan gratis de Resend (ver `.env.example`).
+- **Avisos push y resumen por email: apagados por ahora.** Se prenden con
+  `NEXT_PUBLIC_NOTIFICATIONS="true"`; mientras tanto no aparecen en Ajustes y el cron no hace nada.
 - **Avisos push**: `npm run gen:vapid` y pegá las claves en `.env`. Se activan en Ajustes → Avisos.
   En iPhone hace falta instalar la app (Compartir → Agregar a inicio).
 - **Emails**: sin `SMTP_URL` se imprimen en la consola del servidor (magic link y resumen).

@@ -92,11 +92,21 @@ Leyenda: ✅ hecho · 🟡 parcial · ⬜ pendiente
 - `npm run crear:usuario` para el primer admin; cambio de contraseña en Ajustes (los tres lados)
 - Seed sin usuarios demo fuera de localhost; migraciones por `DIRECT_DATABASE_URL`
 
+## Turnos e historia clínica ✅
+
+- Turnera: agenda de la psicóloga, turnos semanales, "No puedo ir" del paciente, próximo turno en
+  la tarjeta del paciente y en el inicio
+- Historia clínica por paciente (ficha + evolución) con descarga en PDF
+- Evaluaciones: archivar, buscador y vista de respuestas de todos los pacientes con filtros
+- Recuperar contraseña por email; avisos push y resumen por email apagados por ahora
+
 ## Pendientes para producción
 
 - Revisar con asesoría legal el texto del consentimiento y la política de borrado/conservación
 - Verificar los números de las líneas de ayuda
-- Configurar SMTP, VAPID, `CRON_SECRET`, bucket S3/R2 privado y un cron externo
+- Configurar SMTP (Resend, plan gratis) y bucket S3/R2 privado
+- Más adelante: prender avisos (VAPID, `CRON_SECRET`, cron externo) o recordatorios por WhatsApp
+- Historia clínica inalterable (Ley 26.529): definir con asesoría si se versionan las notas
 - Baja de cuentas profesionales (hoy manual)
 - Límite de intentos persistente (Redis/Upstash): el actual es en memoria por instancia
 - Probar avisos push en dispositivos reales (Android, iPhone con la app instalada)

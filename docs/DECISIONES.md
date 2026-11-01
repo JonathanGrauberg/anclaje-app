@@ -258,6 +258,26 @@ salvo que se indique lo contrario.
 - **Migraciones con URL directa:** con un pooler (Neon/Supabase) las migraciones van por
   `DIRECT_DATABASE_URL`; la app usa `DATABASE_URL` (con pooler).
 
+## Turnos, historia clínica y emails
+
+- **Turnera sencilla.** La psicóloga carga turnos (sueltos o semanales, hasta 6 meses) desde
+  `/pro/agenda` o desde la ficha del paciente. El paciente los ve en el inicio y en "Mis turnos" y
+  puede tocar "No puedo ir": el turno queda cancelado y en la agenda se ve "Avisó que no puede
+  venir". Sin reprogramación por parte del paciente (lo arreglan entre ellos). Al desvincularse se
+  cancelan los turnos futuros. El turno no guarda contenido clínico (fecha, modalidad, lugar/link).
+- **Historia clínica = ficha + evolución.** La ficha (`ClinicalRecord`, una por profesional y
+  paciente) tiene motivo de consulta, antecedentes, medicación, diagnóstico, plan y contacto de
+  emergencia, todo cifrado. La evolución son las notas clínicas que ya existían. Solo la ve su
+  autora (ni el paciente ni el admin), cada cambio y cada descarga del PDF quedan en la auditoría.
+  **Pendiente legal:** la Ley 26.529 pide que la historia clínica sea inalterable; hoy las notas se
+  pueden editar y borrar. Antes de usarlo como historia clínica oficial, revisar con asesoría si
+  hace falta guardar versiones en vez de editar.
+- **Avisos y resumen por email, apagados** (`NEXT_PUBLIC_NOTIFICATIONS`). El código queda; se
+  prenden cuando se decida (y más adelante, WhatsApp). Los emails propios de la cuenta (recuperar
+  contraseña, link para entrar) siguen: son necesarios y entran en el plan gratis de Resend.
+- **Recuperar contraseña:** link de un solo uso que vence en 1 hora; al usarlo se cierran las otras
+  sesiones. La pantalla no dice si el email tiene cuenta (para no revelar quién usa la app).
+
 ## Urgencias
 
 - Las líneas de ayuda están en `prisma/data/crisis-lines.json` (seed) y en la tabla `CrisisLine`,
