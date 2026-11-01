@@ -21,7 +21,8 @@
     "gen:key": "node scripts/gen-key.mjs",
     "gen:vapid": "node scripts/gen-vapid.mjs",
     "cron": "node scripts/cron.mjs",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "crear:usuario": "tsx scripts/create-user.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1161.0",
