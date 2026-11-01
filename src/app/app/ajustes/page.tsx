@@ -39,7 +39,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/app/aju
 
   return (
     <div className="flex flex-col gap-8">
-      <PageHeader title="Ajustes" />
+      <PageHeader title="Ajustes" back={{ href: "/app", label: "Inicio" }} />
 
       {justLinked && sharedCounts && (
         <div role="status" className="bg-primary-soft text-primary rounded-2xl p-4">

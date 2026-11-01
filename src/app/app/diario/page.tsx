@@ -33,6 +33,7 @@ export default async function JournalListPage() {
   return (
     <>
       <PageHeader
+        back={{ href: "/app", label: "Inicio" }}
         title="Mi diario íntimo"
         description="Es privado. Vos elegís si compartís alguna entrada."
         action={

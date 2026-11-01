@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { BackLink } from "@/components/back-link";
 import { getEmotionTree } from "@/lib/queries/common";
 import { hasActiveLink } from "@/lib/queries/patient";
 import { requirePatient } from "@/lib/session";
@@ -10,10 +11,13 @@ export default async function WheelPage() {
   const { patient } = await requirePatient();
   const [tree, linked] = await Promise.all([getEmotionTree(), hasActiveLink(patient.id)]);
   return (
-    <EmotionCheckIn
-      tree={tree}
-      defaultVisibility={patient.sharingDefaults?.emotions ?? "SHARED"}
-      hasProfessional={linked}
-    />
+    <>
+      <BackLink href="/app" label="Inicio" className="mb-2" />
+      <EmotionCheckIn
+        tree={tree}
+        defaultVisibility={patient.sharingDefaults?.emotions ?? "SHARED"}
+        hasProfessional={linked}
+      />
+    </>
   );
 }

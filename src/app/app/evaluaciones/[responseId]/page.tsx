@@ -1,4 +1,5 @@
 import { CheckCircle2 } from "lucide-react";
+import { BackLink } from "@/components/back-link";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -55,6 +56,9 @@ export default async function ResponsePage({
   );
 
   return (
-    <ResponsePlayer responseId={response.id} doc={doc} initialAnswers={initial} lines={lines} />
+    <>
+      <BackLink href="/app/tareas" label="Mis tareas" className="mb-2" />
+      <ResponsePlayer responseId={response.id} doc={doc} initialAnswers={initial} lines={lines} />
+    </>
   );
 }

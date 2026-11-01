@@ -42,6 +42,7 @@ export default async function CbtListPage() {
   return (
     <>
       <PageHeader
+        back={{ href: "/app", label: "Inicio" }}
         title="Autorregistro"
         description="Paso a paso, para mirar un pensamiento que te hizo ruido."
         action={records.length > 0 ? <StartButton label="Nuevo" /> : undefined}

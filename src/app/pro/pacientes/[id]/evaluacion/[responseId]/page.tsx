@@ -1,6 +1,6 @@
 import { AlertTriangle, CheckCircle2 } from "lucide-react";
+import { BackLink } from "@/components/back-link";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/misc";
@@ -55,12 +55,7 @@ export default async function ResponseDetailPage({
 
   return (
     <div className="flex max-w-3xl flex-col gap-5">
-      <Link
-        href={`/pro/pacientes/${patient.id}?tab=evaluaciones`}
-        className="text-muted-foreground text-sm hover:underline"
-      >
-        ← {name}
-      </Link>
+      <BackLink href={`/pro/pacientes/${patient.id}?tab=evaluaciones`} label={name} />
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold tracking-tight">{doc.title}</h1>
         <p className="text-muted-foreground text-sm">

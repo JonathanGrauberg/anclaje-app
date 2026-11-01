@@ -24,6 +24,7 @@ export default async function NextSessionPage() {
   return (
     <>
       <PageHeader
+        back={{ href: "/app", label: "Inicio" }}
         title="Para la próxima sesión"
         description="Lo que querés hablar. Tu psicóloga lo ve antes de la sesión."
       />

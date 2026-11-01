@@ -1,6 +1,6 @@
 import { Download } from "lucide-react";
+import { BackLink } from "@/components/back-link";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { duplicateAssessment } from "@/lib/actions/assessments";
@@ -29,9 +29,7 @@ export default async function AssessmentBuilderPage({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <Link href="/pro/evaluaciones" className="text-muted-foreground text-sm hover:underline">
-          ← Evaluaciones
-        </Link>
+        <BackLink href="/pro/evaluaciones" label="Evaluaciones" />
         <div className="flex gap-1">
           <Button asChild variant="ghost" size="sm">
             <a href={`/pro/evaluaciones/${id}/exportar`} download>

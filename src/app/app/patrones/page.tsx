@@ -17,6 +17,7 @@ export default async function PatternsPage({ searchParams }: PageProps<"/app/pat
   return (
     <div className="flex flex-col gap-5">
       <PageHeader
+        back={{ href: "/app", label: "Inicio" }}
         title="Mis patrones"
         description="Lo que fuiste registrando en la rueda, visto de lejos. No hay valores buenos ni malos: es para conocerte un poco más."
       />

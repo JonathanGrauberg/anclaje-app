@@ -1,4 +1,5 @@
 import { Quote } from "lucide-react";
+import { BackLink } from "@/components/back-link";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -33,26 +34,29 @@ export default async function CbtRecordPage({ params }: PageProps<"/app/autorreg
 
   if (record.status === "DRAFT") {
     return (
-      <CbtWizard
-        id={record.id}
-        tree={tree}
-        distortions={distortions}
-        hasProfessional={linked}
-        initialStep={record.currentStep}
-        initial={{
-          occurredAt: toLocalInputValue(record.occurredAt),
-          situation: record.situation,
-          thought: record.thought,
-          beliefBefore: record.beliefBefore,
-          distortionIds: record.distortionIds,
-          emotions: record.emotions,
-          bodyZones: record.bodyZones as BodyZoneId[],
-          behavior: record.behavior,
-          alternative: record.alternative,
-          beliefAfter: record.beliefAfter,
-          share: { visibility: record.visibility, intention: record.intention },
-        }}
-      />
+      <>
+        <BackLink href="/app/autorregistro" label="Mis autorregistros" className="mb-2" />
+        <CbtWizard
+          id={record.id}
+          tree={tree}
+          distortions={distortions}
+          hasProfessional={linked}
+          initialStep={record.currentStep}
+          initial={{
+            occurredAt: toLocalInputValue(record.occurredAt),
+            situation: record.situation,
+            thought: record.thought,
+            beliefBefore: record.beliefBefore,
+            distortionIds: record.distortionIds,
+            emotions: record.emotions,
+            bodyZones: record.bodyZones as BodyZoneId[],
+            behavior: record.behavior,
+            alternative: record.alternative,
+            beliefAfter: record.beliefAfter,
+            share: { visibility: record.visibility, intention: record.intention },
+          }}
+        />
+      </>
     );
   }
 
@@ -64,6 +68,7 @@ export default async function CbtRecordPage({ params }: PageProps<"/app/autorreg
 
   return (
     <div className="flex flex-col gap-4">
+      <BackLink href="/app/autorregistro" label="Mis autorregistros" />
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <p className="text-muted-foreground text-sm">{formatDateTime(record.occurredAt)}</p>

@@ -1,4 +1,5 @@
 import * as React from "react";
+import { BackLink } from "@/components/back-link";
 import { cn } from "@/lib/utils";
 
 export function Badge({ className, ...props }: React.ComponentProps<"span">) {
@@ -65,14 +66,18 @@ export function PageHeader({
   title,
   description,
   action,
+  back,
 }: {
   title: string;
   description?: React.ReactNode;
   action?: React.ReactNode;
+  /** Botón "volver" a la pantalla madre. */
+  back?: { href: string; label: string };
 }) {
   return (
     <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-      <div>
+      <div className="flex flex-col">
+        {back && <BackLink href={back.href} label={back.label} className="mb-1" />}
         <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{title}</h1>
         {description && <p className="text-muted-foreground mt-1">{description}</p>}
       </div>

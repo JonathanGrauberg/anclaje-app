@@ -1,6 +1,6 @@
 import { ExternalLink } from "lucide-react";
+import { BackLink } from "@/components/back-link";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MarkdownView } from "@/components/markdown-view";
 import { Button } from "@/components/ui/button";
@@ -32,9 +32,7 @@ export default async function MaterialPage({ params }: PageProps<"/app/material/
 
   return (
     <div className="flex flex-col gap-4">
-      <Link href="/app/tareas" className="text-muted-foreground text-sm hover:underline">
-        ← Mis tareas
-      </Link>
+      <BackLink href="/app/tareas" label="Mis tareas" />
       <header>
         <p className="text-muted-foreground text-sm">De {resource.professional.displayName}</p>
         <h1 className="text-2xl font-semibold tracking-tight">{resource.title}</h1>

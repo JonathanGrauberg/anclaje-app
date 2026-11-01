@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { BackLink } from "@/components/back-link";
 import { notFound } from "next/navigation";
 import { FeedbackList } from "@/components/patient/feedback-list";
 import { decrypt, decryptOptional } from "@/lib/crypto";
@@ -28,6 +29,7 @@ export default async function JournalEntryPage({ params }: PageProps<"/app/diari
 
   return (
     <>
+      <BackLink href="/app/diario" label="Mi diario" className="mb-2" />
       <JournalEditor
         key={entry.id}
         tree={tree}

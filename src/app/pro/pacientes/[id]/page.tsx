@@ -1,4 +1,5 @@
 import { AlertTriangle, MessageSquareText } from "lucide-react";
+import { BackLink } from "@/components/back-link";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -78,10 +79,8 @@ export default async function PatientRecordPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <Link href="/pro" className="text-muted-foreground text-sm hover:underline">
-          ← Pacientes
-        </Link>
+      <div className="flex flex-col">
+        <BackLink href="/pro" label="Pacientes" />
         <h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">{name}</h1>
         <p className="text-muted-foreground mt-1 text-sm">
           Vinculado desde {formatDate(link.createdAt)} · consentimiento {link.consentVersion}{" "}

@@ -35,6 +35,7 @@ export default async function EmotionHistoryPage() {
   return (
     <>
       <PageHeader
+        back={{ href: "/app/rueda", label: "Rueda" }}
         title="Lo que registré"
         description="Tus registros de la rueda, del más nuevo al más viejo."
         action={

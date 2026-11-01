@@ -1,4 +1,5 @@
 import { Footprints, MessageCircle, Phone, Sparkle } from "lucide-react";
+import { BackLink } from "@/components/back-link";
 import type { Metadata } from "next";
 import { CrisisLineList } from "@/components/patient/help-button";
 import { getCrisisLines } from "@/lib/queries/common";
@@ -34,7 +35,8 @@ export default async function CalmPlanPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <header>
+      <header className="flex flex-col">
+        <BackLink href="/app" label="Inicio" className="mb-1" />
         <h1 className="text-3xl font-semibold tracking-tight">Mi plan de calma</h1>
         <p className="text-muted-foreground mt-1">
           Respirá. No tenés que hacer todo: elegí una sola cosa de acá.

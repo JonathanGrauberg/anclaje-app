@@ -14,6 +14,7 @@ export default async function FeedbackPage() {
   return (
     <>
       <PageHeader
+        back={{ href: "/app", label: "Inicio" }}
         title="Devoluciones"
         description="Lo que tu psicóloga te escribió sobre lo que compartiste."
       />

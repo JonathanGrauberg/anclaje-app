@@ -1,6 +1,6 @@
 import { CalendarCheck, Quote, Trash2 } from "lucide-react";
+import { BackLink } from "@/components/back-link";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { EmotionChip } from "@/components/emotion-chip";
 import { MarkdownView } from "@/components/markdown-view";
@@ -72,12 +72,7 @@ export default async function SharedEntryPage({
 
   return (
     <div className="flex max-w-3xl flex-col gap-5">
-      <Link
-        href={`/pro/pacientes/${patient.id}`}
-        className="text-muted-foreground text-sm hover:underline"
-      >
-        ← {name}
-      </Link>
+      <BackLink href={`/pro/pacientes/${patient.id}`} label={name} />
 
       <header className="flex flex-col gap-2">
         <div className="flex flex-wrap items-center gap-2">
