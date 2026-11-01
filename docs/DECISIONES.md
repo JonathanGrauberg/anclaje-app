@@ -181,6 +181,15 @@ salvo que se indique lo contrario.
 - Los recursos de la biblioteca (títulos, fichas de texto) **no se cifran**: son material de la
   profesional, sin datos del paciente. Abrirlo marca la asignación como vista.
 
+- **Archivar en vez de borrar:** una evaluación con respuestas no se borra (es historia clínica).
+  Se archiva: sale de la lista, no se puede asignar y se cortan sus asignaciones activas (al
+  paciente no le aparece más como pendiente). Las respuestas siguen en la ficha de cada paciente y
+  en "Respuestas". Desarchivar no reactiva asignaciones.
+- **Respuestas de todos los pacientes en un solo lugar** (`/pro/evaluaciones?vista=respuestas`):
+  filtros por evaluación, paciente y "sin revisar / con ítem crítico". Solo respuestas de
+  evaluaciones que asignó esa profesional a pacientes con vínculo activo. Ver la lista queda en la
+  auditoría (`AssessmentResponseList`).
+
 ## Patrones, avisos y datos (fase 4)
 
 - **Gráficos**: una serie por gráfico, color primario (las emociones llevan además el punto de

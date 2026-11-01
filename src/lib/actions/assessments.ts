@@ -184,6 +184,46 @@ export async function deleteAssessment(assessmentId: string) {
   });
 }
 
+/**
+ * Archivar: la evaluación sale de la lista y no se puede asignar más, y se cortan las asignaciones
+ * activas (no le aparece más al paciente como pendiente). Las respuestas se conservan y siguen
+ * visibles en la ficha de cada paciente. Desarchivar no reactiva las asignaciones.
+ */
+export async function setAssessmentArchived(assessmentId: string, archived: boolean) {
+  return safe(async () => {
+    const { userId, professional } = await professionalForAction();
+    const a = await ownAssessment(professional.id, String(assessmentId));
+    if (!a) return fail("No encontramos esa evaluación");
+    await prisma.$transaction([
+      prisma.assessment.update({
+        where: { id: a.id },
+        data: { archivedAt: archived ? new Date() : null },
+      }),
+      ...(archived
+        ? [
+            prisma.assessmentAssignment.updateMany({
+              where: {
+                professionalId: professional.id,
+                active: true,
+                version: { assessmentId: a.id },
+              },
+              data: { active: false },
+            }),
+          ]
+        : []),
+    ]);
+    await audit({
+      actorId: userId,
+      action: "update",
+      entityType: "Assessment",
+      entityId: a.id,
+      meta: { archived },
+    });
+    revalidatePath("/pro/evaluaciones");
+    return ok(undefined);
+  });
+}
+
 // ── Asignación y revisión ────────────────────────────────────
 
 export async function assignAssessment(input: AssignAssessmentInput) {
@@ -195,7 +235,11 @@ export async function assignAssessment(input: AssignAssessmentInput) {
     if (!(await findLinkedPatient(professional.id, patientId)))
       return fail("No tenés vínculo activo");
     const version = await prisma.assessmentVersion.findFirst({
-      where: { assessmentId, status: "PUBLISHED", assessment: { ownerId: professional.id } },
+      where: {
+        assessmentId,
+        status: "PUBLISHED",
+        assessment: { ownerId: professional.id, archivedAt: null },
+      },
       select: { id: true },
     });
     if (!version) return fail("Publicá la evaluación antes de asignarla");

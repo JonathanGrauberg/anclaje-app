@@ -1,11 +1,15 @@
 "use client";
 
-import { Trash2, Upload } from "lucide-react";
+import { Archive, ArchiveRestore, Trash2, Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { FieldError } from "@/components/ui/input";
-import { deleteAssessment, importAssessmentJson } from "@/lib/actions/assessments";
+import {
+  deleteAssessment,
+  importAssessmentJson,
+  setAssessmentArchived,
+} from "@/lib/actions/assessments";
 
 export function ImportJsonButton() {
   const router = useRouter();
@@ -57,6 +61,41 @@ export function DeleteAssessmentButton({ id, title }: { id: string; title: strin
       }}
     >
       <Trash2 />
+    </Button>
+  );
+}
+
+export function ArchiveAssessmentButton({
+  id,
+  title,
+  archived,
+}: {
+  id: string;
+  title: string;
+  archived: boolean;
+}) {
+  const [pending, start] = useTransition();
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      disabled={pending}
+      onClick={() => {
+        if (
+          !archived &&
+          !confirm(
+            `¿Archivar “${title}”? Deja de aparecer en tu lista y no se puede asignar. Si algún paciente la tenía pendiente, ya no le aparece. Las respuestas se conservan.`,
+          )
+        )
+          return;
+        start(async () => {
+          const res = await setAssessmentArchived(id, !archived);
+          if (!res.ok) alert(res.error);
+        });
+      }}
+    >
+      {archived ? <ArchiveRestore aria-hidden /> : <Archive aria-hidden />}
+      {archived ? "Desarchivar" : "Archivar"}
     </Button>
   );
 }

@@ -387,7 +387,11 @@ async function AssessmentsTab({
   // Respuestas visibles: solo las de evaluaciones que asignó esta profesional.
   const [available, assignments, responses, externals] = await Promise.all([
     prisma.assessment.findMany({
-      where: { ownerId: professionalId, versions: { some: { status: "PUBLISHED" } } },
+      where: {
+        ownerId: professionalId,
+        archivedAt: null,
+        versions: { some: { status: "PUBLISHED" } },
+      },
       orderBy: { title: "asc" },
       select: { id: true, title: true },
     }),

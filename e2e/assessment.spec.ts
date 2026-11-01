@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 import { STATE } from "./helpers";
 
 // Flujo completo: la psicóloga importa, publica y asigna; el paciente responde con un ítem
-// crítico y ve las líneas de ayuda; la psicóloga ve la alerta.
+// crítico y ve las líneas de ayuda; la psicóloga ve la alerta, la respuesta y la archiva.
 test("evaluación con ítem crítico, de punta a punta", async ({ browser }) => {
   const pro = await browser.newContext({ storageState: STATE.pro });
   const q = await pro.newPage();
@@ -55,5 +55,21 @@ test("evaluación con ítem crítico, de punta a punta", async ({ browser }) => 
 
   await q.goto("/pro");
   await expect(q.getByText("Ítem crítico en una evaluación").first()).toBeVisible();
+
+  // La respuesta aparece en la lista de respuestas, filtrando por críticos.
+  await q.goto("/pro/evaluaciones?vista=respuestas&mostrar=criticos");
+  await expect(q.getByRole("cell", { name: /Chequeo E2E/ }).first()).toBeVisible();
+
+  // Archivar: sale de la lista (no se puede borrar porque tiene respuestas) y queda en archivadas.
+  await q.goto("/pro/evaluaciones");
+  const card = q
+    .getByRole("listitem")
+    .filter({ has: q.getByRole("link", { name: "Chequeo E2E", exact: true }) });
+  await expect(card.getByRole("button", { name: /Borrar/ })).toHaveCount(0);
+  q.once("dialog", (d) => d.accept());
+  await card.getByRole("button", { name: "Archivar" }).click();
+  await expect(card).toHaveCount(0);
+  await q.goto("/pro/evaluaciones?archivadas=1");
+  await expect(q.getByRole("link", { name: "Chequeo E2E", exact: true }).first()).toBeVisible();
   await pro.close();
 });

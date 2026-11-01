@@ -21,6 +21,7 @@ type SubscaleScore = { key: string; name: string; score: number | null; label: s
 
 export default async function ResponseDetailPage({
   params,
+  searchParams,
 }: PageProps<"/pro/pacientes/[id]/evaluacion/[responseId]">) {
   const { id, responseId } = await params;
   const { user, professional } = await requireProfessional();
@@ -55,7 +56,11 @@ export default async function ResponseDetailPage({
 
   return (
     <div className="flex max-w-3xl flex-col gap-5">
-      <BackLink href={`/pro/pacientes/${patient.id}?tab=evaluaciones`} label={name} />
+      {(await searchParams).desde === "respuestas" ? (
+        <BackLink href="/pro/evaluaciones?vista=respuestas" label="Respuestas" />
+      ) : (
+        <BackLink href={`/pro/pacientes/${patient.id}?tab=evaluaciones`} label={name} />
+      )}
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold tracking-tight">{doc.title}</h1>
         <p className="text-muted-foreground text-sm">

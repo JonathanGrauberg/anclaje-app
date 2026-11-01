@@ -603,6 +603,7 @@ model Assessment {
   description String?
   isTemplate  Boolean              @default(false)
   sourceNote  String? // licencia / origen
+  archivedAt  DateTime? // archivada: no se lista ni se asigna, pero sus respuestas se conservan
   createdAt   DateTime             @default(now())
   updatedAt   DateTime             @updatedAt
 

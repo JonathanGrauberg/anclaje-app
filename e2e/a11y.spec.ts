@@ -70,6 +70,8 @@ for (const scheme of ["light", "dark"] as const) {
         "/pro/respuestas-rapidas",
         "/pro/biblioteca",
         "/pro/evaluaciones",
+        "/pro/evaluaciones?vista=respuestas",
+        "/pro/evaluaciones?archivadas=1",
         "/pro/ajustes",
       ]) {
         test(url, async ({ page }) => check(page, url));
