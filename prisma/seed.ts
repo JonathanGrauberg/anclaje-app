@@ -12,9 +12,8 @@ import distortions from "./data/distortions.json";
 import emotions from "./data/emotions.json";
 import { TEMPLATES } from "./data/templates";
 
-const prisma = new PrismaClient({
-  adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }),
-});
+const SEED_URL = process.env.DIRECT_DATABASE_URL || process.env.DATABASE_URL!;
+const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: SEED_URL }) });
 
 const DEMO_PASSWORD = "sentir-demo-2026";
 const CONSENT_VERSION = "2026-10-v1"; // igual que src/lib/consent.ts
@@ -352,13 +351,32 @@ async function seedDemoHistory() {
   console.log(`✓ Historial demo de la rueda: ${created} registros`);
 }
 
+/**
+ * Los usuarios demo tienen una contraseña pública (está en el README): NUNCA en producción.
+ * Solo se cargan contra una base local, o si se fuerza con SEED_DEMO=true.
+ */
+function shouldSeedDemo() {
+  if (process.env.SEED_DEMO === "true") return true;
+  if (process.env.SEED_DEMO === "false") return false;
+  try {
+    const host = new URL(SEED_URL).hostname;
+    return ["localhost", "127.0.0.1", "::1", "[::1]"].includes(host);
+  } catch {
+    return false;
+  }
+}
+
 async function main() {
   await seedEmotions();
   await seedDistortions();
   await seedCrisisLines();
   await seedTemplates();
-  await seedDemoUsers();
-  await seedDemoHistory();
+  if (shouldSeedDemo()) {
+    await seedDemoUsers();
+    await seedDemoHistory();
+  } else {
+    console.log("· Sin usuarios demo (base no local). Creá el admin con `npm run crear:usuario`.");
+  }
 }
 
 main()
