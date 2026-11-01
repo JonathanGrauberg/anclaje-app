@@ -1,6 +1,6 @@
 "use client";
 
-import { Lock, Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { FieldError, Label, Textarea } from "@/components/ui/input";
@@ -16,10 +16,6 @@ export function NotesPanel({ patientId, notes }: { patientId: string; notes: Not
 
   return (
     <div className="flex max-w-3xl flex-col gap-4">
-      <p className="text-muted-foreground flex items-center gap-2 text-sm">
-        <Lock className="size-4" aria-hidden /> Solo vos ves estas notas. El paciente no tiene
-        acceso. Se guardan cifradas.
-      </p>
       <NoteForm patientId={patientId} key="new" />
       <FieldError>{error}</FieldError>
       <ul className="flex flex-col gap-3">

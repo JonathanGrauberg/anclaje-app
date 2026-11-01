@@ -25,7 +25,8 @@ for (const scheme of ["light", "dark"] as const) {
     test.use({ colorScheme: scheme });
 
     test("páginas públicas", async ({ page }) => {
-      for (const url of ["/ingresar", "/registrarse", "/recuperar", "/offline"]) await check(page, url);
+      for (const url of ["/ingresar", "/registrarse", "/recuperar", "/offline"])
+        await check(page, url);
     });
 
     test.describe("paciente", () => {
@@ -82,7 +83,7 @@ for (const scheme of ["light", "dark"] as const) {
         await page.goto("/pro");
         await page.getByRole("link", { name: /Sofía/ }).first().click();
         const base = page.url().split("?")[0];
-        for (const tab of ["compartido", "notas", "plan", "tareas", "evaluaciones", "patrones"])
+        for (const tab of ["compartido", "historia", "plan", "tareas", "evaluaciones", "patrones"])
           await check(page, `${base}?tab=${tab}`);
       });
     });

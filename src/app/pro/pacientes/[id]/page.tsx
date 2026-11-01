@@ -1,16 +1,17 @@
-import { AlertTriangle, CalendarDays, MessageSquareText } from "lucide-react";
+import { AlertTriangle, CalendarDays, Download, Lock, MessageSquareText } from "lucide-react";
 import { BackLink } from "@/components/back-link";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { EmotionChip } from "@/components/emotion-chip";
+import { Button } from "@/components/ui/button";
 import { Badge, EmptyState } from "@/components/ui/misc";
 import type { ShareIntention } from "@/generated/prisma/client";
 import { findLinkedPatient, sessionTopicsWhere, sharedEmotionWhere } from "@/lib/access";
 import { audit } from "@/lib/audit";
 import { INTENTION_LABELS, INTENTIONS } from "@/lib/constants";
 import { decrypt, decryptOptional } from "@/lib/crypto";
-import { formatAppointmentShort, formatDate, formatRelative } from "@/lib/dates";
+import { dayKey, formatAppointmentShort, formatDate, formatRelative } from "@/lib/dates";
 import { prisma } from "@/lib/db";
 import { buildEmotionIndex } from "@/lib/emotions/tree";
 import { getNextAppointments } from "@/lib/queries/appointments";
@@ -22,6 +23,7 @@ import { PatternsView, RangeFilter } from "@/components/charts/patterns-view";
 import { ScoreChart } from "@/components/charts/pattern-charts";
 import { getPatterns, getScoreSeries, parseRange } from "@/lib/queries/patterns";
 import { AssessmentsPanel } from "./assessments-panel";
+import { ClinicalRecordForm } from "./clinical-record-form";
 import { CopingEditor } from "./coping-editor";
 import { NotesPanel } from "./notes-panel";
 import { TasksPanel } from "./tasks-panel";
@@ -31,7 +33,7 @@ export const metadata: Metadata = { title: "Ficha del paciente" };
 
 const TABS = [
   { id: "compartido", label: "Lo compartido" },
-  { id: "notas", label: "Notas clínicas" },
+  { id: "historia", label: "Historia clínica" },
   { id: "plan", label: "Plan de calma" },
   { id: "tareas", label: "Tareas" },
   { id: "evaluaciones", label: "Evaluaciones" },
@@ -57,7 +59,8 @@ export default async function PatientRecordPage({
   const patient = await findLinkedPatient(professional.id, id);
   if (!patient) notFound();
 
-  const tab: TabId = TABS.some((t) => t.id === one(sp.tab)) ? (one(sp.tab) as TabId) : "compartido";
+  const tabParam = one(sp.tab) === "notas" ? "historia" : one(sp.tab); // "notas" era el nombre viejo
+  const tab: TabId = TABS.some((t) => t.id === tabParam) ? (tabParam as TabId) : "compartido";
   const kindParam = one(sp.tipo);
   const kind = KINDS.some((k) => k.id === kindParam) ? (kindParam as TimelineKind) : undefined;
   const intentionParam = one(sp.intencion);
@@ -106,7 +109,7 @@ export default async function PatientRecordPage({
         </p>
       </div>
 
-      <nav aria-label="Secciones de la ficha" className="flex gap-1 overflow-x-auto border-b">
+      <nav aria-label="Secciones de la ficha" className="flex gap-1 overflow-x-auto overflow-y-hidden border-b">
         {TABS.map((t) => (
           <Link
             key={t.id}
@@ -133,7 +136,7 @@ export default async function PatientRecordPage({
           intention={intention}
         />
       )}
-      {tab === "notas" && <NotesTab professionalId={professional.id} patientId={patient.id} />}
+      {tab === "historia" && <HistoryTab professionalId={professional.id} patientId={patient.id} />}
       {tab === "plan" && <PlanTab patientId={patient.id} />}
       {tab === "tareas" && <TasksTab professionalId={professional.id} patientId={patient.id} />}
       {tab === "patrones" && (
@@ -316,28 +319,77 @@ function FilterChip({
   );
 }
 
-async function NotesTab({
+async function HistoryTab({
   professionalId,
   patientId,
 }: {
   professionalId: string;
   patientId: string;
 }) {
-  // Solo las notas de esta profesional: nadie más (ni el paciente) las ve.
-  const notes = await prisma.clinicalNote.findMany({
-    where: { professionalId, patientId },
-    orderBy: { createdAt: "desc" },
-  });
+  // Solo la historia de esta profesional: nadie más (ni el paciente, ni el admin) la ve.
+  const [record, notes] = await Promise.all([
+    prisma.clinicalRecord.findUnique({
+      where: { professionalId_patientId: { professionalId, patientId } },
+    }),
+    prisma.clinicalNote.findMany({
+      where: { professionalId, patientId },
+      orderBy: { createdAt: "desc" },
+    }),
+  ]);
+  const text = (v: string | null | undefined) => decryptOptional(v) ?? "";
   return (
-    <NotesPanel
-      patientId={patientId}
-      notes={notes.map((n) => ({
-        id: n.id,
-        body: decrypt(n.bodyEnc),
-        createdAt: n.createdAt.toISOString(),
-        updatedAt: n.updatedAt.toISOString(),
-      }))}
-    />
+    <div className="flex max-w-3xl flex-col gap-8">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-muted-foreground flex items-center gap-2 text-sm">
+          <Lock className="size-4" aria-hidden /> Solo vos ves la historia clínica. Se guarda
+          cifrada.
+        </p>
+        <Button asChild variant="soft" size="sm">
+          <a href={`/pro/pacientes/${patientId}/historia-clinica`} download>
+            <Download aria-hidden /> Descargar PDF
+          </a>
+        </Button>
+      </div>
+
+      <section aria-labelledby="hc-ficha" className="flex flex-col gap-3">
+        <h2 id="hc-ficha" className="text-lg font-semibold">
+          Ficha
+        </h2>
+        <ClinicalRecordForm
+          patientId={patientId}
+          updatedAt={record?.updatedAt.toISOString() ?? null}
+          initial={{
+            treatmentStartedAt: record?.treatmentStartedAt ? dayKey(record.treatmentStartedAt) : "",
+            reason: text(record?.reasonEnc),
+            history: text(record?.historyEnc),
+            medication: text(record?.medicationEnc),
+            diagnosis: text(record?.diagnosisEnc),
+            plan: text(record?.planEnc),
+            emergencyContact: text(record?.emergencyContactEnc),
+          }}
+        />
+      </section>
+
+      <section aria-labelledby="hc-evolucion" className="flex flex-col gap-3">
+        <div>
+          <h2 id="hc-evolucion" className="text-lg font-semibold">
+            Evolución
+          </h2>
+          <p className="text-muted-foreground text-sm">
+            Notas de cada sesión, de la más nueva a la más vieja.
+          </p>
+        </div>
+        <NotesPanel
+          patientId={patientId}
+          notes={notes.map((n) => ({
+            id: n.id,
+            body: decrypt(n.bodyEnc),
+            createdAt: n.createdAt.toISOString(),
+            updatedAt: n.updatedAt.toISOString(),
+          }))}
+        />
+      </section>
+    </div>
   );
 }
 

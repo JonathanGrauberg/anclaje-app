@@ -44,6 +44,32 @@ export const clinicalNoteSchema = z.object({
 });
 export type ClinicalNoteInput = z.input<typeof clinicalNoteSchema>;
 
+const recordText = z.string().trim().max(20_000).optional();
+export const CLINICAL_RECORD_FIELDS = [
+  { key: "reason", label: "Motivo de consulta" },
+  { key: "history", label: "Antecedentes personales y familiares" },
+  { key: "medication", label: "Medicación y otros tratamientos" },
+  { key: "diagnosis", label: "Diagnóstico o hipótesis diagnóstica" },
+  { key: "plan", label: "Objetivos y plan de tratamiento" },
+  { key: "emergencyContact", label: "Contacto de emergencia" },
+] as const;
+export type ClinicalRecordField = (typeof CLINICAL_RECORD_FIELDS)[number]["key"];
+
+export const clinicalRecordSchema = z.object({
+  patientId: id,
+  treatmentStartedAt: z
+    .string()
+    .regex(/^(\d{4}-\d{2}-\d{2})?$/, "Fecha inválida")
+    .optional(),
+  reason: recordText,
+  history: recordText,
+  medication: recordText,
+  diagnosis: recordText,
+  plan: recordText,
+  emergencyContact: z.string().trim().max(500).optional(),
+});
+export type ClinicalRecordInput = z.input<typeof clinicalRecordSchema>;
+
 export const COPING_CARD_TYPES = ["TECHNIQUE", "PHRASE", "ACTIVITY", "CONTACT"] as const;
 export type CopingCardTypeValue = (typeof COPING_CARD_TYPES)[number];
 export const COPING_TECHNIQUES = ["BREATHING", "GROUNDING", "OTHER"] as const;

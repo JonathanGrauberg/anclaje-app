@@ -8,6 +8,8 @@ import { prisma } from "@/lib/db";
 import { professionalForAction } from "@/lib/session";
 import {
   clinicalNoteSchema,
+  clinicalRecordSchema,
+  type ClinicalRecordInput,
   copingCardSchema,
   feedbackSchema,
   quickReplySchema,
@@ -129,7 +131,46 @@ export async function deleteQuickReply(id: string) {
   });
 }
 
-// ── Notas clínicas (solo las ve su autora) ───────────────────
+// ── Historia clínica: ficha (solo la ve su autora) ───────────
+
+export async function saveClinicalRecord(input: ClinicalRecordInput) {
+  return safe(async () => {
+    const { userId, professional } = await professionalForAction();
+    const parsed = clinicalRecordSchema.safeParse(input);
+    if (!parsed.success) return fail(firstIssue(parsed.error));
+    const { patientId, treatmentStartedAt, ...texts } = parsed.data;
+    if (!(await linkedOrNull(professional.id, patientId))) return fail("No tenés vínculo activo");
+    const enc = (v?: string) => (v ? encrypt(v) : null);
+    const data = {
+      treatmentStartedAt: treatmentStartedAt
+        ? new Date(`${treatmentStartedAt}T12:00:00-03:00`)
+        : null,
+      reasonEnc: enc(texts.reason),
+      historyEnc: enc(texts.history),
+      medicationEnc: enc(texts.medication),
+      diagnosisEnc: enc(texts.diagnosis),
+      planEnc: enc(texts.plan),
+      emergencyContactEnc: enc(texts.emergencyContact),
+    };
+    const record = await prisma.clinicalRecord.upsert({
+      where: { professionalId_patientId: { professionalId: professional.id, patientId } },
+      create: { professionalId: professional.id, patientId, ...data },
+      update: data,
+      select: { id: true, createdAt: true, updatedAt: true },
+    });
+    await audit({
+      actorId: userId,
+      action: record.createdAt.getTime() === record.updatedAt.getTime() ? "create" : "update",
+      entityType: "ClinicalRecord",
+      entityId: record.id,
+      patientId,
+    });
+    revalidatePath(patientPath(patientId));
+    return ok(undefined);
+  });
+}
+
+// ── Historia clínica: evolución (notas, solo las ve su autora) ─
 
 export async function saveClinicalNote(input: ClinicalNoteInput) {
   return safe(async () => {

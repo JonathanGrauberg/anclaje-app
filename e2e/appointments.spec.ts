@@ -23,7 +23,10 @@ test("turno: agendar, el paciente avisa que no va y la psicóloga lo ve", async 
   const patient = await browser.newContext({ storageState: STATE.patient });
   const p = await patient.newPage();
   await p.goto("/app/turnos");
-  const card = p.getByRole("listitem").filter({ hasText: `${time} a` }).first();
+  const card = p
+    .getByRole("listitem")
+    .filter({ hasText: `${time} a` })
+    .first();
   await expect(card).toBeVisible();
   p.once("dialog", (d) => d.accept());
   await card.getByRole("button", { name: "No puedo ir" }).click();

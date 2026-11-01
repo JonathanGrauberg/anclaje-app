@@ -231,6 +231,7 @@ model ProfessionalProfile {
   externalResults ExternalResult[]
   emotionOverride EmotionNodeOverride[]
   appointments    Appointment[]
+  clinicalRecords ClinicalRecord[]
 }
 
 model PatientProfile {
@@ -257,6 +258,7 @@ model PatientProfile {
   externalResults     ExternalResult[]
   invitationsUsed     Invitation[]
   appointments        Appointment[]
+  clinicalRecords     ClinicalRecord[]
 }
 
 /// Vínculo profesional–paciente. Con status ACTIVE la profesional ve lo compartido.
@@ -519,6 +521,27 @@ model ClinicalNote {
   updatedAt      DateTime            @updatedAt
 
   @@index([professionalId, patientId])
+}
+
+/// Ficha de la historia clínica (una por profesional y paciente). Solo la ve su autora.
+/// La evolución son las ClinicalNote. Todo el texto va cifrado.
+model ClinicalRecord {
+  id                  String              @id @default(cuid())
+  professionalId      String
+  professional        ProfessionalProfile @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  patientId           String
+  patient             PatientProfile      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  treatmentStartedAt  DateTime?
+  reasonEnc           String? // motivo de consulta
+  historyEnc          String? // antecedentes personales y familiares
+  medicationEnc       String? // medicación y otros tratamientos
+  diagnosisEnc        String? // diagnóstico o hipótesis diagnóstica
+  planEnc             String? // objetivos y plan de tratamiento
+  emergencyContactEnc String? // contacto de emergencia
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  @@unique([professionalId, patientId])
 }
 
 // ─────────────────────────────────────────────────────────────

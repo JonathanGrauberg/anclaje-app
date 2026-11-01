@@ -8,13 +8,13 @@ import type { PatientExport } from "./patient-data";
 const A4: [number, number] = [595.28, 841.89];
 const M = 50;
 const INK = rgb(0.16, 0.16, 0.2);
-const MUTED = rgb(0.4, 0.38, 0.44);
+export const MUTED = rgb(0.4, 0.38, 0.44);
 const ACCENT = rgb(0.27, 0.46, 0.42);
 
 const VIS = { SHARED: "Compartido", PRIVATE: "Privado" } as const;
 const d = (s: string | null | undefined) => (s ? formatDateTime(new Date(s)) : "");
 
-class Writer {
+export class Writer {
   private page!: PDFPage;
   private y = 0;
   constructor(
