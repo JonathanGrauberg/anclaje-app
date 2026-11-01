@@ -114,3 +114,39 @@
 .wheel-seg:focus-visible {
   outline: none;
 }
+
+/* Faro de carga: la luz gira (vista de costado: se achica, pasa por delante y vuelve). */
+@keyframes lh-sweep {
+  0% {
+    transform: scaleX(1);
+  }
+  50% {
+    transform: scaleX(-1);
+  }
+  100% {
+    transform: scaleX(1);
+  }
+}
+@keyframes lh-glow {
+  0%,
+  50%,
+  100% {
+    opacity: 0.15;
+  }
+  25%,
+  75% {
+    opacity: 0.6;
+  }
+}
+.lh-beam {
+  animation: lh-sweep 3.2s ease-in-out infinite;
+}
+.lh-glow {
+  animation: lh-glow 3.2s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lh-beam,
+  .lh-glow {
+    animation: none !important;
+  }
+}

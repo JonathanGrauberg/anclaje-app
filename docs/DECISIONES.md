@@ -292,3 +292,9 @@ salvo que se indique lo contrario.
   terminan en `.anclaje.json`. Al importar se sigue aceptando `sentir.assessment`.
 - Se dejan igual, porque no los ve nadie: el usuario y la base local (`sentir`), los emails demo
   (`@demo.sentir.test`), la contraseña demo y el nombre de la carpeta del proyecto.
+- **Logo:** un faro minimalista sobre el agua, en el verde de la app. La luz es un círculo
+  naranja, el mismo que hace de punto en ".anclaje". La torre está partida por un hueco (la
+  franja del faro), así funciona sobre cualquier fondo. Las formas están en `src/lib/brand.ts`
+  y las usan el logo, los íconos PNG y el de la pestaña (`src/app/icon.tsx`).
+- **Carga:** `LighthouseLoader` muestra el faro con la luz girando, en los `loading.tsx` de
+  `/app`, `/pro` y `/admin`. Si la persona pidió menos movimiento, la luz queda quieta.

@@ -1,27 +1,45 @@
+import { BRAND, LIGHTHOUSE } from "@/lib/brand";
 import { cn } from "@/lib/utils";
 
-/** Logo: una flor de seis pétalos con los colores de la rueda. */
+/** El faro dibujado (sin texto). `children` se dibuja detrás, por ejemplo la luz que gira. */
+export function LighthouseMark({
+  className,
+  children,
+}: {
+  className?: string;
+  children?: React.ReactNode;
+}) {
+  const L = LIGHTHOUSE;
+  return (
+    <svg viewBox="0 0 64 64" className={cn("text-primary overflow-visible", className)} aria-hidden>
+      {children}
+      <g fill="currentColor" stroke="currentColor" strokeLinejoin="round">
+        <path d={L.roof} strokeWidth="1.2" />
+        <rect {...L.gallery} stroke="none" />
+        <path d={L.towerTop} strokeWidth="1" />
+        <path d={L.towerBottom} strokeWidth="1" />
+      </g>
+      <circle {...L.lamp} fill={BRAND.light} />
+      <path d={L.waves} fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+/** Logo de .anclaje: el faro y, si se pide, el nombre (el punto es la luz del faro). */
 export function Logo({ className, withText = false }: { className?: string; withText?: boolean }) {
-  const colors = ["#F5A9BC", "#A9D9B4", "#C6B5E6", "#FFC690", "#F9E08A", "#C8CED8"];
   return (
     <span className="inline-flex items-center gap-2">
-      <svg viewBox="0 0 64 64" className={cn("size-8", className)} aria-hidden>
-        {colors.map((c, i) => (
-          <ellipse
-            key={c}
-            cx="32"
-            cy="17"
-            rx="10"
-            ry="15"
-            fill={c}
-            opacity="0.92"
-            transform={`rotate(${i * 60} 32 32)`}
-          />
-        ))}
-        <circle cx="32" cy="32" r="7" fill="var(--card)" />
-      </svg>
-      {withText && <span className="text-lg font-semibold tracking-tight">.anclaje</span>}
-      {!withText && <span className="sr-only">Anclaje</span>}
+      <LighthouseMark className={cn("size-8", className)} />
+      {withText ? (
+        <span className="inline-flex items-baseline text-lg font-semibold tracking-tight">
+          <svg viewBox="0 0 10 10" className="mr-px size-[0.4em]" aria-hidden>
+            <circle cx="5" cy="5" r="5" fill={BRAND.light} />
+          </svg>
+          anclaje
+        </span>
+      ) : (
+        <span className="sr-only">Anclaje</span>
+      )}
     </span>
   );
 }
