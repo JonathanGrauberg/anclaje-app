@@ -317,4 +317,7 @@ salvo que se indique lo contrario.
 - **Calendario:** la agenda tiene un calendario del mes armado en el servidor (links `?dia=` y
   `?mes=`, sin JavaScript). Los días con turnos llevan un punto. Al elegir un día se listan sus
   turnos y el formulario propone ese día a las 9.
-- Pendiente: dar de baja o archivar un paciente sin la app (por ahora queda en la lista).
+- **Dar de baja** (paciente sin la app, desde su ficha): se cancelan sus turnos futuros. Si no
+  tiene historia clínica (ficha ni notas) se borra del todo. Si tiene, se archiva (`CareLink`
+  REVOKED): la historia se conserva (Ley 26.529) y aparece en "Agregar paciente → Dados de baja",
+  desde donde se puede reactivar.

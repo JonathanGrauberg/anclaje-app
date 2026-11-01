@@ -20,8 +20,9 @@ import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Pacientes" };
 
-export default async function ProfessionalHome() {
+export default async function ProfessionalHome({ searchParams }: PageProps<"/pro">) {
   const { professional } = await requireProfessional();
+  const { baja } = await searchParams;
   const patients = await getPatientsWithAttention(professional.id);
   const nextAppointments = await getNextAppointments(
     professional.id,
@@ -48,17 +49,25 @@ export default async function ProfessionalHome() {
         }
       />
 
+      {(baja === "archivado" || baja === "borrado") && (
+        <p role="status" className="bg-primary-soft text-primary mb-4 rounded-xl px-4 py-3 text-sm">
+          {baja === "archivado"
+            ? "Listo, quedó dado de baja. Su historia clínica se guarda: lo podés reactivar desde «Agregar paciente»."
+            : "Listo, el paciente se borró."}
+        </p>
+      )}
+
       {patients.length === 0 ? (
         <EmptyState
           icon={<Users />}
-          title="Todavía no tenés pacientes vinculados"
+          title="Todavía no tenés pacientes"
           action={
             <Button asChild>
-              <Link href="/pro/invitaciones">Generar un código de invitación</Link>
+              <Link href="/pro/invitaciones">Agregar paciente</Link>
             </Button>
           }
         >
-          Generá un código y pasáselo a tu paciente. Cuando lo acepte, lo vas a ver acá.
+          Invitalo a la app, o cargalo sin la app para usar la agenda y la historia clínica.
         </EmptyState>
       ) : (
         <div className="flex flex-col gap-8">

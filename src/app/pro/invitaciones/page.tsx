@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { formatCode } from "@/lib/invitations";
 import { requireProfessional } from "@/lib/session";
 import { AddManagedPatientForm } from "./add-managed-patient-form";
+import { ArchivedPatients } from "./archived-patients";
 import { InvitationPanel } from "./invitation-panel";
 import { patientName } from "@/lib/patients";
 
@@ -17,6 +18,20 @@ export default async function InvitationsPage() {
     orderBy: { createdAt: "desc" },
     take: 30,
     include: { usedBy: { select: { displayName: true, user: { select: { name: true } } } } },
+  });
+  const archived = await prisma.patientProfile.findMany({
+    where: {
+      userId: null,
+      managedById: professional.id,
+      links: { some: { professionalId: professional.id, status: "REVOKED" } },
+    },
+    orderBy: { displayName: "asc" },
+    select: {
+      id: true,
+      displayName: true,
+      user: { select: { name: true } },
+      links: { where: { professionalId: professional.id }, select: { revokedAt: true } },
+    },
   });
   const baseUrl = (process.env.BETTER_AUTH_URL ?? "http://localhost:3000").replace(/\/$/, "");
 
@@ -51,6 +66,23 @@ export default async function InvitationsPage() {
         </h2>
         <AddManagedPatientForm />
       </section>
+      {archived.length > 0 && (
+        <section aria-labelledby="archived-title" className="mt-10 flex flex-col gap-3">
+          <h2 id="archived-title" className="text-lg font-semibold">
+            Dados de baja
+          </h2>
+          <p className="text-muted-foreground text-sm">
+            Pacientes sin la app que diste de baja. Su historia clínica se guarda.
+          </p>
+          <ArchivedPatients
+            patients={archived.map((p) => ({
+              id: p.id,
+              name: patientName(p),
+              archivedAt: p.links[0]?.revokedAt?.toISOString() ?? null,
+            }))}
+          />
+        </section>
+      )}
     </>
   );
 }

@@ -1,11 +1,12 @@
 "use client";
 
-import { Check, Copy, Pencil, UserPlus } from "lucide-react";
+import { Check, Copy, Pencil, UserMinus, UserPlus } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useId, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { FieldError, Input, Label } from "@/components/ui/input";
 import { createInvitation } from "@/lib/actions/invitations";
-import { updateManagedPatient } from "@/lib/actions/patients";
+import { removeManagedPatient, updateManagedPatient } from "@/lib/actions/patients";
 import { formatCode } from "@/lib/invitations";
 
 /** Paciente sin la app: invitarlo (sus turnos e historia pasan a su cuenta) o editar sus datos. */
@@ -21,6 +22,7 @@ export function ManagedPatientActions({
   baseUrl: string;
 }) {
   const uid = useId();
+  const router = useRouter();
   const [code, setCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -53,6 +55,26 @@ export function ManagedPatientActions({
           onClick={() => setEditing((e) => !e)}
         >
           <Pencil /> Editar datos
+        </Button>
+        <Button
+          size="sm"
+          variant="ghost"
+          disabled={pending}
+          onClick={() => {
+            if (
+              !confirm(
+                `¿Dar de baja a ${name}? Se cancelan sus turnos futuros. Si tiene historia clínica, se guarda y lo podés reactivar desde "Agregar paciente"; si no, se borra.`,
+              )
+            )
+              return;
+            start(async () => {
+              const res = await removeManagedPatient(patientId);
+              if (!res.ok) return setError(res.error);
+              router.push(res.data.archived ? "/pro?baja=archivado" : "/pro?baja=borrado");
+            });
+          }}
+        >
+          <UserMinus /> Dar de baja
         </Button>
       </div>
 

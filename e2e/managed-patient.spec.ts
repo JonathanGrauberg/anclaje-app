@@ -85,3 +85,50 @@ test("paciente sin la app: turno, historia clínica, invitación y unión de dat
   await newcomer.close();
   await pro.close();
 });
+
+// Dar de baja: sin historia clínica se borra; con historia se archiva y se puede reactivar.
+test("paciente sin la app: dar de baja, borrar o archivar y reactivar", async ({ browser }) => {
+  const pro = await browser.newContext({ storageState: STATE.pro });
+  const q = await pro.newPage();
+  q.on("dialog", (d) => d.accept());
+
+  async function addPatient(name: string) {
+    await q.goto("/pro/invitaciones");
+    await q.waitForLoadState("networkidle");
+    await q.getByLabel("Nombre", { exact: true }).fill(name);
+    await q.getByRole("button", { name: "Agregar paciente" }).click();
+    await expect(q.getByRole("heading", { level: 1, name })).toBeVisible();
+    await q.waitForLoadState("networkidle");
+  }
+
+  // Sin historia: se borra.
+  const temp = unique("Prueba");
+  await addPatient(temp);
+  await q.getByRole("button", { name: "Dar de baja" }).click();
+  await expect(q.getByRole("status").filter({ hasText: "el paciente se borró" })).toBeVisible();
+  await expect(q.getByText(temp)).toHaveCount(0);
+
+  // Con historia: se archiva y se reactiva.
+  const kept = unique("Archivado");
+  await addPatient(kept);
+  await q.getByLabel("Motivo de consulta").fill("Motivo de prueba");
+  await q.getByRole("button", { name: "Guardar ficha" }).click();
+  await expect(q.getByText(/Guardada/)).toBeVisible();
+  await q.getByRole("button", { name: "Dar de baja" }).click();
+  await expect(q.getByRole("status").filter({ hasText: "quedó dado de baja" })).toBeVisible();
+  await expect(q.getByText(kept)).toHaveCount(0);
+
+  await q.goto("/pro/invitaciones");
+  const row = q.getByRole("listitem").filter({ hasText: kept });
+  await row.getByRole("button", { name: "Reactivar" }).click();
+  await expect(row).toHaveCount(0);
+  await q.goto("/pro");
+  await expect(q.getByText(kept)).toBeVisible();
+
+  // Limpieza: se vuelve a dar de baja (queda archivado, no aparece en la lista).
+  await q.getByRole("link", { name: new RegExp(kept) }).click();
+  await q.waitForLoadState("networkidle");
+  await q.getByRole("button", { name: "Dar de baja" }).click();
+  await expect(q.getByRole("status").filter({ hasText: "quedó dado de baja" })).toBeVisible();
+  await pro.close();
+});
