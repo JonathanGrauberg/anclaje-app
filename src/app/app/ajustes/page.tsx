@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ChangePasswordForm } from "@/components/change-password-form";
 import { PageHeader } from "@/components/ui/misc";
 import { formatDate } from "@/lib/dates";
 import { prisma } from "@/lib/db";
@@ -124,6 +125,13 @@ export default async function SettingsPage({ searchParams }: PageProps<"/app/aju
             days: reminder?.days ?? [0, 1, 2, 3, 4, 5, 6],
           }}
         />
+      </section>
+
+      <section aria-labelledby="pw-title" className="flex flex-col gap-3">
+        <h2 id="pw-title" className="text-lg font-semibold">
+          Contraseña
+        </h2>
+        <ChangePasswordForm />
       </section>
 
       <section aria-labelledby="data-title" className="flex flex-col gap-3">

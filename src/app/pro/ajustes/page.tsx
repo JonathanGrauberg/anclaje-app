@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ChangePasswordForm } from "@/components/change-password-form";
 import { PageHeader } from "@/components/ui/misc";
 import { requireProfessional } from "@/lib/session";
 import { DigestForm } from "./digest-form";
@@ -23,6 +24,13 @@ export default async function ProSettingsPage() {
           </p>
         </div>
         <DigestForm initial={professional.digestFrequency} />
+      </section>
+
+      <section aria-labelledby="pw-title" className="flex flex-col gap-3">
+        <h2 id="pw-title" className="text-lg font-semibold">
+          Contraseña
+        </h2>
+        <ChangePasswordForm />
       </section>
     </div>
   );
