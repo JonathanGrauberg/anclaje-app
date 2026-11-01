@@ -36,3 +36,10 @@ export const HIGH_INTENSITY = 8;
 
 export const DISCLAIMER =
   "Esta app no es un servicio de urgencias. Tu psicóloga revisa lo que compartís según lo que acuerden, no en tiempo real.";
+
+/**
+ * Avisos (recordatorios push) y resumen por email a la profesional. Apagados por ahora: se
+ * prenden con NEXT_PUBLIC_NOTIFICATIONS="true". Los emails propios de la cuenta (link para
+ * entrar, recuperar contraseña) no dependen de esto. Ver docs/DECISIONES.md.
+ */
+export const NOTIFICATIONS_ENABLED = process.env.NEXT_PUBLIC_NOTIFICATIONS === "true";

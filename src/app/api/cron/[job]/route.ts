@@ -1,4 +1,5 @@
 import { timingSafeEqual } from "node:crypto";
+import { NOTIFICATIONS_ENABLED } from "@/lib/constants";
 import { prisma } from "@/lib/db";
 import { digestEmail, summarizeDigest } from "@/lib/digest";
 import { appUrl, sendEmail } from "@/lib/email";
@@ -65,6 +66,7 @@ async function handle(req: Request, ctx: RouteContext<"/api/cron/[job]">) {
   if (!authorized(req)) return Response.json({ error: "No autorizado" }, { status: 401 });
   const { job } = await ctx.params;
   const now = new Date();
+  if (!NOTIFICATIONS_ENABLED) return Response.json({ skipped: "avisos apagados" });
   if (job === "recordatorios") return Response.json(await runReminders(now));
   if (job === "resumen") return Response.json(await runDigests(now));
   return Response.json({ error: "Tarea desconocida" }, { status: 404 });

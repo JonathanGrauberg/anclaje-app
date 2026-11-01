@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { NOTIFICATIONS_ENABLED } from "@/lib/constants";
 import Link from "next/link";
 import { ChangePasswordForm } from "@/components/change-password-form";
 import { PageHeader } from "@/components/ui/misc";
@@ -108,24 +109,26 @@ export default async function SettingsPage({ searchParams }: PageProps<"/app/aju
         />
       </section>
 
-      <section aria-labelledby="rem-title" className="flex flex-col gap-3">
-        <div>
-          <h2 id="rem-title" className="text-lg font-semibold">
-            Avisos
-          </h2>
-          <p className="text-muted-foreground text-sm">
-            Si te sirve un recordatorio para registrar cómo estás. Sin rachas ni reproches.
-          </p>
-        </div>
-        <RemindersForm
-          vapidKey={process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? null}
-          initial={{
-            enabled: reminder?.enabled ?? false,
-            time: reminder?.time ?? "20:00",
-            days: reminder?.days ?? [0, 1, 2, 3, 4, 5, 6],
-          }}
-        />
-      </section>
+      {NOTIFICATIONS_ENABLED && (
+        <section aria-labelledby="rem-title" className="flex flex-col gap-3">
+          <div>
+            <h2 id="rem-title" className="text-lg font-semibold">
+              Avisos
+            </h2>
+            <p className="text-muted-foreground text-sm">
+              Si te sirve un recordatorio para registrar cómo estás. Sin rachas ni reproches.
+            </p>
+          </div>
+          <RemindersForm
+            vapidKey={process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? null}
+            initial={{
+              enabled: reminder?.enabled ?? false,
+              time: reminder?.time ?? "20:00",
+              days: reminder?.days ?? [0, 1, 2, 3, 4, 5, 6],
+            }}
+          />
+        </section>
+      )}
 
       <section aria-labelledby="pw-title" className="flex flex-col gap-3">
         <h2 id="pw-title" className="text-lg font-semibold">
