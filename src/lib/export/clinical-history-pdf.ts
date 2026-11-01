@@ -36,7 +36,7 @@ export async function clinicalHistoryPdf(professionalId: string, patientId: stri
   const doc = await PDFDocument.create();
   doc.setTitle("Historia clínica");
   doc.setLanguage("es-AR");
-  doc.setCreator("Sentir");
+  doc.setCreator("Anclaje");
   const w = new Writer(
     doc,
     await doc.embedFont(StandardFonts.Helvetica),

@@ -136,7 +136,7 @@ export function RemindersForm({
     <div className="bg-card flex flex-col gap-4 rounded-2xl border p-4">
       {support === "ios-install" && (
         <p className="text-muted-foreground text-sm">
-          En iPhone, para recibir avisos primero agregá Sentir a la pantalla de inicio: tocá{" "}
+          En iPhone, para recibir avisos primero agregá Anclaje a la pantalla de inicio: tocá{" "}
           <strong>Compartir</strong> y después <strong>Agregar a inicio</strong>. Abrila desde ahí y
           volvé a esta pantalla.
         </p>
@@ -148,7 +148,7 @@ export function RemindersForm({
       )}
       {support === "ok" && permission === "denied" && (
         <p className="text-muted-foreground text-sm">
-          Bloqueaste los avisos para Sentir. Si los querés, habilitalos desde la configuración del
+          Bloqueaste los avisos para Anclaje. Si los querés, habilitalos desde la configuración del
           navegador (el candado al lado de la dirección).
         </p>
       )}

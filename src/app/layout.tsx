@@ -6,11 +6,11 @@ import "./globals.css";
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: { default: "Sentir", template: "%s · Sentir" },
+  title: { default: "Anclaje", template: "%s · Anclaje" },
   description: "Un lugar para registrar lo que sentís y compartirlo con tu psicóloga.",
-  applicationName: "Sentir",
+  applicationName: "Anclaje",
   robots: { index: false, follow: false },
-  appleWebApp: { capable: true, title: "Sentir", statusBarStyle: "default" },
+  appleWebApp: { capable: true, title: "Anclaje", statusBarStyle: "default" },
 };
 
 export const viewport: Viewport = {

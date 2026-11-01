@@ -1,4 +1,4 @@
-# Sentir
+# Anclaje
 
 Web app (PWA) para que pacientes de psicoterapia registren emociones, escriban un diario y hagan
 autorregistros de TCC, y para que su psicóloga vea lo compartido. Ver [`docs/PLAN.md`](docs/PLAN.md)

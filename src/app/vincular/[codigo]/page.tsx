@@ -55,7 +55,7 @@ export default async function LinkPage({ params }: PageProps<"/vincular/[codigo]
               <div>
                 <p className="text-muted-foreground text-sm">Código {formatCode(code!)}</p>
                 <h1 className="text-2xl font-semibold tracking-tight">
-                  {invitation.professional.displayName} te invita a Sentir
+                  {invitation.professional.displayName} te invita a Anclaje
                 </h1>
               </div>
 

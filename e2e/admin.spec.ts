@@ -71,11 +71,11 @@ test.describe("admin", () => {
   });
 
   test("sube, descarga y borra una plantilla", async ({ page }) => {
-    const doc = JSON.parse(readFileSync("e2e/fixtures/chequeo.sentir.json", "utf8"));
+    const doc = JSON.parse(readFileSync("e2e/fixtures/chequeo.anclaje.json", "utf8"));
     doc.title = unique("Plantilla E2E");
     await page.goto("/admin/plantillas");
     await page.locator('input[type="file"]').setInputFiles({
-      name: "plantilla.sentir.json",
+      name: "plantilla.anclaje.json",
       mimeType: "application/json",
       buffer: Buffer.from(JSON.stringify(doc)),
     });

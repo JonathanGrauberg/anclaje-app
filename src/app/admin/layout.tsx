@@ -7,7 +7,7 @@ import { requireAdmin } from "@/lib/session";
 import { AdminNav } from "./admin-nav";
 
 export const metadata: Metadata = {
-  title: { template: "%s · Administración · Sentir", default: "Administración" },
+  title: { template: "%s · Administración · Anclaje", default: "Administración" },
 };
 
 export default async function AdminLayout({ children }: LayoutProps<"/admin">) {

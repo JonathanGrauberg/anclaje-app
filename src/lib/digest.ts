@@ -42,11 +42,11 @@ export function summarizeDigest(rows: DigestRow[]) {
 }
 
 export function digestEmail(name: string, lines: string[], url: string) {
-  const subject = "Sentir: tu resumen";
+  const subject = "Anclaje: tu resumen";
   const text = [
     `Hola, ${name}.`,
     "",
-    "Esto está esperando tu mirada en Sentir:",
+    "Esto está esperando tu mirada en Anclaje:",
     ...lines,
     "",
     `Entrá para ver el detalle: ${url}`,

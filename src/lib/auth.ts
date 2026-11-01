@@ -10,7 +10,7 @@ import { storage } from "@/lib/storage";
 const isProd = process.env.NODE_ENV === "production";
 
 export const auth = betterAuth({
-  appName: "Sentir",
+  appName: "Anclaje",
   baseURL: process.env.BETTER_AUTH_URL,
   secret: process.env.BETTER_AUTH_SECRET,
   database: prismaAdapter(prisma, { provider: "postgresql" }),
@@ -26,8 +26,8 @@ export const auth = betterAuth({
     sendResetPassword: async ({ user, url }) => {
       await sendEmail({
         to: user.email,
-        subject: "Cambiá tu contraseña de Sentir",
-        text: `Hola. Pediste cambiar tu contraseña de Sentir. Tocá este link para elegir una nueva (vence en 1 hora):\n\n${url}\n\nSi no lo pediste, ignorá este email: tu contraseña sigue igual.`,
+        subject: "Cambiá tu contraseña de Anclaje",
+        text: `Hola. Pediste cambiar tu contraseña de Anclaje. Tocá este link para elegir una nueva (vence en 1 hora):\n\n${url}\n\nSi no lo pediste, ignorá este email: tu contraseña sigue igual.`,
       });
     },
   },
@@ -44,7 +44,7 @@ export const auth = betterAuth({
       beforeDelete: async (user) => {
         if (((user as { role?: string }).role ?? "PATIENT") !== "PATIENT") {
           throw new APIError("FORBIDDEN", {
-            message: "Las cuentas profesionales se dan de baja con el equipo de Sentir.",
+            message: "Las cuentas profesionales se dan de baja con el equipo de Anclaje.",
           });
         }
         const files = await prisma.externalResult.findMany({
@@ -107,8 +107,8 @@ export const auth = betterAuth({
       sendMagicLink: async ({ email, url }) => {
         await sendEmail({
           to: email,
-          subject: "Tu link para entrar a Sentir",
-          text: `Hola. Tocá este link para entrar a Sentir (vence en 10 minutos):\n\n${url}\n\nSi no lo pediste, ignorá este email.`,
+          subject: "Tu link para entrar a Anclaje",
+          text: `Hola. Tocá este link para entrar a Anclaje (vence en 10 minutos):\n\n${url}\n\nSi no lo pediste, ignorá este email.`,
         });
       },
     }),

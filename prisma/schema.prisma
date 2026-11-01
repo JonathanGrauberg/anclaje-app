@@ -1,4 +1,4 @@
-// Modelo de datos de Sentir.
+// Modelo de datos de Anclaje.
 // Convención: los campos que terminan en `Enc` guardan texto cifrado con src/lib/crypto.ts
 // (AES-256-GCM). Nunca se guarda texto plano en ellos.
 

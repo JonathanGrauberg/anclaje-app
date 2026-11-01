@@ -37,7 +37,7 @@ export async function GET(req: Request) {
       headers: {
         ...common,
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="sentir-mis-datos-${date}.pdf"`,
+        "Content-Disposition": `attachment; filename="anclaje-mis-datos-${date}.pdf"`,
       },
     });
   }
@@ -45,7 +45,7 @@ export async function GET(req: Request) {
     headers: {
       ...common,
       "Content-Type": "application/json; charset=utf-8",
-      "Content-Disposition": `attachment; filename="sentir-mis-datos-${date}.json"`,
+      "Content-Disposition": `attachment; filename="anclaje-mis-datos-${date}.json"`,
     },
   });
 }

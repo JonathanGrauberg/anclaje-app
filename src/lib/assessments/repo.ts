@@ -30,7 +30,7 @@ type Config = AssessmentDoc["questions"][number]["config"];
 
 export function versionToDoc(v: VersionWithContent): AssessmentDoc {
   return {
-    format: "sentir.assessment",
+    format: "anclaje.assessment",
     formatVersion: 1,
     title: v.assessment.title,
     description: v.assessment.description,

@@ -93,11 +93,11 @@ async function seedDemoUsers() {
     create: { userId: proUser.id, displayName: "Lic. Laura Méndez", licenseNumber: "MN 00000" },
   });
 
-  await upsertUser("admin@demo.sentir.test", "Admin Sentir", "ADMIN").then((admin) =>
+  await upsertUser("admin@demo.sentir.test", "Admin Anclaje", "ADMIN").then((admin) =>
     prisma.professionalProfile.upsert({
       where: { userId: admin.id },
       update: {},
-      create: { userId: admin.id, displayName: "Admin Sentir" },
+      create: { userId: admin.id, displayName: "Admin Anclaje" },
     }),
   );
 

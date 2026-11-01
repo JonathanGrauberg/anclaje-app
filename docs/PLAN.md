@@ -1,4 +1,4 @@
-# Sentir — Plan por fases
+# Anclaje — Plan por fases
 
 Web app (PWA) para que pacientes de psicoterapia registren emociones, escriban un diario y hagan
 autorregistros de TCC, y para que su psicóloga vea lo compartido, deje devoluciones, cargue material y

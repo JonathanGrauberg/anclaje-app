@@ -18,7 +18,7 @@ export async function sendEmail(email: Email) {
   }
   transporter ??= nodemailer.createTransport(url);
   await transporter.sendMail({
-    from: process.env.EMAIL_FROM ?? "Sentir <no-responder@sentir.test>",
+    from: process.env.EMAIL_FROM ?? "Anclaje <no-responder@anclaje.test>",
     ...email,
   });
 }

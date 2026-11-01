@@ -18,7 +18,7 @@ test("crear cuenta, descargar mis datos y borrar la cuenta", async ({ page }) =>
   const res = await page.request.get("/app/ajustes/exportar?formato=json");
   expect(res.status()).toBe(200);
   const data = await res.json();
-  expect(data.format).toBe("sentir.patient-export");
+  expect(data.format).toBe("anclaje.patient-export");
   expect(data.account.email).toBe(email);
   const pdf = await page.request.get("/app/ajustes/exportar?formato=pdf");
   expect((await pdf.body()).subarray(0, 5).toString()).toBe("%PDF-");

@@ -283,3 +283,12 @@ salvo que se indique lo contrario.
 - Las líneas de ayuda están en `prisma/data/crisis-lines.json` (seed) y en la tabla `CrisisLine`,
   editables desde **/admin → Líneas de ayuda**. **Verificar los números antes de usar en producción.**
   Siempre tiene que quedar al menos una activa (no se puede borrar ni desactivar la última).
+
+## Nombre: de "Sentir" a ".anclaje"
+
+- La app se llama **Anclaje** ("Sentir" ya existía). En el logo y en el ícono de la pantalla de
+  inicio se escribe **.anclaje** (con punto, en minúscula); en las frases, "Anclaje".
+- Los JSON exportados ahora dicen `anclaje.assessment` / `anclaje.patient-export` y los archivos
+  terminan en `.anclaje.json`. Al importar se sigue aceptando `sentir.assessment`.
+- Se dejan igual, porque no los ve nadie: el usuario y la base local (`sentir`), los emails demo
+  (`@demo.sentir.test`), la contraseña demo y el nombre de la carpeta del proyecto.

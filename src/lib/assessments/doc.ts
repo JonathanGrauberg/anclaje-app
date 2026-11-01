@@ -188,7 +188,7 @@ export function toScreens(questions: DocQuestion[]): DocQuestion[][] {
 
 export function emptyDoc(title: string): AssessmentDoc {
   return {
-    format: "sentir.assessment",
+    format: "anclaje.assessment",
     formatVersion: 1,
     title,
     description: null,

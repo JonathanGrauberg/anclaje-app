@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Sentir",
-    short_name: "Sentir",
+    name: "Anclaje",
+    short_name: ".anclaje",
     description: "Un lugar para registrar lo que sentís y compartirlo con tu psicóloga.",
     lang: "es-AR",
     start_url: "/app",

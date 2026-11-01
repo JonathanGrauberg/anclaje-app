@@ -158,7 +158,7 @@ export async function importAssessmentJson(text: string) {
     }
     const parsed = assessmentDocSchema.safeParse(json);
     if (!parsed.success)
-      return fail(`El JSON no tiene el formato de Sentir: ${firstIssue(parsed.error)}`);
+      return fail(`El JSON no tiene el formato de Anclaje: ${firstIssue(parsed.error)}`);
     const a = await createAssessmentFromDoc(professional.id, rekey(parsed.data));
     revalidatePath("/pro/evaluaciones");
     return ok({ id: a.id });

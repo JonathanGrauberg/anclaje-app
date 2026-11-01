@@ -18,7 +18,7 @@ export default async function SignInPage({ searchParams }: PageProps<"/ingresar"
           role="status"
           className="bg-primary-soft text-primary mx-auto mt-6 max-w-sm rounded-2xl p-4 text-sm"
         >
-          Listo, tu cuenta y todos tus datos se borraron. Gracias por haber usado Sentir.
+          Listo, tu cuenta y todos tus datos se borraron. Gracias por haber usado Anclaje.
         </p>
       )}
       {sp.contrasena === "cambiada" && (

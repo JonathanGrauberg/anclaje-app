@@ -3,7 +3,7 @@ import { getVersion, versionToDoc } from "@/lib/assessments/repo";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/session";
 
-// Exporta la última versión de una evaluación propia en el formato JSON de Sentir.
+// Exporta la última versión de una evaluación propia en el formato JSON de Anclaje.
 export async function GET(_req: NextRequest, ctx: RouteContext<"/pro/evaluaciones/[id]/exportar">) {
   const { id } = await ctx.params;
   const session = await getSession();
@@ -24,7 +24,7 @@ export async function GET(_req: NextRequest, ctx: RouteContext<"/pro/evaluacione
   return new NextResponse(JSON.stringify(doc, null, 2), {
     headers: {
       "Content-Type": "application/json; charset=utf-8",
-      "Content-Disposition": `attachment; filename="${slug || "evaluacion"}.sentir.json"`,
+      "Content-Disposition": `attachment; filename="${slug || "evaluacion"}.anclaje.json"`,
     },
   });
 }

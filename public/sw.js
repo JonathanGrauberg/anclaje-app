@@ -1,9 +1,9 @@
-// Service worker de Sentir.
+// Service worker de Anclaje.
 // Privacidad: NO se guarda en caché ninguna página ni respuesta con datos. Solo la página
 // "Sin conexión" y los íconos. Las navegaciones van siempre a la red; si no hay red, se muestra
 // esa página.
 
-const CACHE = "sentir-v1";
+const CACHE = "anclaje-v1";
 const OFFLINE_URL = "/offline";
 const PRECACHE = [OFFLINE_URL, "/icons/icon-192.png"];
 
@@ -41,14 +41,14 @@ self.addEventListener("push", (event) => {
   } catch {
     data = {};
   }
-  const title = data.title || "Sentir";
+  const title = data.title || "Anclaje";
   event.waitUntil(
     self.registration.showNotification(title, {
       body: data.body || "",
       icon: "/icons/icon-192.png",
       badge: "/icons/icon-192.png",
       lang: "es-AR",
-      tag: "sentir-recordatorio", // reemplaza al anterior en vez de acumular
+      tag: "anclaje-recordatorio", // reemplaza al anterior en vez de acumular
       data: { url: typeof data.url === "string" ? data.url : "/app" },
     }),
   );

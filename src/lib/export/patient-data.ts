@@ -9,7 +9,7 @@ import { getEmotionTree } from "@/lib/queries/common";
 // No incluye: notas clínicas (son de la profesional) ni resultados externos (los carga ella y el
 // paciente no los ve en la app). Ver docs/DECISIONES.md.
 
-export const EXPORT_FORMAT = "sentir.patient-export";
+export const EXPORT_FORMAT = "anclaje.patient-export";
 
 const iso = (d: Date | null | undefined) => (d ? d.toISOString() : null);
 

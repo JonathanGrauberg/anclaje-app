@@ -121,7 +121,7 @@ export class Writer {
   footer() {
     const pages = this.doc.getPages();
     pages.forEach((p, i) =>
-      p.drawText(`Sentir · página ${i + 1} de ${pages.length}`, {
+      p.drawText(`Anclaje · página ${i + 1} de ${pages.length}`, {
         x: M,
         y: 26,
         size: 8,
@@ -134,16 +134,16 @@ export class Writer {
 
 export async function patientExportPdf(data: PatientExport) {
   const doc = await PDFDocument.create();
-  doc.setTitle("Mis datos en Sentir");
+  doc.setTitle("Mis datos en Anclaje");
   doc.setLanguage("es-AR");
-  doc.setCreator("Sentir");
+  doc.setCreator("Anclaje");
   const w = new Writer(
     doc,
     await doc.embedFont(StandardFonts.Helvetica),
     await doc.embedFont(StandardFonts.HelveticaBold),
   );
 
-  w.text("Mis datos en Sentir", { size: 22, bold: true, after: 4 });
+  w.text("Mis datos en Anclaje", { size: 22, bold: true, after: 4 });
   w.text(
     `${data.account.displayName ?? data.account.name} · ${data.account.email} · exportado el ${formatDateTime(new Date(data.exportedAt))}`,
     { color: MUTED },

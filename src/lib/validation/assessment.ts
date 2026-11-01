@@ -71,7 +71,11 @@ export const docRangeSchema = z.object({
 
 export const assessmentDocSchema = z
   .object({
-    format: z.literal("sentir.assessment").default("sentir.assessment"),
+    // "sentir.assessment" es el nombre anterior de la app: se sigue aceptando al importar.
+    format: z
+      .enum(["anclaje.assessment", "sentir.assessment"])
+      .default("anclaje.assessment")
+      .transform(() => "anclaje.assessment" as const),
     formatVersion: z.literal(1).default(1),
     title: z.string().trim().min(1, "Poné un título").max(200),
     description: shortText(2000),

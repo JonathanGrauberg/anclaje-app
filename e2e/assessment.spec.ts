@@ -10,7 +10,7 @@ test("evaluación con ítem crítico, de punta a punta", async ({ browser }) => 
   await q.goto("/pro/evaluaciones");
   await q
     .locator('input[type="file"]')
-    .setInputFiles(path.join(__dirname, "fixtures", "chequeo.sentir.json"));
+    .setInputFiles(path.join(__dirname, "fixtures", "chequeo.anclaje.json"));
   await expect(q).toHaveURL(/\/pro\/evaluaciones\/[a-z0-9]+$/);
   await q.getByRole("button", { name: "Publicar" }).click();
   await expect(q.getByText(/Publicada/)).toBeVisible();

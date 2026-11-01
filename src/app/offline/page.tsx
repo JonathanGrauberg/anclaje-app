@@ -10,7 +10,7 @@ export default function OfflinePage() {
       <Logo className="size-14" />
       <h1 className="text-2xl font-semibold">Ahora no hay conexión</h1>
       <p className="text-muted-foreground">
-        Sentir necesita internet para guardar lo que escribís de forma segura. Cuando vuelva la
+        Anclaje necesita internet para guardar lo que escribís de forma segura. Cuando vuelva la
         conexión, probá de nuevo.
       </p>
       <p className="bg-danger-soft rounded-2xl p-4 text-sm">

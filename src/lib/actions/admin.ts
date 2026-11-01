@@ -107,7 +107,7 @@ export async function deleteCrisisLine(id: string) {
   });
 }
 
-/** Sube un JSON de Sentir como plantilla del sistema (la ven todas las profesionales). */
+/** Sube un JSON de Anclaje como plantilla del sistema (la ven todas las profesionales). */
 export async function importTemplate(text: string) {
   return safe(async () => {
     const admin = await adminForAction();
@@ -120,7 +120,7 @@ export async function importTemplate(text: string) {
     }
     const parsed = assessmentDocSchema.safeParse(json);
     if (!parsed.success)
-      return fail(`El JSON no tiene el formato de Sentir: ${firstIssue(parsed.error)}`);
+      return fail(`El JSON no tiene el formato de Anclaje: ${firstIssue(parsed.error)}`);
     const exists = await prisma.assessment.findFirst({
       where: { ownerId: null, isTemplate: true, title: parsed.data.title },
     });

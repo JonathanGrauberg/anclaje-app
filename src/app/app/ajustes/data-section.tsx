@@ -14,7 +14,7 @@ export function DataSection() {
       <div className="flex flex-col gap-2">
         <p className="font-medium">Descargar mis datos</p>
         <p className="text-muted-foreground text-sm">
-          Todo lo que registraste y recibiste en Sentir. El PDF es para leer; el JSON sirve para
+          Todo lo que registraste y recibiste en Anclaje. El PDF es para leer; el JSON sirve para
           llevarlo a otro lado. Ojo: el archivo no está protegido, guardalo en un lugar seguro.
         </p>
         <div className="flex flex-wrap gap-2">
