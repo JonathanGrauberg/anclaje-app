@@ -25,9 +25,11 @@ import { getPatterns, getScoreSeries, parseRange } from "@/lib/queries/patterns"
 import { AssessmentsPanel } from "./assessments-panel";
 import { ClinicalRecordForm } from "./clinical-record-form";
 import { CopingEditor } from "./coping-editor";
+import { ManagedPatientActions } from "./managed-patient-actions";
 import { NotesPanel } from "./notes-panel";
 import { TasksPanel } from "./tasks-panel";
 import { TopicsPanel } from "./topics-panel";
+import { patientName } from "@/lib/patients";
 
 export const metadata: Metadata = { title: "Ficha del paciente" };
 
@@ -59,8 +61,15 @@ export default async function PatientRecordPage({
   const patient = await findLinkedPatient(professional.id, id);
   if (!patient) notFound();
 
+  // Paciente sin la app: no hay nada compartido, solo la historia clínica (y los turnos).
+  const withoutApp = !patient.userId;
+  const tabs = withoutApp ? TABS.filter((t) => t.id === "historia") : TABS;
   const tabParam = one(sp.tab) === "notas" ? "historia" : one(sp.tab); // "notas" era el nombre viejo
-  const tab: TabId = TABS.some((t) => t.id === tabParam) ? (tabParam as TabId) : "compartido";
+  const tab: TabId = tabs.some((t) => t.id === tabParam)
+    ? (tabParam as TabId)
+    : withoutApp
+      ? "historia"
+      : "compartido";
   const kindParam = one(sp.tipo);
   const kind = KINDS.some((k) => k.id === kindParam) ? (kindParam as TimelineKind) : undefined;
   const intentionParam = one(sp.intencion);
@@ -77,7 +86,9 @@ export default async function PatientRecordPage({
     meta: { tab },
   });
 
-  const name = patient.displayName ?? patient.user.name;
+  const name = patientName(patient);
+  const contact = decryptOptional(patient.contactEnc);
+  const baseUrl = (process.env.BETTER_AUTH_URL ?? "http://localhost:3000").replace(/\/$/, "");
   const link = patient.links[0];
   const base = `/pro/pacientes/${patient.id}`;
   const nextAppointment = (await getNextAppointments(professional.id, [patient.id])).get(
@@ -89,10 +100,26 @@ export default async function PatientRecordPage({
       <div className="flex flex-col">
         <BackLink href="/pro" label="Pacientes" />
         <h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">{name}</h1>
-        <p className="text-muted-foreground mt-1 text-sm">
-          Vinculado desde {formatDate(link.createdAt)} · consentimiento {link.consentVersion}{" "}
-          aceptado el {formatDate(link.consentAcceptedAt)}
-        </p>
+        {withoutApp ? (
+          <div className="mt-2 flex flex-col gap-2">
+            <p className="text-muted-foreground flex flex-wrap items-center gap-2 text-sm">
+              <Badge>Sin la app</Badge>
+              Cargado el {formatDate(patient.createdAt)}
+              {contact && <> · {contact}</>}
+            </p>
+            <ManagedPatientActions
+              patientId={patient.id}
+              name={name}
+              contact={contact ?? ""}
+              baseUrl={baseUrl}
+            />
+          </div>
+        ) : (
+          <p className="text-muted-foreground mt-1 text-sm">
+            Vinculado desde {formatDate(link.createdAt)} · consentimiento {link.consentVersion}{" "}
+            aceptado el {formatDate(link.consentAcceptedAt ?? link.createdAt)}
+          </p>
+        )}
         <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
           <span className="flex items-center gap-1.5 font-medium">
             <CalendarDays className="text-primary size-4" aria-hidden />
@@ -109,8 +136,11 @@ export default async function PatientRecordPage({
         </p>
       </div>
 
-      <nav aria-label="Secciones de la ficha" className="flex gap-1 overflow-x-auto overflow-y-hidden border-b">
-        {TABS.map((t) => (
+      <nav
+        aria-label="Secciones de la ficha"
+        className="flex gap-1 overflow-x-auto overflow-y-hidden border-b"
+      >
+        {tabs.map((t) => (
           <Link
             key={t.id}
             href={t.id === "compartido" ? base : `${base}?tab=${t.id}`}

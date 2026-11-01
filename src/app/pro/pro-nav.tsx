@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 const nav = [
   { href: "/pro", label: "Pacientes", icon: LayoutDashboard },
   { href: "/pro/agenda", label: "Agenda", icon: CalendarDays },
-  { href: "/pro/invitaciones", label: "Invitar paciente", icon: UserPlus },
+  { href: "/pro/invitaciones", label: "Agregar paciente", icon: UserPlus },
   { href: "/pro/respuestas-rapidas", label: "Respuestas rápidas", icon: MessageSquareQuote },
   { href: "/pro/biblioteca", label: "Biblioteca", icon: BookOpen },
   { href: "/pro/evaluaciones", label: "Evaluaciones", icon: ClipboardList },

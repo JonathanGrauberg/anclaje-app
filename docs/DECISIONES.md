@@ -298,3 +298,23 @@ salvo que se indique lo contrario.
   y las usan el logo, los íconos PNG y el de la pestaña (`src/app/icon.tsx`).
 - **Carga:** `LighthouseLoader` muestra el faro con la luz girando, en los `loading.tsx` de
   `/app`, `/pro` y `/admin`. Si la persona pidió menos movimiento, la luz queda quieta.
+
+## Pacientes sin la app y calendario de la agenda
+
+- **Paciente "sin la app":** la profesional puede cargar un paciente que no tiene cuenta, desde
+  "Agregar paciente" o al dar un turno ("+ Paciente nuevo, sin la app"). Sirve para usar Anclaje
+  como agenda e historia clínica también con pacientes ocasionales.
+  - Es un `PatientProfile` con `userId` null y `managedById` = la profesional. Tiene un
+    `CareLink` ACTIVE sin consentimiento (`consentVersion` y `consentAcceptedAt` en null): no hay
+    nada compartido que ver, solo lo que carga ella.
+  - El contacto (teléfono o mail) se guarda cifrado en `contactEnc`.
+  - Su ficha muestra solo "Historia clínica". En listados y agenda lleva la marca "Sin la app".
+- **Invitarlo:** desde su ficha, "Invitar a la app" genera un código con `Invitation.patientId`.
+  Cuando la persona acepta con su cuenta (nueva o existente), `mergeManagedPatient` pasa a esa
+  cuenta los turnos, la ficha, la evolución, las tareas, etc., y borra el perfil provisorio.
+  Si ya había una ficha con esa profesional, se completan solo los campos vacíos.
+  - Al aceptar, ve sus turnos en la app. Las notas clínicas siguen siendo solo de la profesional.
+- **Calendario:** la agenda tiene un calendario del mes armado en el servidor (links `?dia=` y
+  `?mes=`, sin JavaScript). Los días con turnos llevan un punto. Al elegir un día se listan sus
+  turnos y el formulario propone ese día a las 9.
+- Pendiente: dar de baja o archivar un paciente sin la app (por ahora queda en la lista).

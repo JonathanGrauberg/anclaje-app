@@ -50,6 +50,9 @@ export async function buildPatientExport(patientId: string) {
     }),
     getEmotionTree(),
   ]);
+  // Solo se exportan pacientes con cuenta (los "sin la app" no pueden pedir su exportación).
+  if (!patient.user || !patient.userId) throw new Error("Paciente sin cuenta");
+  const user = patient.user;
   const index = buildEmotionIndex(tree);
   const emotion = (id: string) => pathLabel(index, id) || id;
   const reminder = await prisma.reminderSettings.findUnique({ where: { userId: patient.userId } });
@@ -59,10 +62,10 @@ export async function buildPatientExport(patientId: string) {
     formatVersion: 1,
     exportedAt: new Date().toISOString(),
     account: {
-      name: patient.user.name,
+      name: user.name,
       displayName: patient.displayName,
-      email: patient.user.email,
-      createdAt: iso(patient.user.createdAt),
+      email: user.email,
+      createdAt: iso(user.createdAt),
     },
     professionals: patient.links.map((l) => ({
       name: l.professional.displayName,

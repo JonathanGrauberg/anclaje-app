@@ -4,12 +4,19 @@ import { revalidatePath } from "next/cache";
 import { audit } from "@/lib/audit";
 import { prisma } from "@/lib/db";
 import { generateCode, INVITATION_DAYS } from "@/lib/invitations";
+import { findManagedPatient } from "@/lib/managed-patients";
 import { professionalForAction } from "@/lib/session";
 import { fail, ok, safe } from "./result";
 
-export async function createInvitation() {
+/** Genera un código. Con `patientId` (un paciente sin la app) sus datos pasan a la cuenta que lo use. */
+export async function createInvitation(patientId?: string) {
   return safe(async () => {
     const { userId, professional } = await professionalForAction();
+    if (patientId !== undefined) {
+      if (typeof patientId !== "string" || patientId.length > 40) return fail("Paciente inválido");
+      if (!(await findManagedPatient(prisma, professional.id, patientId)))
+        return fail("No encontramos ese paciente");
+    }
     const pending = await prisma.invitation.count({
       where: { professionalId: professional.id, usedAt: null, expiresAt: { gt: new Date() } },
     });
@@ -22,7 +29,7 @@ export async function createInvitation() {
       const exists = await prisma.invitation.findUnique({ where: { code }, select: { id: true } });
       if (exists) continue;
       const inv = await prisma.invitation.create({
-        data: { code, professionalId: professional.id, expiresAt },
+        data: { code, professionalId: professional.id, expiresAt, patientId: patientId ?? null },
         select: { id: true, code: true },
       });
       await audit({
@@ -30,8 +37,9 @@ export async function createInvitation() {
         action: "create",
         entityType: "Invitation",
         entityId: inv.id,
+        patientId,
       });
-      revalidatePath("/pro/invitaciones");
+      revalidatePath("/pro", "layout");
       return ok(inv);
     }
     return fail("No pudimos generar el código. Probá de nuevo.");

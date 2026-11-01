@@ -11,7 +11,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { EmptyState, PageHeader } from "@/components/ui/misc";
+import { Badge, EmptyState, PageHeader } from "@/components/ui/misc";
 import { formatAppointmentShort, formatDate, formatRelative } from "@/lib/dates";
 import { getNextAppointments } from "@/lib/queries/appointments";
 import { getPatientsWithAttention, type PatientAttention } from "@/lib/queries/pro";
@@ -43,7 +43,7 @@ export default async function ProfessionalHome() {
         description="Lo que compartieron tus pacientes y lo que está esperando una respuesta."
         action={
           <Button asChild variant="soft">
-            <Link href="/pro/invitaciones">Invitar paciente</Link>
+            <Link href="/pro/invitaciones">Agregar paciente</Link>
           </Button>
         }
       />
@@ -159,13 +159,18 @@ function PatientCard({
       >
         <CardContent className="flex flex-col gap-3">
           <div>
-            <p className="text-lg font-semibold">{p.name}</p>
+            <p className="flex flex-wrap items-center gap-2 text-lg font-semibold">
+              {p.name}
+              {p.withoutApp && <Badge>Sin la app</Badge>}
+            </p>
             <p className="text-muted-foreground text-sm">
-              {p.lastSharedAt
-                ? `Compartió algo ${formatRelative(p.lastSharedAt)}`
-                : p.linkedAt
-                  ? `Vinculado desde ${formatDate(p.linkedAt)}`
-                  : "Sin actividad compartida"}
+              {p.withoutApp
+                ? "Agenda e historia clínica"
+                : p.lastSharedAt
+                  ? `Compartió algo ${formatRelative(p.lastSharedAt)}`
+                  : p.linkedAt
+                    ? `Vinculado desde ${formatDate(p.linkedAt)}`
+                    : "Sin actividad compartida"}
             </p>
             {nextAppointment && (
               <p className="text-primary mt-1 flex items-center gap-1.5 text-sm font-medium">
@@ -174,15 +179,17 @@ function PatientCard({
               </p>
             )}
           </div>
-          <dl className="grid grid-cols-3 gap-2 text-sm">
-            <Stat label="Devoluciones" value={p.pendingFeedback} />
-            <Stat label="Tareas vencidas" value={p.overdueTasks} />
-            <Stat
-              label="Temas"
-              value={p.openTopics}
-              icon={<MessageCircleHeart className="size-3.5" aria-hidden />}
-            />
-          </dl>
+          {!p.withoutApp && (
+            <dl className="grid grid-cols-3 gap-2 text-sm">
+              <Stat label="Devoluciones" value={p.pendingFeedback} />
+              <Stat label="Tareas vencidas" value={p.overdueTasks} />
+              <Stat
+                label="Temas"
+                value={p.openTopics}
+                icon={<MessageCircleHeart className="size-3.5" aria-hidden />}
+              />
+            </dl>
+          )}
         </CardContent>
       </Card>
     </Link>

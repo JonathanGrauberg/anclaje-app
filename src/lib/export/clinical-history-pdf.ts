@@ -5,6 +5,7 @@ import { formatDate, formatDateTime } from "@/lib/dates";
 import { prisma } from "@/lib/db";
 import { CLINICAL_RECORD_FIELDS } from "@/lib/validation/pro";
 import { MUTED, Writer } from "./pdf";
+import { patientName } from "@/lib/patients";
 
 // PDF de la historia clínica de un paciente, para su autora: ficha + evolución + turnos.
 // Quien llama ya verificó el vínculo y registra la exportación en la auditoría.
@@ -13,7 +14,11 @@ export async function clinicalHistoryPdf(professionalId: string, patientId: stri
   const [patient, professional, record, notes, appointments] = await Promise.all([
     prisma.patientProfile.findUniqueOrThrow({
       where: { id: patientId },
-      select: { displayName: true, user: { select: { name: true, email: true } } },
+      select: {
+        displayName: true,
+        contactEnc: true,
+        user: { select: { name: true, email: true } },
+      },
     }),
     prisma.professionalProfile.findUniqueOrThrow({
       where: { id: professionalId },
@@ -43,9 +48,14 @@ export async function clinicalHistoryPdf(professionalId: string, patientId: stri
     await doc.embedFont(StandardFonts.HelveticaBold),
   );
 
-  const name = patient.displayName ?? patient.user.name;
+  const name = patientName(patient);
   w.text("Historia clínica", { size: 22, bold: true, after: 4 });
-  w.text(`${name} (${patient.user.name}) · ${patient.user.email}`, { color: MUTED });
+  w.text(
+    patient.user
+      ? `${name} (${patient.user.name}) · ${patient.user.email}`
+      : `${name} · paciente sin la app${patient.contactEnc ? ` · ${decrypt(patient.contactEnc)}` : ""}`,
+    { color: MUTED },
+  );
   w.text(
     `Profesional: ${professional.displayName}${professional.licenseNumber ? ` · ${professional.licenseNumber}` : ""} · generado el ${formatDateTime(new Date())}`,
     { color: MUTED },

@@ -84,7 +84,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/app/aju
                   <p className="font-medium">{l.professional.displayName}</p>
                   <p className="text-muted-foreground text-sm">
                     Vinculados desde el {formatDate(l.createdAt)} · consentimiento aceptado el{" "}
-                    {formatDate(l.consentAcceptedAt)}
+                    {formatDate(l.consentAcceptedAt ?? l.createdAt)}
                   </p>
                 </div>
                 <UnlinkButton linkId={l.id} name={l.professional.displayName} />

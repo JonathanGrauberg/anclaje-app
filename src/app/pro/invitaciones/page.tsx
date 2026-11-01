@@ -3,9 +3,11 @@ import { PageHeader } from "@/components/ui/misc";
 import { prisma } from "@/lib/db";
 import { formatCode } from "@/lib/invitations";
 import { requireProfessional } from "@/lib/session";
+import { AddManagedPatientForm } from "./add-managed-patient-form";
 import { InvitationPanel } from "./invitation-panel";
+import { patientName } from "@/lib/patients";
 
-export const metadata: Metadata = { title: "Invitar paciente" };
+export const metadata: Metadata = { title: "Agregar paciente" };
 
 export default async function InvitationsPage() {
   const { professional } = await requireProfessional();
@@ -21,20 +23,34 @@ export default async function InvitationsPage() {
   return (
     <>
       <PageHeader
-        title="Invitar paciente"
-        description="Generá un código de un solo uso. Vence a los 7 días."
+        title="Agregar paciente"
+        description="Invitalo a la app, o cargalo sin la app para usar la agenda y la historia clínica."
       />
-      <InvitationPanel
-        baseUrl={baseUrl}
-        invitations={invitations.map((inv) => ({
-          id: inv.id,
-          code: formatCode(inv.code),
-          rawCode: inv.code,
-          expiresAt: inv.expiresAt.toISOString(),
-          state: inv.usedAt ? "used" : inv.expiresAt <= now ? "expired" : "pending",
-          usedBy: inv.usedBy ? (inv.usedBy.displayName ?? inv.usedBy.user.name) : null,
-        }))}
-      />
+      <section aria-labelledby="invite-title" className="flex flex-col gap-3">
+        <h2 id="invite-title" className="text-lg font-semibold">
+          Invitar a la app
+        </h2>
+        <p className="text-muted-foreground text-sm">
+          Generá un código de un solo uso. Vence a los 7 días.
+        </p>
+        <InvitationPanel
+          baseUrl={baseUrl}
+          invitations={invitations.map((inv) => ({
+            id: inv.id,
+            code: formatCode(inv.code),
+            rawCode: inv.code,
+            expiresAt: inv.expiresAt.toISOString(),
+            state: inv.usedAt ? "used" : inv.expiresAt <= now ? "expired" : "pending",
+            usedBy: inv.usedBy ? patientName(inv.usedBy) : null,
+          }))}
+        />
+      </section>
+      <section aria-labelledby="managed-title" className="mt-10 flex flex-col gap-3">
+        <h2 id="managed-title" className="text-lg font-semibold">
+          Sin la app
+        </h2>
+        <AddManagedPatientForm />
+      </section>
     </>
   );
 }

@@ -5,6 +5,7 @@ import { audit } from "@/lib/audit";
 import { CONSENT_VERSION } from "@/lib/consent";
 import { prisma } from "@/lib/db";
 import { normalizeCode } from "@/lib/invitations";
+import { mergeManagedPatient } from "@/lib/managed-patients";
 import { allow } from "@/lib/rate-limit";
 import { patientForAction } from "@/lib/session";
 import {
@@ -36,6 +37,10 @@ export async function acceptInvitation(input: AcceptInvitationInput) {
       });
       if (claimed.count === 0) return null;
       const invitation = await tx.invitation.findUniqueOrThrow({ where: { code } });
+      // Si la profesional ya lo tenía cargado "sin la app", sus turnos e historia pasan a esta cuenta.
+      const merged = invitation.patientId
+        ? await mergeManagedPatient(tx, invitation.patientId, invitation.professionalId, patient.id)
+        : false;
       const link = await tx.careLink.upsert({
         where: {
           patientId_professionalId: {
@@ -56,7 +61,7 @@ export async function acceptInvitation(input: AcceptInvitationInput) {
           consentAcceptedAt: now,
         },
       });
-      return link;
+      return { ...link, merged };
     });
     if (!result) return fail("El código venció o ya se usó. Pedile uno nuevo a tu psicóloga.");
 
@@ -66,7 +71,7 @@ export async function acceptInvitation(input: AcceptInvitationInput) {
       entityType: "CareLink",
       entityId: result.id,
       patientId: patient.id,
-      meta: { consentVersion: CONSENT_VERSION },
+      meta: { consentVersion: CONSENT_VERSION, merged: result.merged },
     });
     revalidatePath("/app", "layout");
     return ok(undefined);

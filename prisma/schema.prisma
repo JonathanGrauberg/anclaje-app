@@ -232,15 +232,23 @@ model ProfessionalProfile {
   emotionOverride EmotionNodeOverride[]
   appointments    Appointment[]
   clinicalRecords ClinicalRecord[]
+  managedPatients PatientProfile[]       @relation("ManagedPatients")
 }
 
+/// Paciente. Si `userId` es null es un paciente "sin la app": lo cargó una profesional
+/// (`managedById`) para usarlo en la agenda y la historia clínica. Si después acepta una
+/// invitación, sus datos pasan a su cuenta real y este perfil se borra.
 model PatientProfile {
-  id          String   @id @default(cuid())
-  userId      String   @unique
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id          String               @id @default(cuid())
+  userId      String?              @unique
+  user        User?                @relation(fields: [userId], references: [id], onDelete: Cascade)
   displayName String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  managedById String?
+  managedBy   ProfessionalProfile? @relation("ManagedPatients", fields: [managedById], references: [id], onDelete: Cascade)
+  /// Teléfono, mail u otro dato de contacto (solo pacientes sin la app). Cifrado.
+  contactEnc  String?
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
 
   links               CareLink[]
   sharingDefaults     SharingDefaults?
@@ -256,7 +264,8 @@ model PatientProfile {
   assignments         AssessmentAssignment[]
   responses           AssessmentResponse[]
   externalResults     ExternalResult[]
-  invitationsUsed     Invitation[]
+  invitationsUsed     Invitation[]           @relation("InvitationUsedBy")
+  invitationsFor      Invitation[]           @relation("InvitationTarget")
   appointments        Appointment[]
   clinicalRecords     ClinicalRecord[]
 }
@@ -269,8 +278,9 @@ model CareLink {
   professionalId    String
   professional      ProfessionalProfile @relation(fields: [professionalId], references: [id], onDelete: Cascade)
   status            CareLinkStatus      @default(ACTIVE)
-  consentVersion    String
-  consentAcceptedAt DateTime
+  /// Null en pacientes sin la app: todavía no aceptaron el consentimiento.
+  consentVersion    String?
+  consentAcceptedAt DateTime?
   createdAt         DateTime            @default(now())
   revokedAt         DateTime?
 
@@ -286,7 +296,10 @@ model Invitation {
   expiresAt      DateTime
   usedAt         DateTime?
   usedById       String?
-  usedBy         PatientProfile?     @relation(fields: [usedById], references: [id], onDelete: SetNull)
+  usedBy         PatientProfile?     @relation("InvitationUsedBy", fields: [usedById], references: [id], onDelete: SetNull)
+  /// Paciente sin la app al que va dirigida: al aceptarla, sus datos pasan a la cuenta real.
+  patientId      String?
+  patient        PatientProfile?     @relation("InvitationTarget", fields: [patientId], references: [id], onDelete: SetNull)
   createdAt      DateTime            @default(now())
 }
 

@@ -15,6 +15,7 @@ import { prisma } from "@/lib/db";
 import { requireProfessional } from "@/lib/session";
 import { cn } from "@/lib/utils";
 import { ArchiveAssessmentButton, DeleteAssessmentButton, ImportJsonButton } from "./list-client";
+import { patientName } from "@/lib/patients";
 
 export const metadata: Metadata = { title: "Evaluaciones" };
 
@@ -394,7 +395,7 @@ async function ResponsesView({
           <option value="">Todos los pacientes</option>
           {patients.map((p) => (
             <option key={p.id} value={p.id}>
-              {p.displayName ?? p.user.name}
+              {patientName(p)}
             </option>
           ))}
         </select>
@@ -467,7 +468,7 @@ async function ResponsesView({
                         {formatDate(r.completedAt!)}
                       </Link>
                     </td>
-                    <td className="px-4 py-3">{r.patient.displayName ?? r.patient.user.name}</td>
+                    <td className="px-4 py-3">{patientName(r.patient)}</td>
                     <td className="px-4 py-3">
                       {r.version.assessment.title}{" "}
                       <span className="text-muted-foreground text-xs">v{r.version.version}</span>

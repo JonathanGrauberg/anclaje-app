@@ -23,6 +23,7 @@ import { getDistortions, getEmotionTree } from "@/lib/queries/common";
 import { getOwnFeedbacks, KIND_TO_TARGET, type TimelineKind } from "@/lib/queries/pro";
 import { requireProfessional } from "@/lib/session";
 import { FeedbackForm } from "./feedback-form";
+import { patientName } from "@/lib/patients";
 
 export const metadata: Metadata = { title: "Entrada compartida" };
 
@@ -68,7 +69,7 @@ export default async function SharedEntryPage({
       take: 100,
     }),
   ]);
-  const name = patient.displayName ?? patient.user.name;
+  const name = patientName(patient);
 
   return (
     <div className="flex max-w-3xl flex-col gap-5">

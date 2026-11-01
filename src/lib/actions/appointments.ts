@@ -6,6 +6,7 @@ import { findLinkedPatient } from "@/lib/access";
 import { audit } from "@/lib/audit";
 import { fromLocalInputValue } from "@/lib/dates";
 import { prisma } from "@/lib/db";
+import { createManagedPatient } from "@/lib/managed-patients";
 import { patientForAction, professionalForAction } from "@/lib/session";
 import {
   createAppointmentSchema,
@@ -30,25 +31,41 @@ export async function createAppointment(input: CreateAppointmentInput) {
     const { userId, professional } = await professionalForAction();
     const parsed = createAppointmentSchema.safeParse(input);
     if (!parsed.success) return fail(firstIssue(parsed.error));
-    const { patientId, startsAt, durationMin, modality, place, repeatWeeks } = parsed.data;
-    if (!(await findLinkedPatient(professional.id, patientId)))
-      return fail("No tenés vínculo activo con ese paciente");
+    const { newPatient, startsAt, durationMin, modality, place, repeatWeeks } = parsed.data;
     const first = fromLocalInputValue(startsAt);
     if (Number.isNaN(first.getTime())) return fail("Fecha inválida");
     if (first.getTime() < Date.now() - 60 * 60_000)
       return fail("Elegí una fecha que no haya pasado");
+    if (!newPatient && !(await findLinkedPatient(professional.id, parsed.data.patientId!)))
+      return fail("No tenés vínculo activo con ese paciente");
 
     const seriesId = repeatWeeks > 1 ? randomUUID() : null;
     const data = Array.from({ length: repeatWeeks }, (_, i) => ({
       professionalId: professional.id,
-      patientId,
       startsAt: new Date(first.getTime() + i * WEEK), // Argentina no tiene horario de verano
       durationMin,
       modality,
       place: place || null,
       seriesId,
     }));
-    await prisma.appointment.createMany({ data });
+    const { patientId, created } = await prisma.$transaction(async (tx) => {
+      // Paciente nuevo sin la app: se crea junto con el turno.
+      const created = newPatient
+        ? await createManagedPatient(tx, professional.id, newPatient)
+        : null;
+      const patientId = created?.id ?? parsed.data.patientId!;
+      await tx.appointment.createMany({ data: data.map((d) => ({ ...d, patientId })) });
+      return { patientId, created };
+    });
+    if (created) {
+      await audit({
+        actorId: userId,
+        action: "create",
+        entityType: "ManagedPatient",
+        entityId: patientId,
+        patientId,
+      });
+    }
     await audit({
       actorId: userId,
       action: "create",
@@ -57,7 +74,10 @@ export async function createAppointment(input: CreateAppointmentInput) {
       meta: { count: repeatWeeks },
     });
     refresh();
-    return ok({ count: repeatWeeks });
+    return ok({
+      count: repeatWeeks,
+      newPatient: created ? { id: created.id, name: created.displayName ?? "" } : null,
+    });
   });
 }
 

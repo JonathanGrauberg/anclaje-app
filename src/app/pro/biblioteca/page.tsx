@@ -5,6 +5,7 @@ import { linkedPatientsWhere } from "@/lib/access";
 import { prisma } from "@/lib/db";
 import { requireProfessional } from "@/lib/session";
 import { NewResourceButton, ResourceCard } from "./library-client";
+import { patientName } from "@/lib/patients";
 
 export const metadata: Metadata = { title: "Biblioteca" };
 
@@ -41,7 +42,7 @@ export default async function LibraryPage({ searchParams }: PageProps<"/pro/bibl
       select: { category: true },
     }),
   ]);
-  const patientList = patients.map((p) => ({ id: p.id, name: p.displayName ?? p.user.name }));
+  const patientList = patients.map((p) => ({ id: p.id, name: patientName(p) }));
 
   return (
     <>

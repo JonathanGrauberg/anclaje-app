@@ -32,7 +32,7 @@ export const requirePatient = cache(async () => {
     create: { userId: user.id, displayName: user.name, sharingDefaults: { create: {} } },
     include: { sharingDefaults: true },
   });
-  return { user, patient };
+  return { user, patient: { ...patient, userId: user.id } };
 });
 
 /** Usuario profesional (o admin) + su perfil profesional. */
@@ -65,7 +65,7 @@ export async function patientForAction() {
     include: { sharingDefaults: true },
   });
   if (!patient) throw new Error("No autorizado");
-  return patient;
+  return { ...patient, userId: session.user.id };
 }
 
 /** Para Server Actions del lado profesional: sesión + perfil, sin redirect. */

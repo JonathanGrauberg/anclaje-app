@@ -12,6 +12,7 @@ import { decrypt, decryptOptional } from "@/lib/crypto";
 import { prisma } from "@/lib/db";
 import { toPlainText } from "@/lib/markdown";
 import type { FeedbackTarget } from "@/lib/validation/pro";
+import { patientName } from "@/lib/patients";
 
 // Consultas del lado profesional. Todas pasan por los filtros de src/lib/access.ts.
 
@@ -37,6 +38,7 @@ export async function getPatientsWithAttention(pid: string, now = new Date()) {
     where: linkedPatientsWhere(pid),
     select: {
       id: true,
+      userId: true,
       displayName: true,
       user: { select: { name: true } },
       links: { where: { professionalId: pid }, select: { createdAt: true } },
@@ -149,7 +151,8 @@ export async function getPatientsWithAttention(pid: string, now = new Date()) {
   return patients
     .map((p, i) => ({
       id: p.id,
-      name: p.displayName ?? p.user.name,
+      name: patientName(p),
+      withoutApp: !p.userId,
       linkedAt: p.links[0]?.createdAt ?? null,
       lastSharedAt: lastShared[i],
       pendingFeedback: pending.get(p.id) ?? 0,

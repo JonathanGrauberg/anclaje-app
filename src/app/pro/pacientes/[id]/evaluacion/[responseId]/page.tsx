@@ -14,6 +14,7 @@ import { prisma } from "@/lib/db";
 import { findRange, scoredValue } from "@/lib/scoring";
 import { toScoringInput } from "@/lib/assessments/doc";
 import { requireProfessional } from "@/lib/session";
+import { patientName } from "@/lib/patients";
 
 export const metadata: Metadata = { title: "Respuesta de evaluación" };
 
@@ -52,7 +53,7 @@ export default async function ResponseDetailPage({
   const critical = new Set(response.criticalQuestionIds);
   const subscales = (response.subscaleScores ?? []) as SubscaleScore[];
   const totalRange = findRange(doc.ranges, null, response.totalScore);
-  const name = patient.displayName ?? patient.user.name;
+  const name = patientName(patient);
 
   return (
     <div className="flex max-w-3xl flex-col gap-5">

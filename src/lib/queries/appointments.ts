@@ -41,7 +41,9 @@ export function getAgenda(professionalId: string, from: Date, to: Date) {
       status: true,
       cancelledBy: true,
       seriesId: true,
-      patient: { select: { id: true, displayName: true, user: { select: { name: true } } } },
+      patient: {
+        select: { id: true, userId: true, displayName: true, user: { select: { name: true } } },
+      },
     },
   });
 }

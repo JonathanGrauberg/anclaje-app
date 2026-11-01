@@ -6,6 +6,7 @@ import { useId, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { FieldError, Input, Label } from "@/components/ui/input";
+import { Badge } from "@/components/ui/misc";
 import {
   cancelAppointment,
   createAppointment,
@@ -78,17 +79,27 @@ function AppointmentFields({ value, onChange }: { value: Fields; onChange: (v: F
   );
 }
 
+const NEW = "__nuevo__";
+
 export function NewAppointmentForm({
   patients,
   defaultPatientId,
+  defaultDay,
 }: {
-  patients: { id: string; name: string }[];
+  patients: { id: string; name: string; withoutApp: boolean }[];
   defaultPatientId?: string;
+  /** Día elegido en el calendario ("YYYY-MM-DD"): se propone a las 9. */
+  defaultDay?: string;
 }) {
   const uid = useId();
-  const [patientId, setPatientId] = useState(defaultPatientId ?? "");
+  const [patientId, setPatientId] = useState(
+    defaultPatientId ?? (patients.length === 0 ? NEW : ""),
+  );
+  const [newPatient, setNewPatient] = useState({ name: "", contact: "" });
+  const [created, setCreated] = useState<{ id: string; name: string } | null>(null);
+  const selectedPatient = patients.find((p) => p.id === patientId);
   const [fields, setFields] = useState<Fields>({
-    startsAt: "",
+    startsAt: defaultDay ? `${defaultDay}T09:00` : "",
     durationMin: 50,
     modality: "IN_PERSON",
     place: "",
@@ -106,14 +117,25 @@ export function NewAppointmentForm({
           onSubmit={(e) => {
             e.preventDefault();
             setDone(null);
+            setCreated(null);
             start(async () => {
-              const res = await createAppointment({ patientId, ...fields, repeatWeeks });
+              const res = await createAppointment(
+                patientId === NEW
+                  ? { newPatient, ...fields, repeatWeeks }
+                  : { patientId, ...fields, repeatWeeks },
+              );
               if (!res.ok) return setError(res.error);
               setError(null);
               setDone(
                 res.data.count === 1 ? "Turno agendado." : `${res.data.count} turnos agendados.`,
               );
               setFields((f) => ({ ...f, startsAt: "" }));
+              if (res.data.newPatient) {
+                // El paciente nuevo ya aparece en la lista: queda elegido.
+                setCreated(res.data.newPatient);
+                setPatientId(res.data.newPatient.id);
+                setNewPatient({ name: "", contact: "" });
+              }
             });
           }}
         >
@@ -130,10 +152,51 @@ export function NewAppointmentForm({
               {patients.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.name}
+                  {p.withoutApp ? " (sin la app)" : ""}
                 </option>
               ))}
+              <option value={NEW}>+ Paciente nuevo, sin la app</option>
             </select>
+            {selectedPatient?.withoutApp && (
+              <p className="text-muted-foreground text-xs">
+                No tiene la app.{" "}
+                <Link
+                  href={`/pro/pacientes/${selectedPatient.id}`}
+                  className="text-primary underline underline-offset-2"
+                >
+                  Invitalo desde su ficha
+                </Link>
+              </p>
+            )}
           </div>
+          {patientId === NEW && (
+            <div className="bg-muted/60 grid gap-3 rounded-xl p-3 sm:col-span-3 sm:grid-cols-2">
+              <p className="text-muted-foreground text-sm sm:col-span-2">
+                Para alguien que no usa la app (o todavía no): queda en tu agenda y podés llevar su
+                historia clínica. Después lo podés invitar desde su ficha.
+              </p>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor={`${uid}-new-name`}>Nombre del paciente</Label>
+                <Input
+                  id={`${uid}-new-name`}
+                  value={newPatient.name}
+                  maxLength={120}
+                  required
+                  onChange={(e) => setNewPatient((v) => ({ ...v, name: e.target.value }))}
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor={`${uid}-new-contact`}>Contacto (opcional)</Label>
+                <Input
+                  id={`${uid}-new-contact`}
+                  value={newPatient.contact}
+                  maxLength={300}
+                  placeholder="Teléfono o mail"
+                  onChange={(e) => setNewPatient((v) => ({ ...v, contact: e.target.value }))}
+                />
+              </div>
+            </div>
+          )}
           <AppointmentFields value={fields} onChange={setFields} />
           <div className="flex flex-col gap-1.5">
             <Label htmlFor={`${uid}-repeat`}>Repetir</Label>
@@ -159,6 +222,19 @@ export function NewAppointmentForm({
             {done && (
               <span role="status" className="text-primary text-sm">
                 {done}
+                {created && (
+                  <>
+                    {" "}
+                    {created.name} todavía no tiene la app:{" "}
+                    <Link
+                      href={`/pro/pacientes/${created.id}`}
+                      className="underline underline-offset-2"
+                    >
+                      ver su ficha e invitarlo
+                    </Link>
+                    .
+                  </>
+                )}
               </span>
             )}
           </div>
@@ -179,6 +255,7 @@ export type AgendaRowItem = {
   inSeries: boolean;
   patientId: string;
   patientName: string;
+  withoutApp: boolean;
 };
 
 export function AgendaRow({ item }: { item: AgendaRowItem }) {
@@ -200,7 +277,7 @@ export function AgendaRow({ item }: { item: AgendaRowItem }) {
       scope === "following"
         ? `este turno de ${item.patientName} y todos los siguientes de la serie`
         : `el turno de ${item.patientName}`;
-    if (!confirm(`¿Cancelar ${what}? Lo va a ver en la app.`)) return;
+    if (!confirm(`¿Cancelar ${what}?${item.withoutApp ? "" : " Lo va a ver en la app."}`)) return;
     start(async () => {
       const res = await cancelAppointment(item.id, scope);
       if (!res.ok) setError(res.error);
@@ -215,12 +292,18 @@ export function AgendaRow({ item }: { item: AgendaRowItem }) {
       )}
     >
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-        <span className={cn("font-semibold tabular-nums", cancelled && "text-muted-foreground line-through")}>
+        <span
+          className={cn(
+            "font-semibold tabular-nums",
+            cancelled && "text-muted-foreground line-through",
+          )}
+        >
           {formatTime(startsAt)}–{formatTime(ends)}
         </span>
         <Link href={`/pro/pacientes/${item.patientId}`} className="font-medium hover:underline">
           {item.patientName}
         </Link>
+        {item.withoutApp && <Badge>Sin la app</Badge>}
         <span className="text-muted-foreground flex items-center gap-1 text-sm">
           {item.modality === "ONLINE" ? (
             <Video className="size-4" aria-hidden />
