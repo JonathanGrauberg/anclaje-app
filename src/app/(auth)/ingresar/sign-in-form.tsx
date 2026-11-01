@@ -70,7 +70,15 @@ export function SignInForm({ next }: { next: string | null }) {
             <FieldError>{errors.email?.message}</FieldError>
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="password">Contraseña</Label>
+            <div className="flex items-baseline justify-between gap-2">
+              <Label htmlFor="password">Contraseña</Label>
+              <Link
+                href="/recuperar"
+                className="text-primary text-sm underline-offset-2 hover:underline"
+              >
+                ¿Te la olvidaste?
+              </Link>
+            </div>
             <Input
               id="password"
               type="password"

@@ -25,7 +25,7 @@ for (const scheme of ["light", "dark"] as const) {
     test.use({ colorScheme: scheme });
 
     test("páginas públicas", async ({ page }) => {
-      for (const url of ["/ingresar", "/registrarse", "/offline"]) await check(page, url);
+      for (const url of ["/ingresar", "/registrarse", "/recuperar", "/offline"]) await check(page, url);
     });
 
     test.describe("paciente", () => {
@@ -43,6 +43,7 @@ for (const scheme of ["light", "dark"] as const) {
         "/app/ajustes",
         "/app/devoluciones",
         "/app/proxima-sesion",
+        "/app/turnos",
       ]) {
         test(url, async ({ page }) => check(page, url));
       }
@@ -66,6 +67,7 @@ for (const scheme of ["light", "dark"] as const) {
       test.use({ storageState: STATE.pro });
       for (const url of [
         "/pro",
+        "/pro/agenda",
         "/pro/invitaciones",
         "/pro/respuestas-rapidas",
         "/pro/biblioteca",

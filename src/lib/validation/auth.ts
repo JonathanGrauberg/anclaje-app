@@ -19,3 +19,17 @@ export const signUpSchema = z
 
 export type SignInInput = z.infer<typeof signInSchema>;
 export type SignUpInput = z.infer<typeof signUpSchema>;
+
+export const forgotPasswordSchema = z.object({ email: z.email("Revisá el email") });
+export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
+
+export const resetPasswordSchema = z
+  .object({
+    password: z.string().min(8, "Usá al menos 8 caracteres").max(128, "Es demasiado larga"),
+    confirm: z.string(),
+  })
+  .refine((d) => d.password === d.confirm, {
+    path: ["confirm"],
+    message: "Las contraseñas no coinciden",
+  });
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;

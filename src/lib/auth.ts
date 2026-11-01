@@ -20,6 +20,16 @@ export const auth = betterAuth({
     minPasswordLength: 8,
     maxPasswordLength: 128,
     autoSignIn: true,
+    // "¿Te olvidaste la contraseña?": link de un solo uso por email, vence en 1 hora.
+    resetPasswordTokenExpiresIn: 60 * 60,
+    revokeSessionsOnPasswordReset: true,
+    sendResetPassword: async ({ user, url }) => {
+      await sendEmail({
+        to: user.email,
+        subject: "Cambiá tu contraseña de Sentir",
+        text: `Hola. Pediste cambiar tu contraseña de Sentir. Tocá este link para elegir una nueva (vence en 1 hora):\n\n${url}\n\nSi no lo pediste, ignorá este email: tu contraseña sigue igual.`,
+      });
+    },
   },
 
   user: {
@@ -65,6 +75,8 @@ export const auth = betterAuth({
       "/sign-in/email": { window: 60, max: 5 },
       "/sign-up/email": { window: 60, max: 3 },
       "/sign-in/magic-link": { window: 60, max: 3 },
+      "/request-password-reset": { window: 60, max: 3 },
+      "/reset-password": { window: 60, max: 5 },
     },
   },
 

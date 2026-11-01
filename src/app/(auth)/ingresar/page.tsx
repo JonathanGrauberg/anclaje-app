@@ -21,6 +21,14 @@ export default async function SignInPage({ searchParams }: PageProps<"/ingresar"
           Listo, tu cuenta y todos tus datos se borraron. Gracias por haber usado Sentir.
         </p>
       )}
+      {sp.contrasena === "cambiada" && (
+        <p
+          role="status"
+          className="bg-primary-soft text-primary mx-auto mb-4 max-w-sm rounded-2xl p-4 text-sm"
+        >
+          Listo, cambiaste tu contraseña. Ya podés entrar con la nueva.
+        </p>
+      )}
       <SignInForm next={next} />
     </>
   );
