@@ -1,6 +1,8 @@
-import { CalendarDays } from "lucide-react";
+import { CalendarDays, UserPlus } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState, PageHeader } from "@/components/ui/misc";
 import { linkedPatientsWhere } from "@/lib/access";
 import { dayKey, formatLongDay } from "@/lib/dates";
@@ -58,9 +60,21 @@ export default async function AgendaPage({ searchParams }: PageProps<"/pro/agend
           Nuevo turno
         </h2>
         {patients.length === 0 ? (
-          <p className="text-muted-foreground text-sm">
-            Cuando tengas pacientes vinculados vas a poder darles turnos.
-          </p>
+          <Card>
+            <CardContent className="flex flex-col items-start gap-3">
+              <p className="font-medium">Todavía no tenés pacientes vinculados</p>
+              <p className="text-muted-foreground text-sm">
+                Los turnos se dan a pacientes que ya usan la app con vos. Primero invitalos: les
+                pasás un link o un código, se crean la cuenta y quedan vinculados. Después vuelven a
+                esta pantalla y los elegís en la lista para darles turno.
+              </p>
+              <Button asChild>
+                <Link href="/pro/invitaciones">
+                  <UserPlus aria-hidden /> Invitar paciente
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
         ) : (
           <NewAppointmentForm
             patients={patients.map((p) => ({ id: p.id, name: p.displayName ?? p.user.name }))}
@@ -75,7 +89,9 @@ export default async function AgendaPage({ searchParams }: PageProps<"/pro/agend
         </h2>
         {days.size === 0 ? (
           <EmptyState icon={<CalendarDays />} title="No tenés turnos cargados">
-            Cargá el primero arriba. Si es semanal, elegí cuántas semanas repetirlo.
+            {patients.length === 0
+              ? "Cuando tengas pacientes vinculados, los turnos que les des van a aparecer acá."
+              : "Cargá el primero arriba. Si es semanal, elegí cuántas semanas repetirlo."}
           </EmptyState>
         ) : (
           [...days.entries()].map(([k, list]) => (
