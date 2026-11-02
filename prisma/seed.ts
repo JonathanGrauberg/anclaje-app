@@ -12,7 +12,7 @@ import distortions from "./data/distortions.json";
 import emotions from "./data/emotions.json";
 import { TEMPLATES } from "./data/templates";
 
-const SEED_URL = process.env.DIRECT_DATABASE_URL || process.env.DATABASE_URL!;
+const SEED_URL = process.env.DIRECT_DATABASE_URL || process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL!;
 const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: SEED_URL }) });
 
 const DEMO_PASSWORD = "sentir-demo-2026";
