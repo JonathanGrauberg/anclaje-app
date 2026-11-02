@@ -352,3 +352,10 @@ salvo que se indique lo contrario.
   y la marca como verificada desde Profesionales después de chequear con el colegio. Las cuentas
   que crea el admin nacen verificadas. No hay verificación automática: los colegios no tienen una
   API pública unificada.
+
+## Deploy en Vercel
+
+- Vercel corre `vercel-build` en vez de `build`: aplica las migraciones pendientes
+  (`prisma migrate deploy`, por la conexión directa), corre el seed (idempotente: rueda,
+  distorsiones, plantillas y líneas que falten; sin usuarios demo porque la base no es localhost)
+  y recién después compila. Así la base de producción nunca queda atrasada respecto del código.
