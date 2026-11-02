@@ -9,6 +9,10 @@ import { storage } from "@/lib/storage";
 
 const isProd = process.env.NODE_ENV === "production";
 
+/** Ingreso con Google: solo si están las credenciales. Es solo para profesionales. */
+export const googleEnabled = !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
+const GOOGLE_ONLY_PROS = "El ingreso con Google es solo para profesionales.";
+
 export const auth = betterAuth({
   appName: "Anclaje",
   baseURL: process.env.BETTER_AUTH_URL,
@@ -32,10 +36,27 @@ export const auth = betterAuth({
     },
   },
 
+  socialProviders: googleEnabled
+    ? {
+        google: {
+          clientId: process.env.GOOGLE_CLIENT_ID!,
+          clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+          prompt: "select_account",
+        },
+      }
+    : undefined,
+
+  account: {
+    // Una profesional con cuenta de email puede entrar después con Google (mismo email).
+    accountLinking: { enabled: true, trustedProviders: ["google"] },
+  },
+
   user: {
     additionalFields: {
-      // El rol nunca lo elige el usuario: el registro público siempre crea pacientes.
+      // El rol nunca lo elige el usuario: el registro público siempre crea pacientes. Quien se
+      // registra con Google queda como profesional (ver databaseHooks) y completa su matrícula.
       role: { type: "string", required: false, defaultValue: "PATIENT", input: false },
+      lastActiveAt: { type: "date", required: false, input: false },
     },
     // Borrar cuenta: solo pacientes, siempre con contraseña (lo valida la acción deleteMyAccount).
     // Todo lo del paciente se borra en cascada desde la DB; acá se borran los archivos asociados.
@@ -88,12 +109,43 @@ export const auth = betterAuth({
   databaseHooks: {
     user: {
       create: {
+        before: async (user, ctx) => {
+          if (!ctx?.path?.startsWith("/callback/")) return;
+          return { data: { ...user, role: "PROFESSIONAL" } };
+        },
         after: async (user) => {
           const role = (user as { role?: string }).role ?? "PATIENT";
           if (role !== "PATIENT") return;
           await prisma.patientProfile.create({
             data: { userId: user.id, displayName: user.name, sharingDefaults: { create: {} } },
           });
+        },
+      },
+    },
+    account: {
+      create: {
+        // Un paciente no puede sumar Google a su cuenta: el ingreso con Google es de profesionales.
+        before: async (account) => {
+          if (account.providerId !== "google") return;
+          const user = await prisma.user.findUnique({
+            where: { id: account.userId },
+            select: { role: true },
+          });
+          if (user?.role === "PATIENT")
+            throw new APIError("FORBIDDEN", { message: GOOGLE_ONLY_PROS });
+        },
+      },
+    },
+    session: {
+      create: {
+        after: async (session) => {
+          const now = new Date();
+          await prisma.user
+            .update({
+              where: { id: session.userId },
+              data: { lastLoginAt: now, lastActiveAt: now },
+            })
+            .catch(() => {});
         },
       },
     },

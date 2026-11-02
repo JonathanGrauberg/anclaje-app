@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { Card, CardContent } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/misc";
-import { formatDate } from "@/lib/dates";
+import { Badge } from "@/components/ui/misc";
+import { formatDate, formatRelative } from "@/lib/dates";
+import { jurisdictionName } from "@/lib/licenses";
 import { prisma } from "@/lib/db";
 import { requireAdmin } from "@/lib/session";
-import { CreateProfessionalForm, ResetPasswordButton } from "./professionals-client";
+import { CreateProfessionalForm, ResetPasswordButton, VerifyButton } from "./professionals-client";
 
 export const metadata: Metadata = { title: "Profesionales" };
 
@@ -16,9 +18,24 @@ export default async function AdminProfessionalsPage() {
       id: true,
       displayName: true,
       licenseNumber: true,
+      licenseJurisdiction: true,
+      verifiedAt: true,
       createdAt: true,
-      user: { select: { id: true, email: true, role: true } },
-      _count: { select: { links: { where: { status: "ACTIVE" } } } },
+      user: {
+        select: {
+          id: true,
+          email: true,
+          role: true,
+          lastActiveAt: true,
+          accounts: { where: { providerId: "google" }, select: { id: true } },
+        },
+      },
+      _count: {
+        select: {
+          links: { where: { status: "ACTIVE", patient: { userId: { not: null } } } },
+          managedPatients: true,
+        },
+      },
     },
   });
 
@@ -55,7 +72,13 @@ export default async function AdminProfessionalsPage() {
                     Matrícula
                   </th>
                   <th scope="col" className="px-4 py-3 text-right font-medium">
-                    Pacientes activos
+                    Con la app
+                  </th>
+                  <th scope="col" className="px-4 py-3 text-right font-medium">
+                    Sin la app
+                  </th>
+                  <th scope="col" className="px-4 py-3 font-medium">
+                    Usó la app
                   </th>
                   <th scope="col" className="px-4 py-3 font-medium">
                     Alta
@@ -74,14 +97,40 @@ export default async function AdminProfessionalsPage() {
                         <span className="text-muted-foreground ml-2 text-xs">(admin)</span>
                       )}
                     </td>
-                    <td className="px-4 py-3">{p.user.email}</td>
-                    <td className="px-4 py-3">{p.licenseNumber ?? "—"}</td>
+                    <td className="px-4 py-3">
+                      {p.user.email}
+                      {p.user.accounts.length > 0 && (
+                        <span className="text-muted-foreground block text-xs">
+                          Entra con Google
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="tabular-nums">{p.licenseNumber ?? "—"}</span>
+                      {p.licenseJurisdiction && (
+                        <span className="text-muted-foreground block text-xs">
+                          {jurisdictionName(p.licenseJurisdiction)}
+                        </span>
+                      )}
+                      {!p.verifiedAt && <Badge className="mt-1">Sin verificar</Badge>}
+                    </td>
                     <td className="px-4 py-3 text-right tabular-nums">{p._count.links}</td>
+                    <td className="px-4 py-3 text-right tabular-nums">
+                      {p._count.managedPatients}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      {p.user.lastActiveAt ? formatRelative(p.user.lastActiveAt) : "Nunca"}
+                    </td>
                     <td className="px-4 py-3 whitespace-nowrap">{formatDate(p.createdAt)}</td>
                     <td className="px-4 py-3 text-right">
-                      {p.user.role === "PROFESSIONAL" && (
-                        <ResetPasswordButton userId={p.user.id} name={p.displayName} />
-                      )}
+                      <div className="flex flex-wrap justify-end gap-2">
+                        {!p.verifiedAt && (
+                          <VerifyButton professionalId={p.id} name={p.displayName} />
+                        )}
+                        {p.user.role === "PROFESSIONAL" && p.user.accounts.length === 0 && (
+                          <ResetPasswordButton userId={p.user.id} name={p.displayName} />
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}

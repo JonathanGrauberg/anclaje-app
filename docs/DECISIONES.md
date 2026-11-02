@@ -325,3 +325,30 @@ salvo que se indique lo contrario.
   tiene historia clínica (ficha ni notas) se borra del todo. Si tiene, se archiva (`CareLink`
   REVOKED): la historia se conserva (Ley 26.529) y aparece en "Agregar paciente → Dados de baja",
   desde donde se puede reactivar.
+
+## Marca, panel de uso e ingreso con Google (nov 2026)
+
+- **Marca:** el dorado de la luz y del punto es `#fcc107` (el mismo de webi y .budgets). El punto
+  delante de "anclaje" mide la altura x de Inter (0,55 em) y apoya en la base. Manual de marca
+  publicado aparte (artifact).
+- **Panel de admin (Resumen):** solo números agregados, separados en profesionales y pacientes:
+  cuentas, activos en 7 y 30 días, pacientes sin la app, uso de los últimos 30 días y altas por mes.
+  De los pacientes **no** se lista nadie (ni nombre ni email): saber que alguien hace terapia es un
+  dato sensible y el admin no lo necesita para controlar el uso. Las profesionales sí se listan
+  una por una (email, matrícula, pacientes con y sin la app, último uso).
+- **"Activo"** = abrió la app en el período. Se guarda solo `user.lastLoginAt` (al iniciar sesión)
+  y `user.lastActiveAt` (como mucho una escritura por hora, en `requireUser`). No se registra qué
+  pantallas mira ni cuánto tiempo.
+- **Google, solo profesionales:** quien se registra con Google queda con rol `PROFESSIONAL` (hook
+  `user.create.before` cuando la ruta es `/callback/…`) y antes de entrar al panel completa su
+  matrícula en `/alta-profesional` (jurisdicción + número, con declaración jurada). Un paciente no
+  puede sumar Google a su cuenta (hook `account.create.before`). Una profesional que ya tenía
+  email y contraseña puede entrar con Google si es el mismo email.
+- **Matrícula única:** `@@unique([licenseJurisdiction, licenseNumber])`, con el número normalizado
+  a dígitos (así "M.P. 1.234" y "1234" son la misma). Si ya existe, no deja darse de alta y pide
+  escribir al equipo.
+- **Verificación:** el alta con Google queda "Sin verificar" (`verifiedAt` null) pero puede usar la
+  app desde el primer momento (confianza + declaración jurada). El admin ve el aviso en el Resumen
+  y la marca como verificada desde Profesionales después de chequear con el colegio. Las cuentas
+  que crea el admin nacen verificadas. No hay verificación automática: los colegios no tienen una
+  API pública unificada.

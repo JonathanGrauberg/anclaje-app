@@ -1,11 +1,11 @@
 // Dibujo del logo de .anclaje: un faro minimalista sobre el agua, en una grilla de 64×64.
-// La luz del faro es el mismo punto naranja que va delante de "anclaje".
+// La luz del faro es el mismo punto dorado que va delante de "anclaje".
 // Lo usan el componente <Logo>, los íconos PNG y la animación de carga.
 
 export const BRAND = {
   ink: "#426f64",
   inkDark: "#8fc4b5",
-  light: "#f2b544",
+  light: "#fcc107", // dorado, el mismo de webi y .budgets
   bg: "#faf7f2",
 } as const;
 

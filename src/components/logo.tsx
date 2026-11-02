@@ -32,7 +32,8 @@ export function Logo({ className, withText = false }: { className?: string; with
       <LighthouseMark className={cn("size-8", className)} />
       {withText ? (
         <span className="inline-flex items-baseline text-lg font-semibold tracking-tight">
-          <svg viewBox="0 0 10 10" className="mr-px size-[0.4em]" aria-hidden>
+          {/* El punto mide lo mismo que una minúscula (la altura x de Inter) y apoya en la base. */}
+          <svg viewBox="0 0 10 10" className="mr-[0.06em] size-[0.55em]" aria-hidden>
             <circle cx="5" cy="5" r="5" fill={BRAND.light} />
           </svg>
           anclaje

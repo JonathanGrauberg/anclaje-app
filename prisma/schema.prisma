@@ -137,14 +137,17 @@ enum DigestFrequency {
 // ─────────────────────────────────────────────────────────────
 
 model User {
-  id            String   @id
+  id            String    @id
   name          String
-  email         String   @unique
-  emailVerified Boolean  @default(false)
+  email         String    @unique
+  emailVerified Boolean   @default(false)
   image         String?
-  role          Role     @default(PATIENT)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  role          Role      @default(PATIENT)
+  /// Para el panel de admin: último ingreso y última vez que usó la app (con 1 h de margen).
+  lastLoginAt   DateTime?
+  lastActiveAt  DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   sessions            Session[]
   accounts            Account[]
@@ -209,15 +212,19 @@ model Verification {
 // ─────────────────────────────────────────────────────────────
 
 model ProfessionalProfile {
-  id              String          @id @default(cuid())
-  userId          String          @unique
-  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  displayName     String
-  licenseNumber   String?
-  digestFrequency DigestFrequency @default(NEVER)
-  lastDigestAt    DateTime?
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
+  id                  String          @id @default(cuid())
+  userId              String          @unique
+  user                User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  displayName         String
+  licenseNumber       String?
+  /// Dónde está matriculada: código de provincia ("ER", "CABA"…) o "MN" (nacional).
+  licenseJurisdiction String?
+  /// Alta propia (con Google): queda sin verificar hasta que el admin revisa la matrícula.
+  verifiedAt          DateTime?
+  digestFrequency     DigestFrequency @default(NEVER)
+  lastDigestAt        DateTime?
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
 
   links           CareLink[]
   invitations     Invitation[]
@@ -233,6 +240,8 @@ model ProfessionalProfile {
   appointments    Appointment[]
   clinicalRecords ClinicalRecord[]
   managedPatients PatientProfile[]       @relation("ManagedPatients")
+
+  @@unique([licenseJurisdiction, licenseNumber])
 }
 
 /// Paciente. Si `userId` es null es un paciente "sin la app": lo cargó una profesional

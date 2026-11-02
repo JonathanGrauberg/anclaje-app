@@ -95,7 +95,12 @@ async function seedDemoUsers() {
   const professional = await prisma.professionalProfile.upsert({
     where: { userId: proUser.id },
     update: {},
-    create: { userId: proUser.id, displayName: "Lic. Laura Méndez", licenseNumber: "MN 00000" },
+    create: {
+      userId: proUser.id,
+      displayName: "Lic. Laura Méndez",
+      licenseNumber: "MN 00000",
+      verifiedAt: new Date(),
+    },
   });
 
   await upsertUser("admin@demo.sentir.test", "Admin Anclaje", "ADMIN").then((admin) =>

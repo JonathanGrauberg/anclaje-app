@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { googleEnabled } from "@/lib/auth";
 import { getSession, homeForRole, type Role } from "@/lib/session";
 import { safeNext } from "@/lib/utils";
 import { SignInForm } from "./sign-in-form";
@@ -29,7 +30,16 @@ export default async function SignInPage({ searchParams }: PageProps<"/ingresar"
           Listo, cambiaste tu contraseña. Ya podés entrar con la nueva.
         </p>
       )}
-      <SignInForm next={next} />
+      {sp.error === "google" && (
+        <p
+          role="alert"
+          className="bg-danger-soft text-danger mx-auto mb-4 max-w-sm rounded-2xl p-4 text-sm"
+        >
+          No pudiste entrar con Google. Ese ingreso es solo para profesionales: si sos paciente,
+          entrá con tu email y contraseña.
+        </p>
+      )}
+      <SignInForm next={next} googleEnabled={googleEnabled} />
     </>
   );
 }

@@ -66,6 +66,28 @@ export async function resetProfessionalPassword(userId: string) {
   });
 }
 
+/** Matrícula revisada (alta propia con Google). */
+export async function verifyProfessional(professionalId: string) {
+  return safe(async () => {
+    const admin = await adminForAction();
+    const updated = await prisma.professionalProfile.updateMany({
+      where: { id: String(professionalId), verifiedAt: null },
+      data: { verifiedAt: new Date() },
+    });
+    if (updated.count === 0) return fail("No encontramos esa profesional sin verificar");
+    await audit({
+      actorId: admin.id,
+      action: "update",
+      entityType: "Professional",
+      entityId: String(professionalId),
+      meta: { field: "verifiedAt" },
+    });
+    revalidatePath("/admin/profesionales");
+    revalidatePath("/admin");
+    return ok(undefined);
+  });
+}
+
 export async function saveCrisisLine(input: CrisisLineInput) {
   return safe(async () => {
     const admin = await adminForAction();

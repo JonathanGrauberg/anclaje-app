@@ -1,12 +1,16 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { KeyRound } from "lucide-react";
+import { BadgeCheck, KeyRound } from "lucide-react";
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { FieldError, Input, Label } from "@/components/ui/input";
-import { createProfessional, resetProfessionalPassword } from "@/lib/actions/admin";
+import {
+  createProfessional,
+  resetProfessionalPassword,
+  verifyProfessional,
+} from "@/lib/actions/admin";
 import { createProfessionalSchema, type CreateProfessionalInput } from "@/lib/validation/admin";
 import { TempPassword } from "../temp-password";
 
@@ -97,6 +101,26 @@ export function ResetPasswordButton({ userId, name }: { userId: string; name: st
       }}
     >
       <KeyRound aria-hidden /> {pending ? "Generando…" : "Nueva contraseña"}
+    </Button>
+  );
+}
+
+export function VerifyButton({ professionalId, name }: { professionalId: string; name: string }) {
+  const [pending, start] = useTransition();
+  return (
+    <Button
+      variant="soft"
+      size="sm"
+      disabled={pending}
+      onClick={() => {
+        if (!confirm(`¿Ya revisaste la matrícula de ${name} con su colegio?`)) return;
+        start(async () => {
+          const res = await verifyProfessional(professionalId);
+          if (!res.ok) alert(res.error);
+        });
+      }}
+    >
+      <BadgeCheck aria-hidden /> {pending ? "Guardando…" : "Marcar verificada"}
     </Button>
   );
 }

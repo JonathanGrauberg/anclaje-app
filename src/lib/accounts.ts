@@ -50,7 +50,11 @@ export async function createStaffUser(
       },
       ...(needsProfile && {
         professionalProfile: {
-          create: { displayName: input.name, licenseNumber: input.licenseNumber || null },
+          create: {
+            displayName: input.name,
+            licenseNumber: input.licenseNumber || null,
+            verifiedAt: new Date(), // la dio de alta el admin
+          },
         },
       }),
     },

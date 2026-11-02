@@ -12,9 +12,18 @@ export const getSession = cache(async () => {
   return auth.api.getSession({ headers: await headers() });
 });
 
+const ACTIVE_EVERY = 60 * 60 * 1000;
+
 export async function requireUser() {
   const session = await getSession();
   if (!session) redirect("/ingresar");
+  // "Última vez que usó la app", para el panel de admin. Se escribe como mucho una vez por hora.
+  const last = session.user.lastActiveAt ? new Date(session.user.lastActiveAt).getTime() : 0;
+  if (Date.now() - last > ACTIVE_EVERY) {
+    await prisma.user
+      .update({ where: { id: session.user.id }, data: { lastActiveAt: new Date() } })
+      .catch(() => {});
+  }
   return { ...session.user, role: (session.user.role ?? "PATIENT") as Role };
 }
 
@@ -40,7 +49,8 @@ export const requireProfessional = cache(async () => {
   const user = await requireUser();
   if (user.role === "PATIENT") redirect("/app");
   const professional = await prisma.professionalProfile.findUnique({ where: { userId: user.id } });
-  if (!professional) redirect(user.role === "ADMIN" ? "/admin" : "/ingresar?error=sin-perfil");
+  // Quien entró con Google por primera vez todavía no cargó su matrícula.
+  if (!professional) redirect(user.role === "ADMIN" ? "/admin" : "/alta-profesional");
   return { user, professional };
 });
 
