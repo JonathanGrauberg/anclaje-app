@@ -21,6 +21,7 @@ export default async function AdminCrisisLinesPage() {
       <CrisisLinesEditor
         lines={lines.map((l) => ({
           ...l,
+          whatsapp: l.whatsapp ?? "",
           description: l.description ?? "",
           region: l.region ?? "",
         }))}

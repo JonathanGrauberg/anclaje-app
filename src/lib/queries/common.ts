@@ -7,7 +7,7 @@ export const getCrisisLines = cache(() =>
   prisma.crisisLine.findMany({
     where: { active: true },
     orderBy: { sortOrder: "asc" },
-    select: { id: true, name: true, phone: true, description: true, region: true },
+    select: { id: true, name: true, phone: true, whatsapp: true, description: true, region: true },
   }),
 );
 

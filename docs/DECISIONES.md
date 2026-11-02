@@ -282,6 +282,10 @@ salvo que se indique lo contrario.
 
 - Las líneas de ayuda están en `prisma/data/crisis-lines.json` (seed) y en la tabla `CrisisLine`,
   editables desde **/admin → Líneas de ayuda**. **Verificar los números antes de usar en producción.**
+- Una línea puede tener un **WhatsApp** opcional (se abre con `wa.me`). Se sumó el Hospital Escuela
+  de Salud Mental de Paraná (tel. y WhatsApp de hesm.gob.ar/contacto). No se le puso "24 h" porque
+  la página no lo dice. El seed ya no se saltea si hay líneas: agrega solo las que falten por
+  nombre (no pisa lo editado en el admin; si se borra una del seed, vuelve al correr el seed).
   Siempre tiene que quedar al menos una activa (no se puede borrar ni desactivar la última).
 
 ## Nombre: de "Sentir" a ".anclaje"

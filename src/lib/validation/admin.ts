@@ -16,6 +16,12 @@ export const crisisLineSchema = z.object({
     .min(2, "Escribí el teléfono")
     .max(40)
     .regex(/^[0-9+\-() ]+$/, "Solo números, espacios, +, - y paréntesis"),
+  whatsapp: z
+    .string()
+    .trim()
+    .max(40)
+    .regex(/^[0-9+\-() ]*$/, "Solo números, espacios, +, - y paréntesis")
+    .optional(),
   description: z.string().trim().max(300).optional(),
   region: z.string().trim().max(80).optional(),
   sortOrder: z.number().int().min(0).max(999),

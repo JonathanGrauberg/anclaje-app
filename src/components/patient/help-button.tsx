@@ -1,21 +1,24 @@
 "use client";
 
-import { HeartHandshake, LifeBuoy, Phone } from "lucide-react";
+import { HeartHandshake, LifeBuoy, MessageCircle, Phone } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetClose, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { DISCLAIMER } from "@/lib/constants";
 import type { CrisisLineDTO } from "@/lib/queries/common";
-import { telHref } from "@/lib/utils";
+import { telHref, whatsappHref } from "@/lib/utils";
 
 export function CrisisLineList({ lines }: { lines: CrisisLineDTO[] }) {
   return (
     <ul className="flex flex-col gap-2">
       {lines.map((line) => (
-        <li key={line.id}>
+        <li
+          key={line.id}
+          className="bg-background flex flex-col overflow-hidden rounded-2xl border"
+        >
           <a
             href={telHref(line.phone)}
-            className="bg-background hover:bg-muted flex items-center gap-4 rounded-2xl border p-4 transition-colors"
+            className="hover:bg-muted flex items-center gap-4 p-4 transition-colors"
           >
             <span className="bg-danger-soft text-danger flex size-11 shrink-0 items-center justify-center rounded-full">
               <Phone className="size-5" aria-hidden />
@@ -30,6 +33,18 @@ export function CrisisLineList({ lines }: { lines: CrisisLineDTO[] }) {
               )}
             </span>
           </a>
+          {line.whatsapp && (
+            <a
+              href={whatsappHref(line.whatsapp)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:bg-muted text-primary flex items-center gap-2 border-t px-4 py-2.5 text-sm font-medium transition-colors"
+            >
+              <MessageCircle className="size-4" aria-hidden />
+              WhatsApp: <span className="tabular-nums">{line.whatsapp}</span>
+              <span className="sr-only">(abre WhatsApp)</span>
+            </a>
+          )}
         </li>
       ))}
     </ul>

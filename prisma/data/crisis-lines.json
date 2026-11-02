@@ -1,5 +1,5 @@
 {
-  "_comment": "Líneas de ayuda iniciales. VERIFICAR antes de usar en producción: los números pueden cambiar. Se editan desde la tabla CrisisLine (UI de admin pendiente).",
+  "_comment": "Líneas de ayuda iniciales. VERIFICAR antes de usar en producción: los números pueden cambiar. Se editan desde /admin/lineas; el seed solo agrega las que falten (por nombre).",
   "lines": [
     {
       "name": "Emergencias",
@@ -24,6 +24,13 @@
       "phone": "0800-345-1435",
       "description": "Línea gratuita, atiende las 24 h.",
       "region": "Todo el país"
+    },
+    {
+      "name": "Hospital Escuela de Salud Mental (HESM)",
+      "phone": "+54 343 433 1817",
+      "whatsapp": "+54 343 506 0204",
+      "description": "Hospital público de salud mental. Ambrosetti y Rondeau.",
+      "region": "Paraná, Entre Ríos"
     }
   ]
 }

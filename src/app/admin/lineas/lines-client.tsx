@@ -14,6 +14,7 @@ type Line = Required<Omit<CrisisLineInput, "id">> & { id?: string };
 const empty = (sortOrder: number): Line => ({
   name: "",
   phone: "",
+  whatsapp: "",
   description: "",
   region: "",
   sortOrder,
@@ -91,7 +92,17 @@ function LineForm({ line, onDone }: { line: Line; onDone?: () => void }) {
                 required
               />
             </div>
-            <div className="flex flex-col gap-1.5 sm:col-span-2">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor={`${uid}-wa`}>WhatsApp (opcional)</Label>
+              <Input
+                id={`${uid}-wa`}
+                inputMode="tel"
+                placeholder="+54 343 …"
+                value={value.whatsapp}
+                onChange={(e) => set("whatsapp", e.target.value)}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
               <Label htmlFor={`${uid}-desc`}>Descripción (opcional)</Label>
               <Input
                 id={`${uid}-desc`}

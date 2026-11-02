@@ -72,7 +72,12 @@ export async function saveCrisisLine(input: CrisisLineInput) {
     const parsed = crisisLineSchema.safeParse(input);
     if (!parsed.success) return fail(firstIssue(parsed.error));
     const { id, ...data } = parsed.data;
-    const clean = { ...data, description: data.description || null, region: data.region || null };
+    const clean = {
+      ...data,
+      whatsapp: data.whatsapp || null,
+      description: data.description || null,
+      region: data.region || null,
+    };
     if (id && !data.active) {
       const others = await prisma.crisisLine.count({ where: { active: true, id: { not: id } } });
       if (others === 0) return fail("Tiene que quedar al menos una línea de ayuda activa.");

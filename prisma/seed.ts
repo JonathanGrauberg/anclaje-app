@@ -50,12 +50,17 @@ async function seedDistortions() {
   console.log(`✓ Distorsiones: ${distortions.length}`);
 }
 
+// Agrega las líneas que falten (por nombre). No pisa las que se editaron desde el admin.
 async function seedCrisisLines() {
-  if ((await prisma.crisisLine.count()) > 0) return console.log("· Líneas de ayuda ya cargadas");
-  await prisma.crisisLine.createMany({
-    data: crisisLines.lines.map((l, i) => ({ ...l, sortOrder: i })),
-  });
-  console.log(`✓ Líneas de ayuda: ${crisisLines.lines.length}`);
+  const existing = new Set(
+    (await prisma.crisisLine.findMany({ select: { name: true } })).map((l) => l.name),
+  );
+  const missing = crisisLines.lines
+    .map((l, i) => ({ ...l, sortOrder: i }))
+    .filter((l) => !existing.has(l.name));
+  if (missing.length === 0) return console.log("· Líneas de ayuda ya cargadas");
+  await prisma.crisisLine.createMany({ data: missing });
+  console.log(`✓ Líneas de ayuda nuevas: ${missing.length}`);
 }
 
 async function upsertUser(email: string, name: string, role: "PATIENT" | "PROFESSIONAL" | "ADMIN") {

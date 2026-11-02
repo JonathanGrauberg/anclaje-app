@@ -14,6 +14,11 @@ export function telHref(phone: string) {
   return `tel:${phone.replace(/[^\d+]/g, "")}`;
 }
 
+/** Link para escribir por WhatsApp ("+54 343 506 0204" → https://wa.me/543435060204). */
+export function whatsappHref(phone: string) {
+  return `https://wa.me/${phone.replace(/\D/g, "")}`;
+}
+
 /** Ruta interna segura para redirigir después de ingresar ("/vincular/..."). Evita open redirects. */
 export function safeNext(value: string | string[] | undefined) {
   const v = Array.isArray(value) ? value[0] : value;
