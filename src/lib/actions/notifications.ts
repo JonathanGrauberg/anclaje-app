@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { pushConfigured, sendPushToUser } from "@/lib/push";
 import { allow } from "@/lib/rate-limit";
 import { reminderMessage } from "@/lib/reminders";
-import { getSession, professionalForAction } from "@/lib/session";
+import { getSession, patientForAction, professionalForAction } from "@/lib/session";
 import {
   digestSchema,
   pushSubscriptionSchema,
@@ -82,6 +82,30 @@ export async function saveDigestFrequency(frequency: "DAILY" | "WEEKLY" | "NEVER
     await prisma.professionalProfile.update({
       where: { id: professional.id },
       data: { digestFrequency: parsed.data.frequency },
+    });
+    return ok(undefined);
+  });
+}
+
+/** Recordatorio de turnos por mail: la profesional lo apaga para todos sus pacientes. */
+export async function saveAppointmentReminders(enabled: boolean) {
+  return safe(async () => {
+    const { professional } = await professionalForAction();
+    await prisma.professionalProfile.update({
+      where: { id: professional.id },
+      data: { appointmentReminders: enabled === true },
+    });
+    return ok(undefined);
+  });
+}
+
+/** Recordatorio de turnos por mail: el paciente decide si lo recibe. */
+export async function saveAppointmentEmails(enabled: boolean) {
+  return safe(async () => {
+    const patient = await patientForAction();
+    await prisma.patientProfile.update({
+      where: { id: patient.id },
+      data: { appointmentEmails: enabled === true },
     });
     return ok(undefined);
   });

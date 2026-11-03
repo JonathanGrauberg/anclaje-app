@@ -23,6 +23,15 @@ export async function sendEmail(email: Email) {
   });
 }
 
+/** Para avisos que no deben frenar la acción que los dispara (bienvenida, vinculación…). */
+export async function sendEmailQuietly(email: Email, context: string) {
+  try {
+    await sendEmail(email);
+  } catch (e) {
+    console.error(`[email] no se pudo mandar: ${context}`, (e as Error).message);
+  }
+}
+
 export function appUrl(path = "/") {
   return new URL(path, process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").toString();
 }

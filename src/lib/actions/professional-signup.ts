@@ -2,6 +2,8 @@
 
 import { audit } from "@/lib/audit";
 import { prisma } from "@/lib/db";
+import { appUrl, sendEmailQuietly } from "@/lib/email";
+import { welcomeProfessionalEmail } from "@/lib/emails";
 import { getSession } from "@/lib/session";
 import {
   professionalSignupSchema,
@@ -44,6 +46,13 @@ export async function completeProfessionalSignup(input: ProfessionalSignupInput)
       if ((e as { code?: string }).code === "P2002") return fail(TAKEN);
       throw e;
     }
+    await sendEmailQuietly(
+      {
+        to: session.user.email,
+        ...welcomeProfessionalEmail({ name: displayName, loginUrl: appUrl("/ingresar") }),
+      },
+      "bienvenida",
+    );
     return ok(undefined);
   });
 }

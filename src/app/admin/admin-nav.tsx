@@ -2,6 +2,7 @@
 
 import {
   ClipboardList,
+  Inbox,
   LayoutDashboard,
   LifeBuoy,
   ScrollText,
@@ -16,6 +17,7 @@ import { cn } from "@/lib/utils";
 const nav = [
   { href: "/admin", label: "Resumen", icon: LayoutDashboard },
   { href: "/admin/profesionales", label: "Profesionales", icon: UserRound },
+  { href: "/admin/interesados", label: "Interesados", icon: Inbox },
   { href: "/admin/lineas", label: "Líneas de ayuda", icon: LifeBuoy },
   { href: "/admin/plantillas", label: "Plantillas", icon: ClipboardList },
   { href: "/admin/auditoria", label: "Auditoría", icon: ScrollText },

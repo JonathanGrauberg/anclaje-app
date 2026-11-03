@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { audit } from "@/lib/audit";
 import { CONSENT_VERSION } from "@/lib/consent";
 import { prisma } from "@/lib/db";
+import { appUrl, sendEmailQuietly } from "@/lib/email";
+import { patientLinkedEmail } from "@/lib/emails";
 import { normalizeCode } from "@/lib/invitations";
 import { mergeManagedPatient } from "@/lib/managed-patients";
 import { allow } from "@/lib/rate-limit";
@@ -73,6 +75,23 @@ export async function acceptInvitation(input: AcceptInvitationInput) {
       patientId: patient.id,
       meta: { consentVersion: CONSENT_VERSION, merged: result.merged },
     });
+    const pro = await prisma.professionalProfile.findUnique({
+      where: { id: result.professionalId },
+      select: { displayName: true, user: { select: { email: true } } },
+    });
+    if (pro) {
+      await sendEmailQuietly(
+        {
+          to: pro.user.email,
+          ...patientLinkedEmail({
+            professionalName: pro.displayName,
+            url: appUrl("/pro"),
+            merged: result.merged,
+          }),
+        },
+        "vinculación",
+      );
+    }
     revalidatePath("/app", "layout");
     return ok(undefined);
   });

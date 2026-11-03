@@ -1,4 +1,5 @@
 import { timingSafeEqual } from "node:crypto";
+import { sendAppointmentReminders } from "@/lib/appointment-reminders";
 import { NOTIFICATIONS_ENABLED } from "@/lib/constants";
 import { prisma } from "@/lib/db";
 import { digestEmail, summarizeDigest } from "@/lib/digest";
@@ -7,7 +8,7 @@ import { pushConfigured, sendPushToUser } from "@/lib/push";
 import { getPatientsWithAttention } from "@/lib/queries/pro";
 import { isDigestDue, isReminderDue, reminderMessage } from "@/lib/reminders";
 
-// Tareas programadas. Las llama un cron externo (Vercel Cron, GitHub Actions, `npm run cron` en
+// Tareas programadas. `turnos` la llama Vercel Cron una vez por día (vercel.json). Las demás, un cron externo (Vercel Cron, GitHub Actions, `npm run cron` en
 // dev) cada 5–15 minutos con `Authorization: Bearer $CRON_SECRET`. Son idempotentes: cada
 // recordatorio y resumen se manda como mucho una vez por día.
 
@@ -66,6 +67,11 @@ async function handle(req: Request, ctx: RouteContext<"/api/cron/[job]">) {
   if (!authorized(req)) return Response.json({ error: "No autorizado" }, { status: 401 });
   const { job } = await ctx.params;
   const now = new Date();
+  // Recordatorio de turnos por mail: no depende de los avisos push, solo de tener SMTP.
+  if (job === "turnos") {
+    if (!process.env.SMTP_URL) return Response.json({ skipped: "mail sin configurar" });
+    return Response.json(await sendAppointmentReminders(now));
+  }
   if (!NOTIFICATIONS_ENABLED) return Response.json({ skipped: "avisos apagados" });
   if (job === "recordatorios") return Response.json(await runReminders(now));
   if (job === "resumen") return Response.json(await runDigests(now));

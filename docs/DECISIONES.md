@@ -359,3 +359,26 @@ salvo que se indique lo contrario.
   (`prisma migrate deploy`, por la conexión directa), corre el seed (idempotente: rueda,
   distorsiones, plantillas y líneas que falten; sin usuarios demo porque la base no es localhost)
   y recién después compila. Así la base de producción nunca queda atrasada respecto del código.
+
+## Mails de turnos, bienvenida y vinculación · landing (nov 2026)
+
+- **Recordatorio de turno:** Vercel Cron llama a `/api/cron/turnos` una vez por día a las 10 (13 UTC)
+  y manda un mail por cada turno de mañana. Al paciente con la app, a su mail de la cuenta; al que
+  no la tiene, solo si la profesional cargó un mail en el contacto (se busca dentro del texto
+  cifrado). Cada turno se marca con `reminderSentAt` antes de enviar: no se repite aunque el cron
+  corra dos veces. La profesional lo apaga para todos (`appointmentReminders`) y cada paciente para
+  sí (`appointmentEmails`). No depende de `NEXT_PUBLIC_NOTIFICATIONS`: solo de SMTP y `CRON_SECRET`.
+- **Bienvenida:** al crear una profesional desde el admin o al completar el alta con Google. Nunca
+  lleva la contraseña temporal (esa la pasa el admin por otro canal).
+- **Vinculación:** cuando un paciente acepta la invitación, la profesional recibe un aviso **sin el
+  nombre del paciente**, igual que el resumen: el mail no es un canal seguro para eso.
+- Los mails fallidos de bienvenida/vinculación no frenan la acción (`sendEmailQuietly`).
+- **Landing (`/`):** pública e indexable (el resto sigue `noindex`). Quien tiene sesión va directo a
+  su inicio. No promete cifrado "de punta a punta" ni que "nadie puede leerlo": dice lo que es
+  verdad (cifrado AES-256 en reposo, comparte el paciente, el admin no ve nada clínico, auditoría).
+- **Interesados (`Lead`):** el formulario de la landing guarda nombre, mail, WhatsApp, provincia y
+  mensaje, con consentimiento explícito, campo trampa contra bots y límite por IP. Avisa por mail a
+  los admins y se gestiona en /admin/interesados. Por ahora el alta de profesionales sigue siendo
+  manual (admin) hasta que estén Google y los planes.
+- **Favicon:** `src/app/icon.svg` sin fondo, verde en modo claro y blanco en modo oscuro (media query
+  dentro del SVG). El ícono de iPhone y los de la PWA siguen con fondo crema, que es lo que piden.

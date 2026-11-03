@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { NOTIFICATIONS_ENABLED } from "@/lib/constants";
 import Link from "next/link";
+import { AppointmentEmailToggle } from "@/components/appointment-email-toggle";
 import { ChangePasswordForm } from "@/components/change-password-form";
 import { PageHeader } from "@/components/ui/misc";
 import { formatDate } from "@/lib/dates";
@@ -106,6 +107,23 @@ export default async function SettingsPage({ searchParams }: PageProps<"/app/aju
         </div>
         <SharingDefaultsForm
           initial={{ journal: defaults.journal, emotions: defaults.emotions, cbt: defaults.cbt }}
+        />
+      </section>
+
+      <section aria-labelledby="appt-title" className="flex flex-col gap-3">
+        <div>
+          <h2 id="appt-title" className="text-lg font-semibold">
+            Recordatorio de turnos
+          </h2>
+          <p className="text-muted-foreground text-sm">
+            El día anterior te llega un mail a <strong>{user.email}</strong> con la hora y el lugar
+            de tu turno.
+          </p>
+        </div>
+        <AppointmentEmailToggle
+          side="patient"
+          initial={patient.appointmentEmails}
+          label="Recibir el recordatorio por mail"
         />
       </section>
 

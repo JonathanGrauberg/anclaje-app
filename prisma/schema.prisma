@@ -212,19 +212,21 @@ model Verification {
 // ─────────────────────────────────────────────────────────────
 
 model ProfessionalProfile {
-  id                  String          @id @default(cuid())
-  userId              String          @unique
-  user                User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  displayName         String
-  licenseNumber       String?
+  id                   String          @id @default(cuid())
+  userId               String          @unique
+  user                 User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  displayName          String
+  licenseNumber        String?
   /// Dónde está matriculada: código de provincia ("ER", "CABA"…) o "MN" (nacional).
-  licenseJurisdiction String?
+  licenseJurisdiction  String?
   /// Alta propia (con Google): queda sin verificar hasta que el admin revisa la matrícula.
-  verifiedAt          DateTime?
-  digestFrequency     DigestFrequency @default(NEVER)
-  lastDigestAt        DateTime?
-  createdAt           DateTime        @default(now())
-  updatedAt           DateTime        @updatedAt
+  verifiedAt           DateTime?
+  digestFrequency      DigestFrequency @default(NEVER)
+  /// Mandar a sus pacientes un mail recordando el turno el día anterior.
+  appointmentReminders Boolean         @default(true)
+  lastDigestAt         DateTime?
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
 
   links           CareLink[]
   invitations     Invitation[]
@@ -248,16 +250,18 @@ model ProfessionalProfile {
 /// (`managedById`) para usarlo en la agenda y la historia clínica. Si después acepta una
 /// invitación, sus datos pasan a su cuenta real y este perfil se borra.
 model PatientProfile {
-  id          String               @id @default(cuid())
-  userId      String?              @unique
-  user        User?                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  displayName String?
-  managedById String?
-  managedBy   ProfessionalProfile? @relation("ManagedPatients", fields: [managedById], references: [id], onDelete: Cascade)
+  id                String               @id @default(cuid())
+  userId            String?              @unique
+  user              User?                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  displayName       String?
+  managedById       String?
+  managedBy         ProfessionalProfile? @relation("ManagedPatients", fields: [managedById], references: [id], onDelete: Cascade)
   /// Teléfono, mail u otro dato de contacto (solo pacientes sin la app). Cifrado.
-  contactEnc  String?
-  createdAt   DateTime             @default(now())
-  updatedAt   DateTime             @updatedAt
+  contactEnc        String?
+  /// Recibir por mail el recordatorio del turno del día anterior.
+  appointmentEmails Boolean              @default(true)
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
 
   links               CareLink[]
   sharingDefaults     SharingDefaults?
@@ -892,9 +896,24 @@ model Appointment {
   cancelledBy    AuthorKind?
   cancelledAt    DateTime?
   seriesId       String? // turnos creados juntos como semanales
+  reminderSentAt DateTime? // recordatorio por mail del día anterior (se manda una sola vez)
   createdAt      DateTime            @default(now())
   updatedAt      DateTime            @updatedAt
 
   @@index([professionalId, startsAt])
   @@index([patientId, startsAt])
+}
+
+/// Interesada/o que dejó sus datos en la landing. Son profesionales, no pacientes.
+model Lead {
+  id          String    @id @default(cuid())
+  name        String
+  email       String
+  phone       String?
+  province    String?
+  message     String?
+  createdAt   DateTime  @default(now())
+  contactedAt DateTime?
+
+  @@index([createdAt])
 }

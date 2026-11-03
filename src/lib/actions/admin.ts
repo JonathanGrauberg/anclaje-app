@@ -6,6 +6,8 @@ import { rekey } from "@/lib/assessments/doc";
 import { createAssessmentFromDoc } from "@/lib/assessments/repo";
 import { audit } from "@/lib/audit";
 import { prisma } from "@/lib/db";
+import { appUrl, sendEmailQuietly } from "@/lib/email";
+import { welcomeProfessionalEmail } from "@/lib/emails";
 import { adminForAction } from "@/lib/session";
 import {
   createProfessionalSchema,
@@ -36,6 +38,14 @@ export async function createProfessional(input: CreateProfessionalInput) {
         entityType: "Professional",
         entityId: user.id,
       });
+      // La contraseña temporal NO va por mail: el admin se la pasa por otro canal.
+      await sendEmailQuietly(
+        {
+          to: user.email,
+          ...welcomeProfessionalEmail({ name: user.name, loginUrl: appUrl("/ingresar") }),
+        },
+        "bienvenida",
+      );
       revalidatePath("/admin/profesionales");
       return ok({ email: user.email, tempPassword });
     } catch (e) {

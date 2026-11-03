@@ -24,6 +24,11 @@
   --success: #3f7a4f;
   --wheel-text: #2a2833;
   --wheel-stroke: #faf7f2;
+  /* Pasteles de la marca (landing): la luz del faro, el cielo y el atardecer. */
+  --sun: #fcc107;
+  --sun-soft: #fdf0c4;
+  --sky-soft: #e3edf2;
+  --lilac-soft: #ece6f3;
   --radius: 1rem;
 }
 
@@ -49,6 +54,9 @@
     --success: #8fcf9f;
     --wheel-text: #22212a;
     --wheel-stroke: #16151b;
+    --sun-soft: #3a321c;
+    --sky-soft: #1d2830;
+    --lilac-soft: #27222f;
   }
 }
 
@@ -71,6 +79,10 @@
   --color-danger-foreground: var(--danger-foreground);
   --color-danger-soft: var(--danger-soft);
   --color-success: var(--success);
+  --color-sun: var(--sun);
+  --color-sun-soft: var(--sun-soft);
+  --color-sky-soft: var(--sky-soft);
+  --color-lilac-soft: var(--lilac-soft);
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 0.25rem);

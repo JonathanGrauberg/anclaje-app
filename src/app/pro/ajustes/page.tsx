@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AppointmentEmailToggle } from "@/components/appointment-email-toggle";
 import { ChangePasswordForm } from "@/components/change-password-form";
 import { PageHeader } from "@/components/ui/misc";
 import { NOTIFICATIONS_ENABLED } from "@/lib/constants";
@@ -12,6 +13,23 @@ export default async function ProSettingsPage() {
   return (
     <div className="flex max-w-2xl flex-col gap-8">
       <PageHeader title="Ajustes" />
+      <section aria-labelledby="appt-title" className="flex flex-col gap-3">
+        <div>
+          <h2 id="appt-title" className="text-lg font-semibold">
+            Recordatorio de turnos
+          </h2>
+          <p className="text-muted-foreground text-sm">
+            El día anterior, a la mañana, le mandamos un mail a cada paciente con la fecha, la hora
+            y el lugar o link. A quienes no usan la app, solo si cargaste su mail en el contacto.
+            Cada paciente lo puede apagar para sí.
+          </p>
+        </div>
+        <AppointmentEmailToggle
+          side="pro"
+          initial={professional.appointmentReminders}
+          label="Mandar recordatorios a mis pacientes"
+        />
+      </section>
       {NOTIFICATIONS_ENABLED && (
         <section aria-labelledby="digest-title" className="flex flex-col gap-3">
           <div>
