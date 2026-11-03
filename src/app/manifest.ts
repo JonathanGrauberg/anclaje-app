@@ -9,7 +9,6 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: "/app",
     scope: "/",
     display: "standalone",
-    orientation: "portrait",
     background_color: "#faf7f2",
     theme_color: "#faf7f2",
     categories: ["health", "lifestyle"],

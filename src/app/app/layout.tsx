@@ -1,5 +1,6 @@
 import { Settings } from "lucide-react";
 import Link from "next/link";
+import { InstallAppBanner } from "@/components/install-app-banner";
 import { Logo } from "@/components/logo";
 import { HelpButton } from "@/components/patient/help-button";
 import { SignOutButton } from "@/components/sign-out-button";
@@ -35,6 +36,7 @@ export default async function PatientLayout({ children }: LayoutProps<"/app">) {
         {DISCLAIMER}
       </footer>
       <HelpButton lines={lines} />
+      <InstallAppBanner />
     </div>
   );
 }
