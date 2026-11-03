@@ -41,7 +41,7 @@ export async function findLinkedPatient(professionalId: string, patientId: strin
       displayName: true,
       contactEnc: true,
       createdAt: true,
-      user: { select: { name: true, email: true } },
+      user: { select: { name: true, email: true, phoneEnc: true } },
       links: {
         where: { professionalId, status: "ACTIVE" },
         select: { createdAt: true, consentVersion: true, consentAcceptedAt: true },

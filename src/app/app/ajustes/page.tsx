@@ -7,6 +7,7 @@ import { ProfileForm } from "@/components/profile-form";
 import { PageHeader } from "@/components/ui/misc";
 import { NOTIFICATIONS_ENABLED } from "@/lib/constants";
 import { formatDate } from "@/lib/dates";
+import { decryptOptional } from "@/lib/crypto";
 import { prisma } from "@/lib/db";
 import { cleanEnv } from "@/lib/push";
 import { NOTIFY_DEFAULTS } from "@/lib/push-messages";
@@ -51,7 +52,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/app/aju
   const justLinked = (await searchParams).vinculado === "1";
   const shared = { patientId: patient.id, visibility: "SHARED" as const };
 
-  const [links, sharedCounts, reminder, prefs] = await Promise.all([
+  const [links, sharedCounts, reminder, prefs, account] = await Promise.all([
     prisma.careLink.findMany({
       where: { patientId: patient.id, status: "ACTIVE" },
       orderBy: { createdAt: "asc" },
@@ -66,6 +67,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/app/aju
       : null,
     prisma.reminderSettings.findUnique({ where: { userId: user.id } }),
     prisma.notificationPrefs.findUnique({ where: { userId: user.id } }),
+    prisma.user.findUniqueOrThrow({ where: { id: user.id }, select: { phoneEnc: true } }),
   ]);
   const defaults = patient.sharingDefaults ?? {
     journal: "PRIVATE",
@@ -196,7 +198,12 @@ export default async function SettingsPage({ searchParams }: PageProps<"/app/aju
         <h2 id="profile-title" className="text-lg font-semibold">
           Datos personales
         </h2>
-        <ProfileForm side="patient" email={user.email} name={patientName({ ...patient, user })} />
+        <ProfileForm
+          side="patient"
+          email={user.email}
+          phone={decryptOptional(account.phoneEnc)}
+          name={patientName({ ...patient, user })}
+        />
       </section>
 
       <section

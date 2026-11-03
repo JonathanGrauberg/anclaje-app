@@ -4,15 +4,18 @@ import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { FieldError, Input, Label } from "@/components/ui/input";
 import { updatePatientProfile, updateProfessionalProfile } from "@/lib/actions/profile";
+import { PhoneInput } from "@/components/phone-input";
 import { JURISDICTIONS, type Jurisdiction } from "@/lib/licenses";
+import { formatNational, splitPhone } from "@/lib/phone";
 
 const selectClass = "border-input bg-card h-11 rounded-xl border px-3 text-sm";
 
 type Props =
-  | { side: "patient"; email: string; name: string }
+  | { side: "patient"; email: string; phone: string | null; name: string }
   | {
       side: "pro";
       email: string;
+      phone: string | null;
       displayName: string;
       licenseJurisdiction: string | null;
       licenseNumber: string | null;
@@ -26,6 +29,10 @@ export function ProfileForm(props: Props) {
     props.side === "pro" ? ((props.licenseJurisdiction as Jurisdiction | null) ?? "") : "",
   );
   const [license, setLicense] = useState(props.side === "pro" ? (props.licenseNumber ?? "") : "");
+  const [phone, setPhone] = useState(() => {
+    const p = splitPhone(props.phone);
+    return { country: p.code, value: formatNational(p.code, p.national) };
+  });
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
   const [pending, start] = useTransition();
@@ -39,11 +46,17 @@ export function ProfileForm(props: Props) {
         start(async () => {
           const res =
             props.side === "patient"
-              ? await updatePatientProfile({ name })
+              ? await updatePatientProfile({
+                  name,
+                  phoneCountry: phone.country,
+                  phone: phone.value,
+                })
               : await updateProfessionalProfile({
                   displayName: name,
                   licenseJurisdiction: jurisdiction as Jurisdiction,
                   licenseNumber: license,
+                  phoneCountry: phone.country,
+                  phone: phone.value,
                 });
           if (!res.ok) return setError(res.error);
           setError(null);
@@ -109,6 +122,19 @@ export function ProfileForm(props: Props) {
           </p>
         </div>
       )}
+
+      <PhoneInput
+        id="profile-phone"
+        label="Celular (opcional)"
+        country={phone.country}
+        value={phone.value}
+        onChange={(v) => setPhone({ country: v.country, value: v.value })}
+        description={
+          props.side === "patient"
+            ? "Lo ve tu psicóloga o psicólogo, para escribirte por WhatsApp."
+            : "Para que podamos contactarte. Tus pacientes no lo ven."
+        }
+      />
 
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="profile-email">Email</Label>

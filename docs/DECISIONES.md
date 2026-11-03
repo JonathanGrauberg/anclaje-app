@@ -394,3 +394,8 @@ salvo que se indique lo contrario.
   "olvidé mi contraseña") llega siempre un mail y un aviso al celular, sin opción de apagarlos:
   "si no fuiste vos…" lleva a cambiar la contraseña (o a recuperarla, si lo que cambió fue la
   contraseña). Cambiar o recuperar la contraseña cierra las sesiones abiertas en otros lados.
+- **Celular:** se carga en Datos personales con el país aparte y la cantidad de números controlada
+  (Argentina: 10, área sin 0 + número sin 15; si se cuelan el 0 o el 15, se sacan solos). Se guarda
+  cifrado (`User.phoneEnc`) y ya listo para wa.me (549… en Argentina). El del paciente lo ve su
+  profesional en la ficha y lo usan los botones de WhatsApp; el de la profesional no lo ven los
+  pacientes. Opcional para todos.

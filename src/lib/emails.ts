@@ -45,7 +45,13 @@ function build(
   return { subject, text, html: layout(paragraphs, button, footer) };
 }
 
-const firstName = (name: string | null | undefined) => name?.trim().split(/\s+/)[0] || null;
+/** Primer nombre para saludar, salteando títulos ("Lic. Laura Méndez" → "Laura"). */
+const TITLE = /^(lic|lic\.?da|dr|dra|mg|psic|psi|prof)\.?$/i;
+const firstName = (name: string | null | undefined) =>
+  name
+    ?.trim()
+    .split(/\s+/)
+    .find((w) => !TITLE.test(w)) || null;
 
 /** Recordatorio del turno del día siguiente, para el paciente (tenga o no la app). */
 export function appointmentReminderEmail(a: {

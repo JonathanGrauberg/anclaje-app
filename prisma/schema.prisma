@@ -143,6 +143,8 @@ model User {
   emailVerified Boolean   @default(false)
   image         String?
   role          Role      @default(PATIENT)
+  /// Celular listo para WhatsApp (solo dígitos, ej. 5491123456789), cifrado. Ver src/lib/phone.ts.
+  phoneEnc      String?
   /// Para el panel de admin: último ingreso y última vez que usó la app (con 1 h de margen).
   lastLoginAt   DateTime?
   lastActiveAt  DateTime?

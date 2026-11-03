@@ -46,8 +46,9 @@ export function getAgenda(professionalId: string, from: Date, to: Date) {
           id: true,
           userId: true,
           displayName: true,
-          contactEnc: true, // para el botón de WhatsApp (pacientes sin la app)
-          user: { select: { name: true } },
+          // Para el botón de WhatsApp: el celular de su cuenta o, sin la app, el de su contacto.
+          contactEnc: true,
+          user: { select: { name: true, phoneEnc: true } },
         },
       },
     },

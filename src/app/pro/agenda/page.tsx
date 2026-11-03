@@ -48,13 +48,15 @@ function groupByDay(items: AgendaItem[]) {
 
 /**
  * Botón de WhatsApp de un turno que viene: recordarlo, o avisar que lo cancelaste (si lo canceló
- * el paciente, ya lo sabe). Abre el chat del paciente si tiene celular en su contacto.
+ * el paciente, ya lo sabe). Abre el chat del paciente si cargó su celular (o está en su contacto).
  */
 function whatsappFor(a: AgendaItem, professionalName: string) {
   if (a.startsAt.getTime() < Date.now()) return null;
   const cancelled = a.status === "CANCELLED";
   if (cancelled && a.cancelledBy !== "PROFESSIONAL") return null;
-  const phone = extractPhone(decryptOptional(a.patient.contactEnc));
+  const phone =
+    decryptOptional(a.patient.user?.phoneEnc) ??
+    extractPhone(decryptOptional(a.patient.contactEnc));
   const message = { ...a, patientName: patientName(a.patient), professionalName };
   const text = cancelled
     ? appointmentCancelledMessage(message)

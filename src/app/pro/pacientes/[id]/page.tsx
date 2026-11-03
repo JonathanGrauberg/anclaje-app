@@ -18,7 +18,8 @@ import { getNextAppointments } from "@/lib/queries/appointments";
 import { getEmotionTree } from "@/lib/queries/common";
 import { getTimeline, type TimelineKind } from "@/lib/queries/pro";
 import { requireProfessional } from "@/lib/session";
-import { extractPhone } from "@/lib/whatsapp";
+import { formatPhone } from "@/lib/phone";
+import { extractPhone, whatsappMessageHref } from "@/lib/whatsapp";
 import { cn } from "@/lib/utils";
 import { PatternsView, RangeFilter } from "@/components/charts/patterns-view";
 import { ScoreChart } from "@/components/charts/pattern-charts";
@@ -90,6 +91,7 @@ export default async function PatientRecordPage({
 
   const name = patientName(patient);
   const contact = decryptOptional(patient.contactEnc);
+  const phone = decryptOptional(patient.user?.phoneEnc); // lo carga el paciente en Ajustes
   const baseUrl = (process.env.BETTER_AUTH_URL ?? "http://localhost:3000").replace(/\/$/, "");
   const link = patient.links[0];
   const base = `/pro/pacientes/${patient.id}`;
@@ -122,6 +124,19 @@ export default async function PatientRecordPage({
           <p className="text-muted-foreground mt-1 text-sm">
             Vinculado desde {formatDate(link.createdAt)} · consentimiento {link.consentVersion}{" "}
             aceptado el {formatDate(link.consentAcceptedAt ?? link.createdAt)}
+            {phone && (
+              <>
+                {" · "}
+                <a
+                  href={whatsappMessageHref(phone, "")}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary underline underline-offset-2"
+                >
+                  {formatPhone(phone)}
+                </a>
+              </>
+            )}
           </p>
         )}
         <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">

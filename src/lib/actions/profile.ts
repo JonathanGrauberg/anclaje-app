@@ -2,7 +2,9 @@
 
 import { after } from "next/server";
 import { revalidatePath } from "next/cache";
+import { decryptOptional, encryptOptional } from "@/lib/crypto";
 import { prisma } from "@/lib/db";
+import { normalizeLicense } from "@/lib/licenses";
 import { allow } from "@/lib/rate-limit";
 import { sendAccountChangedNotice } from "@/lib/security-notice";
 import { patientForAction, professionalForAction } from "@/lib/session";
@@ -17,23 +19,34 @@ import { fail, firstIssue, ok, safe } from "./result";
 const TAKEN = "Esa matrícula ya está registrada en Anclaje. Si es tuya, escribinos y lo vemos.";
 const TOO_MANY = "Guardaste muchas veces seguidas. Esperá unos minutos.";
 
-/** El paciente corrige su nombre. Es el que ve su psicóloga. */
+/** El celular guardado (descifrado), para saber si cambió. */
+async function currentPhone(userId: string) {
+  const u = await prisma.user.findUnique({ where: { id: userId }, select: { phoneEnc: true } });
+  return decryptOptional(u?.phoneEnc);
+}
+
+/** El paciente corrige su nombre y su celular. Los ve su psicóloga (el celular, para WhatsApp). */
 export async function updatePatientProfile(input: PatientProfileInput) {
   return safe(async () => {
     const patient = await patientForAction();
     if (!allow(`profile:${patient.userId}`, 10, 15 * 60_000)) return fail(TOO_MANY);
     const parsed = patientProfileSchema.safeParse(input);
     if (!parsed.success) return fail(firstIssue(parsed.error));
-    const { name } = parsed.data;
+    const { name, phone } = parsed.data;
 
     const user = await prisma.user.findUnique({
       where: { id: patient.userId },
       select: { name: true },
     });
-    if (user?.name === name && (patient.displayName ?? name) === name) return ok(undefined);
+    const samePhone = (await currentPhone(patient.userId)) === phone;
+    if (user?.name === name && (patient.displayName ?? name) === name && samePhone)
+      return ok(undefined);
 
     await prisma.$transaction([
-      prisma.user.update({ where: { id: patient.userId }, data: { name } }),
+      prisma.user.update({
+        where: { id: patient.userId },
+        data: { name, phoneEnc: encryptOptional(phone) },
+      }),
       prisma.patientProfile.update({ where: { id: patient.id }, data: { displayName: name } }),
     ]);
     after(() => sendAccountChangedNotice(patient.userId, "profile"));
@@ -44,7 +57,7 @@ export async function updatePatientProfile(input: PatientProfileInput) {
 }
 
 /**
- * La profesional corrige su nombre o su matrícula. Si cambia la matrícula, vuelve a quedar sin
+ * La profesional corrige su nombre, su matrícula o su celular. Si cambia la matrícula, vuelve a quedar sin
  * verificar hasta que el admin la revise (igual que en el alta).
  */
 export async function updateProfessionalProfile(input: ProfessionalProfileInput) {
@@ -53,12 +66,16 @@ export async function updateProfessionalProfile(input: ProfessionalProfileInput)
     if (!allow(`profile:${userId}`, 10, 15 * 60_000)) return fail(TOO_MANY);
     const parsed = professionalProfileSchema.safeParse(input);
     if (!parsed.success) return fail(firstIssue(parsed.error));
-    const { displayName, licenseJurisdiction, licenseNumber } = parsed.data;
+    const { displayName, licenseJurisdiction, licenseNumber, phone } = parsed.data;
 
+    // La matrícula cargada a mano por el admin puede tener puntos o letras: se compara normalizada,
+    // para no perder la verificación cuando solo se cambia otro dato.
     const licenseChanged =
       licenseJurisdiction !== professional.licenseJurisdiction ||
-      licenseNumber !== professional.licenseNumber;
-    if (!licenseChanged && displayName === professional.displayName) return ok(undefined);
+      licenseNumber !== normalizeLicense(professional.licenseNumber ?? "");
+    const samePhone = (await currentPhone(userId)) === phone;
+    if (!licenseChanged && displayName === professional.displayName && samePhone)
+      return ok(undefined);
 
     if (licenseChanged) {
       const taken = await prisma.professionalProfile.findFirst({
@@ -78,7 +95,10 @@ export async function updateProfessionalProfile(input: ProfessionalProfileInput)
             ...(licenseChanged ? { verifiedAt: null } : {}),
           },
         }),
-        prisma.user.update({ where: { id: userId }, data: { name: displayName } }),
+        prisma.user.update({
+          where: { id: userId },
+          data: { name: displayName, phoneEnc: encryptOptional(phone) },
+        }),
       ]);
     } catch (e) {
       if ((e as { code?: string }).code === "P2002") return fail(TAKEN);

@@ -6,6 +6,7 @@ import { PushDevice } from "@/components/push-device";
 import { ProfileForm } from "@/components/profile-form";
 import { PageHeader } from "@/components/ui/misc";
 import { NOTIFICATIONS_ENABLED } from "@/lib/constants";
+import { decryptOptional } from "@/lib/crypto";
 import { prisma } from "@/lib/db";
 import { cleanEnv } from "@/lib/push";
 import { NOTIFY_DEFAULTS } from "@/lib/push-messages";
@@ -29,6 +30,10 @@ const PRO_NOTIFICATIONS: NotificationPrefItem[] = [
 
 export default async function ProSettingsPage() {
   const { user, professional } = await requireProfessional();
+  const { phoneEnc } = await prisma.user.findUniqueOrThrow({
+    where: { id: user.id },
+    select: { phoneEnc: true },
+  });
   const prefs = NOTIFICATIONS_ENABLED
     ? await prisma.notificationPrefs.findUnique({ where: { userId: user.id } })
     : null;
@@ -42,6 +47,7 @@ export default async function ProSettingsPage() {
         <ProfileForm
           side="pro"
           email={user.email}
+          phone={decryptOptional(phoneEnc)}
           displayName={professional.displayName}
           licenseJurisdiction={professional.licenseJurisdiction}
           licenseNumber={professional.licenseNumber}
