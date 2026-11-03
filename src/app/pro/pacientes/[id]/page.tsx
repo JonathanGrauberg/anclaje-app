@@ -18,6 +18,7 @@ import { getNextAppointments } from "@/lib/queries/appointments";
 import { getEmotionTree } from "@/lib/queries/common";
 import { getTimeline, type TimelineKind } from "@/lib/queries/pro";
 import { requireProfessional } from "@/lib/session";
+import { extractPhone } from "@/lib/whatsapp";
 import { cn } from "@/lib/utils";
 import { PatternsView, RangeFilter } from "@/components/charts/patterns-view";
 import { ScoreChart } from "@/components/charts/pattern-charts";
@@ -112,6 +113,8 @@ export default async function PatientRecordPage({
               name={name}
               contact={contact ?? ""}
               baseUrl={baseUrl}
+              phone={extractPhone(contact)}
+              professionalName={professional.displayName}
             />
           </div>
         ) : (

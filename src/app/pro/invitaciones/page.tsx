@@ -50,6 +50,7 @@ export default async function InvitationsPage() {
         </p>
         <InvitationPanel
           baseUrl={baseUrl}
+          professionalName={professional.displayName}
           invitations={invitations.map((inv) => ({
             id: inv.id,
             code: formatCode(inv.code),

@@ -42,7 +42,13 @@ export function getAgenda(professionalId: string, from: Date, to: Date) {
       cancelledBy: true,
       seriesId: true,
       patient: {
-        select: { id: true, userId: true, displayName: true, user: { select: { name: true } } },
+        select: {
+          id: true,
+          userId: true,
+          displayName: true,
+          contactEnc: true, // para el botón de WhatsApp (pacientes sin la app)
+          user: { select: { name: true } },
+        },
       },
     },
   });

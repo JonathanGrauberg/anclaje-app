@@ -4,10 +4,17 @@ import Link from "next/link";
 import { EmptyState, PageHeader } from "@/components/ui/misc";
 import { linkedPatientsWhere } from "@/lib/access";
 import { dayKey, formatLongDay } from "@/lib/dates";
+import { decryptOptional } from "@/lib/crypto";
 import { prisma } from "@/lib/db";
 import { patientName } from "@/lib/patients";
 import { getAgenda, type AgendaItem } from "@/lib/queries/appointments";
 import { requireProfessional } from "@/lib/session";
+import {
+  appointmentCancelledMessage,
+  appointmentReminderMessage,
+  extractPhone,
+  whatsappMessageHref,
+} from "@/lib/whatsapp";
 import { AgendaRow, NewAppointmentForm } from "./agenda-client";
 import { MonthCalendar, shiftMonth } from "./month-calendar";
 
@@ -37,6 +44,26 @@ function groupByDay(items: AgendaItem[]) {
     days.set(k, [...(days.get(k) ?? []), a]);
   }
   return days;
+}
+
+/**
+ * Botón de WhatsApp de un turno que viene: recordarlo, o avisar que lo cancelaste (si lo canceló
+ * el paciente, ya lo sabe). Abre el chat del paciente si tiene celular en su contacto.
+ */
+function whatsappFor(a: AgendaItem, professionalName: string) {
+  if (a.startsAt.getTime() < Date.now()) return null;
+  const cancelled = a.status === "CANCELLED";
+  if (cancelled && a.cancelledBy !== "PROFESSIONAL") return null;
+  const phone = extractPhone(decryptOptional(a.patient.contactEnc));
+  const message = { ...a, patientName: patientName(a.patient), professionalName };
+  const text = cancelled
+    ? appointmentCancelledMessage(message)
+    : appointmentReminderMessage(message);
+  return {
+    label: cancelled ? "Avisar por WhatsApp" : "Recordar por WhatsApp",
+    href: whatsappMessageHref(phone, text),
+    withPhone: !!phone,
+  };
 }
 
 export default async function AgendaPage({ searchParams }: PageProps<"/pro/agenda">) {
@@ -171,6 +198,7 @@ export default async function AgendaPage({ searchParams }: PageProps<"/pro/agend
                           patientId: a.patient.id,
                           patientName: patientName(a.patient),
                           withoutApp: !a.patient.userId,
+                          whatsapp: whatsappFor(a, professional.displayName),
                         }}
                       />
                     ))}

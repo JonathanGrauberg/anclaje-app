@@ -1,12 +1,13 @@
 "use client";
 
-import { Check, Copy, Plus, Trash2 } from "lucide-react";
+import { Check, Copy, MessageCircle, Plus, Trash2 } from "lucide-react";
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { FieldError } from "@/components/ui/input";
 import { Badge } from "@/components/ui/misc";
 import { createInvitation, deleteInvitation } from "@/lib/actions/invitations";
 import { formatDate } from "@/lib/dates";
+import { invitationMessage, whatsappMessageHref } from "@/lib/whatsapp";
 
 type Invitation = {
   id: string;
@@ -22,9 +23,11 @@ const STATE_LABEL = { pending: "Sin usar", used: "Usada", expired: "Vencida" } a
 export function InvitationPanel({
   invitations,
   baseUrl,
+  professionalName,
 }: {
   invitations: Invitation[];
   baseUrl: string;
+  professionalName: string;
 }) {
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
@@ -96,6 +99,18 @@ export function InvitationPanel({
                   <Button variant="soft" size="sm" onClick={() => copy(linkFor(inv), inv.id)}>
                     {copied === inv.id ? <Check /> : <Copy />}
                     {copied === inv.id ? "Copiado" : "Copiar link"}
+                  </Button>
+                  <Button asChild variant="soft" size="sm">
+                    <a
+                      href={whatsappMessageHref(
+                        null,
+                        invitationMessage({ professionalName, link: linkFor(inv) }),
+                      )}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <MessageCircle aria-hidden /> Mandar por WhatsApp
+                    </a>
                   </Button>
                   <Button
                     variant="ghost"

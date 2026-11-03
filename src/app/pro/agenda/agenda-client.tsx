@@ -1,6 +1,6 @@
 "use client";
 
-import { MapPin, Pencil, Video, X } from "lucide-react";
+import { MapPin, MessageCircle, Pencil, Video, X } from "lucide-react";
 import Link from "next/link";
 import { useId, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
@@ -256,9 +256,12 @@ export type AgendaRowItem = {
   patientId: string;
   patientName: string;
   withoutApp: boolean;
+  /** Mensaje de WhatsApp ya armado: recordar el turno o avisar que lo cancelaste. */
+  whatsapp: { label: string; href: string; withPhone: boolean } | null;
 };
 
 export function AgendaRow({ item }: { item: AgendaRowItem }) {
+  const { whatsapp } = item;
   const [editing, setEditing] = useState(false);
   const [fields, setFields] = useState<Fields>({
     startsAt: toLocalInputValue(new Date(item.startsAt)),
@@ -323,8 +326,26 @@ export function AgendaRow({ item }: { item: AgendaRowItem }) {
             {item.cancelledBy === "PATIENT" ? "Avisó que no puede venir" : "Cancelado"}
           </span>
         )}
-        {!cancelled && (
+        {(whatsapp || !cancelled) && (
           <span className="ml-auto flex flex-wrap gap-1">
+            {whatsapp && (
+              <Button asChild variant="ghost" size="sm">
+                <a
+                  href={whatsapp.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title={
+                    whatsapp.withPhone ? undefined : "Se abre WhatsApp para que elijas el chat"
+                  }
+                >
+                  <MessageCircle aria-hidden /> {whatsapp.label}
+                </a>
+              </Button>
+            )}
+          </span>
+        )}
+        {!cancelled && (
+          <span className="flex flex-wrap gap-1">
             <Button
               variant="ghost"
               size="sm"

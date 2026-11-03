@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Copy, Pencil, UserMinus, UserPlus } from "lucide-react";
+import { Check, Copy, MessageCircle, Pencil, UserMinus, UserPlus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useId, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { FieldError, Input, Label } from "@/components/ui/input";
 import { createInvitation } from "@/lib/actions/invitations";
 import { removeManagedPatient, updateManagedPatient } from "@/lib/actions/patients";
 import { formatCode } from "@/lib/invitations";
+import { invitationMessage, whatsappMessageHref } from "@/lib/whatsapp";
 
 /** Paciente sin la app: invitarlo (sus turnos e historia pasan a su cuenta) o editar sus datos. */
 export function ManagedPatientActions({
@@ -15,11 +16,16 @@ export function ManagedPatientActions({
   name,
   contact,
   baseUrl,
+  phone,
+  professionalName,
 }: {
   patientId: string;
   name: string;
   contact: string;
   baseUrl: string;
+  /** Celular sacado de su contacto, para abrir directo su chat de WhatsApp. */
+  phone: string | null;
+  professionalName: string;
 }) {
   const uid = useId();
   const router = useRouter();
@@ -101,6 +107,18 @@ export function ManagedPatientActions({
               }}
             >
               {copied ? <Check /> : <Copy />} {copied ? "Copiado" : "Copiar link"}
+            </Button>
+            <Button asChild size="sm" variant="soft">
+              <a
+                href={whatsappMessageHref(
+                  phone,
+                  invitationMessage({ patientName: name, professionalName, link }),
+                )}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <MessageCircle aria-hidden /> Mandar por WhatsApp
+              </a>
             </Button>
           </div>
           <p className="text-muted-foreground break-all">{link}</p>
