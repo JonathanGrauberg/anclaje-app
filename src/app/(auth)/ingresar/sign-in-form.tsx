@@ -36,7 +36,7 @@ export function SignInForm({
       );
       return;
     }
-    router.replace(next ?? "/");
+    router.replace(next ?? "/ingresar");
     router.refresh();
   }
 
@@ -46,7 +46,7 @@ export function SignInForm({
     if (!ok) return;
     const { error } = await signIn.magicLink({
       email: form.getValues("email"),
-      callbackURL: next ?? "/",
+      callbackURL: next ?? "/ingresar",
     });
     if (error) {
       setError(

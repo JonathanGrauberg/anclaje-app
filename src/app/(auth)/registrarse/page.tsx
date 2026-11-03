@@ -8,6 +8,6 @@ export const metadata: Metadata = { title: "Crear cuenta" };
 
 export default async function SignUpPage({ searchParams }: PageProps<"/registrarse">) {
   const next = safeNext((await searchParams).next);
-  if (await getSession()) redirect(next ?? "/");
+  if (await getSession()) redirect(next ?? "/ingresar");
   return <SignUpForm next={next} />;
 }

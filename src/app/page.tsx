@@ -16,7 +16,6 @@ import {
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { HeroLighthouse } from "@/components/landing/hero-lighthouse";
 import { LeadForm } from "@/components/landing/lead-form";
 import { Logo } from "@/components/logo";
@@ -112,8 +111,9 @@ const steps = [
 ];
 
 export default async function Home() {
+  // Con sesión abierta la landing se ve igual (para mostrarla), pero con el acceso al panel.
   const session = await getSession();
-  if (session) redirect(homeForRole((session.user.role ?? "PATIENT") as Role));
+  const panel = session ? homeForRole((session.user.role ?? "PATIENT") as Role) : null;
 
   return (
     <div className="flex flex-1 flex-col">
@@ -139,7 +139,7 @@ export default async function Home() {
               Seguridad
             </a>
             <Button asChild variant="ghost" size="sm">
-              <Link href="/ingresar">Ingresar</Link>
+              <Link href={panel ?? "/ingresar"}>{panel ? "Ir a mi panel" : "Ingresar"}</Link>
             </Button>
             <Button asChild size="sm">
               <a href="#probar">Quiero probarla</a>
@@ -284,8 +284,8 @@ export default async function Home() {
             en peligro, llamá al 911. Para hablar con alguien: 135 (CABA y GBA) o 0800-345-1435
             (todo el país), gratis las 24 h.
           </p>
-          <Link href="/ingresar" className="text-primary font-medium hover:underline">
-            Ingresar
+          <Link href={panel ?? "/ingresar"} className="text-primary font-medium hover:underline">
+            {panel ? "Ir a mi panel" : "Ingresar"}
           </Link>
         </div>
       </footer>
