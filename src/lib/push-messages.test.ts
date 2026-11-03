@@ -18,6 +18,8 @@ const all = (now: Date) => {
     pushMessages.patientCancelled(d, "2026-11-05", now),
     pushMessages.patientLinked(),
     pushMessages.test(false),
+    pushMessages.accountChanged("profile", "/app/ajustes#contrasena"),
+    pushMessages.accountChanged("password", "/recuperar"),
   ];
 };
 

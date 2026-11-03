@@ -101,6 +101,29 @@ export function welcomeProfessionalEmail(a: { name: string; loginUrl: string }):
   );
 }
 
+/** Aviso de seguridad: cambiaron los datos o la contraseña de la cuenta. */
+export function accountChangedEmail(a: {
+  name: string;
+  change: "profile" | "password";
+  url: string;
+}): EmailContent {
+  const password = a.change === "password";
+  return build(
+    password ? "Cambió tu contraseña de Anclaje" : "Cambiaron tus datos en Anclaje",
+    [
+      `Hola, ${firstName(a.name) ?? a.name}.`,
+      password
+        ? "Te avisamos que se cambió la contraseña de tu cuenta de Anclaje y se cerraron las sesiones abiertas en otros dispositivos."
+        : "Te avisamos que se modificaron los datos personales de tu cuenta de Anclaje.",
+      password
+        ? "Si fuiste vos, no tenés que hacer nada. Si no fuiste vos, recuperá tu cuenta ahora: te mandamos un link para elegir una contraseña nueva."
+        : "Si fuiste vos, no tenés que hacer nada. Si no fuiste vos, entrá y cambiá tu contraseña: así se cierran las sesiones abiertas en otros dispositivos.",
+    ],
+    { label: password ? "Recuperar mi cuenta" : "Cambiar mi contraseña", url: a.url },
+    "Este mail es automático y te llega siempre que cambian tus datos o tu contraseña.",
+  );
+}
+
 /** Aviso a la profesional: alguien aceptó su invitación. Sin nombre (ver regla arriba). */
 export function patientLinkedEmail(a: {
   professionalName: string;

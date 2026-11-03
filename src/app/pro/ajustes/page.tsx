@@ -3,6 +3,7 @@ import { AppointmentEmailToggle } from "@/components/appointment-email-toggle";
 import { ChangePasswordForm } from "@/components/change-password-form";
 import { NotificationPrefs, type NotificationPrefItem } from "@/components/notification-prefs";
 import { PushDevice } from "@/components/push-device";
+import { ProfileForm } from "@/components/profile-form";
 import { PageHeader } from "@/components/ui/misc";
 import { NOTIFICATIONS_ENABLED } from "@/lib/constants";
 import { prisma } from "@/lib/db";
@@ -34,6 +35,19 @@ export default async function ProSettingsPage() {
   return (
     <div className="flex max-w-2xl flex-col gap-8">
       <PageHeader title="Ajustes" />
+      <section aria-labelledby="profile-title" className="flex flex-col gap-3">
+        <h2 id="profile-title" className="text-lg font-semibold">
+          Datos personales
+        </h2>
+        <ProfileForm
+          side="pro"
+          email={user.email}
+          displayName={professional.displayName}
+          licenseJurisdiction={professional.licenseJurisdiction}
+          licenseNumber={professional.licenseNumber}
+          verified={!!professional.verifiedAt}
+        />
+      </section>
       <section aria-labelledby="appt-title" className="flex flex-col gap-3">
         <div>
           <h2 id="appt-title" className="text-lg font-semibold">
@@ -90,7 +104,11 @@ export default async function ProSettingsPage() {
         </section>
       )}
 
-      <section aria-labelledby="pw-title" className="flex flex-col gap-3">
+      <section
+        id="contrasena"
+        aria-labelledby="pw-title"
+        className="flex scroll-mt-20 flex-col gap-3"
+      >
         <h2 id="pw-title" className="text-lg font-semibold">
           Contraseña
         </h2>

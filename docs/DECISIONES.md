@@ -387,3 +387,10 @@ salvo que se indique lo contrario.
   y la profesional lo manda desde su número: recordar turno, avisar cancelación, mandar invitación.
   El texto no lleva nada clínico. Si el paciente sin la app tiene celular en su contacto, abre su
   chat; si no (o si usa la app, que no guarda teléfono), WhatsApp deja elegir el chat.
+- **Datos personales en Ajustes:** paciente (nombre) y profesional (nombre visible y matrícula) los
+  corrigen ellos mismos. Si la profesional cambia la matrícula, vuelve a "sin verificar". El email no
+  se cambia desde la app (es el usuario de ingreso): por ahora lo hace el equipo a pedido.
+- **Avisos de seguridad:** al cambiar datos personales o la contraseña (desde Ajustes o con
+  "olvidé mi contraseña") llega siempre un mail y un aviso al celular, sin opción de apagarlos:
+  "si no fuiste vos…" lleva a cambiar la contraseña (o a recuperarla, si lo que cambió fue la
+  contraseña). Cambiar o recuperar la contraseña cierra las sesiones abiertas en otros lados.

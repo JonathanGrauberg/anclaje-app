@@ -3,12 +3,14 @@ import Link from "next/link";
 import { AppointmentEmailToggle } from "@/components/appointment-email-toggle";
 import { ChangePasswordForm } from "@/components/change-password-form";
 import { NotificationPrefs, type NotificationPrefItem } from "@/components/notification-prefs";
+import { ProfileForm } from "@/components/profile-form";
 import { PageHeader } from "@/components/ui/misc";
 import { NOTIFICATIONS_ENABLED } from "@/lib/constants";
 import { formatDate } from "@/lib/dates";
 import { prisma } from "@/lib/db";
 import { cleanEnv } from "@/lib/push";
 import { NOTIFY_DEFAULTS } from "@/lib/push-messages";
+import { patientName } from "@/lib/patients";
 import { requirePatient } from "@/lib/session";
 import { DataSection } from "./data-section";
 import { RemindersForm } from "./reminders-form";
@@ -190,7 +192,18 @@ export default async function SettingsPage({ searchParams }: PageProps<"/app/aju
         </section>
       )}
 
-      <section aria-labelledby="pw-title" className="flex flex-col gap-3">
+      <section aria-labelledby="profile-title" className="flex flex-col gap-3">
+        <h2 id="profile-title" className="text-lg font-semibold">
+          Datos personales
+        </h2>
+        <ProfileForm side="patient" email={user.email} name={patientName({ ...patient, user })} />
+      </section>
+
+      <section
+        id="contrasena"
+        aria-labelledby="pw-title"
+        className="flex scroll-mt-20 flex-col gap-3"
+      >
         <h2 id="pw-title" className="text-lg font-semibold">
           Contraseña
         </h2>

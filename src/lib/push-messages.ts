@@ -91,6 +91,15 @@ export const pushMessages = {
     body: "Un paciente aceptó tu invitación y ya está en tu lista.",
     url: "/pro",
   }),
+  // Aviso de seguridad: no se puede apagar. `url` lleva a cambiar o recuperar la contraseña.
+  accountChanged: (change: "profile" | "password", url: string): PushMessage => ({
+    title: change === "password" ? "Cambió tu contraseña" : "Cambiaron tus datos",
+    body:
+      change === "password"
+        ? "Se cambió la contraseña de tu cuenta. Si no fuiste vos, tocá acá para recuperarla."
+        : "Se modificaron los datos de tu cuenta. Si no fuiste vos, tocá acá y cambiá tu contraseña.",
+    url,
+  }),
   test: (professional: boolean): PushMessage => ({
     title: "Anclaje",
     body: "Así te van a llegar los avisos. ¡Funciona!",

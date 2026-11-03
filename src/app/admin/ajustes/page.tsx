@@ -10,7 +10,11 @@ export default async function AdminSettingsPage() {
   return (
     <div className="flex max-w-2xl flex-col gap-8">
       <PageHeader title="Ajustes" description={user.email} />
-      <section aria-labelledby="pw-title" className="flex flex-col gap-3">
+      <section
+        id="contrasena"
+        aria-labelledby="pw-title"
+        className="flex scroll-mt-20 flex-col gap-3"
+      >
         <h2 id="pw-title" className="text-lg font-semibold">
           Contraseña
         </h2>

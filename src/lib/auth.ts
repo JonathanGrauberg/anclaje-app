@@ -1,10 +1,11 @@
 import { betterAuth } from "better-auth";
-import { APIError } from "better-auth/api";
+import { APIError, createAuthMiddleware, isAPIError } from "better-auth/api";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
 import { magicLink } from "better-auth/plugins";
 import { prisma } from "@/lib/db";
 import { sendEmail } from "@/lib/email";
+import { sendAccountChangedNotice } from "@/lib/security-notice";
 import { storage } from "@/lib/storage";
 
 const isProd = process.env.NODE_ENV === "production";
@@ -27,6 +28,10 @@ export const auth = betterAuth({
     // "¿Te olvidaste la contraseña?": link de un solo uso por email, vence en 1 hora.
     resetPasswordTokenExpiresIn: 60 * 60,
     revokeSessionsOnPasswordReset: true,
+    // Aviso de seguridad por mail y al celular (por si no fue la persona).
+    onPasswordReset: async ({ user }) => {
+      await sendAccountChangedNotice(user.id, "password");
+    },
     sendResetPassword: async ({ user, url }) => {
       await sendEmail({
         to: user.email,
@@ -149,6 +154,15 @@ export const auth = betterAuth({
         },
       },
     },
+  },
+
+  hooks: {
+    // Cambio de contraseña desde Ajustes (ya cierra las otras sesiones): aviso de seguridad.
+    after: createAuthMiddleware(async (ctx) => {
+      if (ctx.path !== "/change-password" || isAPIError(ctx.context.returned)) return;
+      const userId = ctx.context.session?.user.id;
+      if (userId) await sendAccountChangedNotice(userId, "password");
+    }),
   },
 
   plugins: [
