@@ -2,7 +2,7 @@
 
 import { audit } from "@/lib/audit";
 import { prisma } from "@/lib/db";
-import { appUrl, sendEmailQuietly } from "@/lib/email";
+import { appUrl, contactEmail, sendEmailQuietly } from "@/lib/email";
 import { welcomeProfessionalEmail } from "@/lib/emails";
 import { getSession } from "@/lib/session";
 import {
@@ -49,6 +49,7 @@ export async function completeProfessionalSignup(input: ProfessionalSignupInput)
     await sendEmailQuietly(
       {
         to: session.user.email,
+        replyTo: contactEmail(),
         ...welcomeProfessionalEmail({ name: displayName, loginUrl: appUrl("/ingresar") }),
       },
       "bienvenida",

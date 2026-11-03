@@ -7,7 +7,13 @@ import nodemailer, { type Transporter } from "nodemailer";
 
 let transporter: Transporter | null = null;
 
-export type Email = { to: string; subject: string; text: string; html?: string };
+export type Email = { to: string; subject: string; text: string; html?: string; replyTo?: string };
+
+/**
+ * Casilla del equipo de Anclaje (`CONTACT_EMAIL`): recibe los avisos de interesados y las respuestas
+ * a los mails para profesionales. Sin configurar, los avisos van a las cuentas ADMIN.
+ */
+export const contactEmail = () => process.env.CONTACT_EMAIL || undefined;
 
 export async function sendEmail(email: Email) {
   const url = process.env.SMTP_URL;

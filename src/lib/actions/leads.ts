@@ -4,7 +4,7 @@ import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { audit } from "@/lib/audit";
 import { prisma } from "@/lib/db";
-import { appUrl, sendEmailQuietly } from "@/lib/email";
+import { appUrl, contactEmail, sendEmailQuietly } from "@/lib/email";
 import { allow } from "@/lib/rate-limit";
 import { adminForAction } from "@/lib/session";
 import { leadSchema, type LeadInput } from "@/lib/validation/leads";
@@ -31,14 +31,16 @@ export async function createLead(input: LeadInput) {
         message: data.message || null,
       },
     });
-    const admins = await prisma.user.findMany({
-      where: { role: "ADMIN" },
-      select: { email: true },
-    });
-    for (const a of admins) {
+    const contact = contactEmail();
+    const recipients = contact
+      ? [contact]
+      : (await prisma.user.findMany({ where: { role: "ADMIN" }, select: { email: true } })).map(
+          (a) => a.email,
+        );
+    for (const to of recipients) {
       await sendEmailQuietly(
         {
-          to: a.email,
+          to,
           subject: `Anclaje: ${lead.name} quiere probarla`,
           text: [
             `${lead.name} dejó sus datos en la página de Anclaje.`,

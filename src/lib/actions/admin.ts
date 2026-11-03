@@ -6,7 +6,7 @@ import { rekey } from "@/lib/assessments/doc";
 import { createAssessmentFromDoc } from "@/lib/assessments/repo";
 import { audit } from "@/lib/audit";
 import { prisma } from "@/lib/db";
-import { appUrl, sendEmailQuietly } from "@/lib/email";
+import { appUrl, contactEmail, sendEmailQuietly } from "@/lib/email";
 import { welcomeProfessionalEmail } from "@/lib/emails";
 import { adminForAction } from "@/lib/session";
 import {
@@ -42,6 +42,7 @@ export async function createProfessional(input: CreateProfessionalInput) {
       await sendEmailQuietly(
         {
           to: user.email,
+          replyTo: contactEmail(),
           ...welcomeProfessionalEmail({ name: user.name, loginUrl: appUrl("/ingresar") }),
         },
         "bienvenida",
