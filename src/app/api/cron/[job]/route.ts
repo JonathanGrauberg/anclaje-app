@@ -8,9 +8,12 @@ import { pushConfigured, sendPushToUser } from "@/lib/push";
 import { getPatientsWithAttention } from "@/lib/queries/pro";
 import { isDigestDue, isReminderDue, reminderMessage } from "@/lib/reminders";
 
-// Tareas programadas. `turnos` la llama Vercel Cron una vez por día (vercel.json). Las demás, un cron externo (Vercel Cron, GitHub Actions, `npm run cron` en
-// dev) cada 5–15 minutos con `Authorization: Bearer $CRON_SECRET`. Son idempotentes: cada
-// recordatorio y resumen se manda como mucho una vez por día.
+// Tareas programadas, con `Authorization: Bearer $CRON_SECRET`:
+// - `turnos` (10 h) y `resumen` (9 h, diario o los lunes según cada profesional): Vercel Cron,
+//   una vez por día (vercel.json).
+// - `recordatorios` (avisos push a la hora que eligió cada paciente): un cron externo cada 10 min
+//   (cron-job.org; el plan gratis de Vercel no permite más de una vez por día). En dev, `npm run cron`.
+// Son idempotentes: cada recordatorio y resumen se manda como mucho una vez por día.
 
 export const dynamic = "force-dynamic";
 

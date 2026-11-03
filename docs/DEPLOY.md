@@ -16,7 +16,7 @@ Los valores secretos **no** van acá: están en Vercel (Sensitive) y respaldados
 | `STORAGE_DRIVER=s3`, `S3_BUCKET=anclaje-app`, `S3_REGION=auto`, `S3_ENDPOINT` | ✅ | Cloudflare R2, bucket privado |
 | `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | ✅ | Token de R2 "anclaje-vercel", Object Read & Write, solo ese bucket |
 | `SMTP_URL` (`smtps://resend:<clave>@smtp.resend.com:465`), `EMAIL_FROM` (`Anclaje <no-responder@anclaje.webistudio.net>`) | ✅ | Resend, dominio anclaje.webistudio.net verificado (DKIM + 2 CNAME en Hostinger, región São Paulo). Clave "anclaje-vercel", solo envío |
-| `CRON_SECRET` | ⏳ | `npm run gen:key`. Vercel Cron lo manda solo en cada llamada (recordatorio de turnos, `vercel.json`) |
+| `CRON_SECRET` | ✅ | `npm run gen:key`. Vercel Cron lo manda solo en cada llamada (recordatorio de turnos, `vercel.json`) |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | ⏳ | Google Cloud (ver `.env.example`) |
 | Avisos (`NEXT_PUBLIC_NOTIFICATIONS`, VAPID, `CRON_SECRET`) | apagados | Más adelante |
 
