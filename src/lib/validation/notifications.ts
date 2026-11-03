@@ -20,3 +20,19 @@ export const reminderSettingsSchema = z.object({
 export type ReminderSettingsInput = z.infer<typeof reminderSettingsSchema>;
 
 export const digestSchema = z.object({ frequency: z.enum(["DAILY", "WEEKLY", "NEVER"]) });
+
+/** Avisos que puede apagar cada lado (ver `NotificationPrefs`). */
+export const PATIENT_NOTIFY_KINDS = [
+  "appointmentDayBefore",
+  "appointmentSoon",
+  "appointmentChanges",
+  "feedback",
+  "assignments",
+] as const;
+export const PRO_NOTIFY_KINDS = ["patientCancelled", "patientLinked"] as const;
+
+export const notificationPrefSchema = z.object({
+  kind: z.enum([...PATIENT_NOTIFY_KINDS, ...PRO_NOTIFY_KINDS]),
+  enabled: z.boolean(),
+});
+export type NotificationPrefInput = z.infer<typeof notificationPrefSchema>;

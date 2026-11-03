@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import { findLinkedPatient } from "@/lib/access";
 import { emptyDoc, publishProblems, rekey } from "@/lib/assessments/doc";
 import {
@@ -13,6 +14,8 @@ import {
 import { audit } from "@/lib/audit";
 import { encryptOptional } from "@/lib/crypto";
 import { prisma } from "@/lib/db";
+import { notifyPatient } from "@/lib/notify";
+import { pushMessages } from "@/lib/push-messages";
 import { professionalForAction } from "@/lib/session";
 import { isValidKey } from "@/lib/storage";
 import {
@@ -261,6 +264,7 @@ export async function assignAssessment(input: AssignAssessmentInput) {
       patientId,
       meta: { recurrenceDays },
     });
+    after(() => notifyPatient(patientId, "assignments", pushMessages.assessment()));
     revalidatePath(`/pro/pacientes/${patientId}`);
     return ok(undefined);
   });

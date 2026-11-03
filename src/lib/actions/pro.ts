@@ -1,10 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { findLinkedPatient, findSharedTarget, sessionTopicsWhere } from "@/lib/access";
 import { audit } from "@/lib/audit";
 import { encrypt } from "@/lib/crypto";
 import { prisma } from "@/lib/db";
+import { notifyPatient } from "@/lib/notify";
+import { pushMessages } from "@/lib/push-messages";
 import { professionalForAction } from "@/lib/session";
 import {
   clinicalNoteSchema,
@@ -70,6 +73,7 @@ export async function addFeedback(input: FeedbackInput) {
       patientId,
       meta: { targetType, targetId },
     });
+    after(() => notifyPatient(patientId, "feedback", pushMessages.feedback()));
     revalidatePath(patientPath(patientId), "layout");
     revalidatePath("/pro");
     return ok({ id: fb.id });
@@ -348,6 +352,7 @@ export async function createTask(input: TaskInput) {
       entityId: task.id,
       patientId,
     });
+    after(() => notifyPatient(patientId, "assignments", pushMessages.task()));
     revalidatePath(patientPath(patientId));
     revalidatePath("/pro");
     return ok({ id: task.id });

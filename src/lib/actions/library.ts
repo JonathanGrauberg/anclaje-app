@@ -1,9 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { findLinkedPatient } from "@/lib/access";
 import { audit } from "@/lib/audit";
 import { prisma } from "@/lib/db";
+import { notifyPatient } from "@/lib/notify";
+import { pushMessages } from "@/lib/push-messages";
 import { professionalForAction } from "@/lib/session";
 import { isValidKey, storage } from "@/lib/storage";
 import { resourceSchema, type ResourceInput } from "@/lib/validation/pro";
@@ -79,11 +82,13 @@ export async function setResourceAssignment(
       return fail("No tenés vínculo activo");
 
     if (assigned) {
+      const existing = await prisma.resourceAssignment.count({ where: { resourceId, patientId } });
       await prisma.resourceAssignment.upsert({
         where: { resourceId_patientId: { resourceId, patientId } },
         update: {},
         create: { resourceId, patientId },
       });
+      if (!existing) after(() => notifyPatient(patientId, "assignments", pushMessages.resource()));
     } else {
       await prisma.resourceAssignment.deleteMany({ where: { resourceId, patientId } });
     }

@@ -3,12 +3,15 @@
 import { prisma } from "@/lib/db";
 import { pushConfigured, sendPushToUser } from "@/lib/push";
 import { allow } from "@/lib/rate-limit";
-import { reminderMessage } from "@/lib/reminders";
+import { pushMessages } from "@/lib/push-messages";
 import { getSession, patientForAction, professionalForAction } from "@/lib/session";
 import {
   digestSchema,
+  notificationPrefSchema,
+  PATIENT_NOTIFY_KINDS,
   pushSubscriptionSchema,
   reminderSettingsSchema,
+  type NotificationPrefInput,
   type PushSubscriptionInput,
   type ReminderSettingsInput,
 } from "@/lib/validation/notifications";
@@ -63,11 +66,15 @@ export async function saveReminderSettings(input: ReminderSettingsInput) {
 /** Manda una notificación de prueba a los dispositivos del usuario. */
 export async function sendTestNotification() {
   return safe(async () => {
-    const userId = await currentUserId();
+    const session = await getSession();
+    if (!session) throw new Error("No autorizado");
+    const userId = session.user.id;
     if (!pushConfigured()) return fail("Las notificaciones no están configuradas en el servidor.");
     if (!allow(`push-test:${userId}`, 3, 10 * 60_000)) return fail("Esperá unos minutos.");
-    const msg = reminderMessage();
-    const delivered = await sendPushToUser(userId, { ...msg, url: "/app/rueda" });
+    const delivered = await sendPushToUser(
+      userId,
+      pushMessages.test(session.user.role === "PROFESSIONAL"),
+    );
     if (!delivered) return fail("No encontramos este dispositivo. Volvé a activar los avisos.");
     return ok(undefined);
   });
@@ -106,6 +113,25 @@ export async function saveAppointmentEmails(enabled: boolean) {
     await prisma.patientProfile.update({
       where: { id: patient.id },
       data: { appointmentEmails: enabled === true },
+    });
+    return ok(undefined);
+  });
+}
+
+/** Prende o apaga un tipo de aviso al celular. Cada lado solo puede tocar los suyos. */
+export async function saveNotificationPref(input: NotificationPrefInput) {
+  return safe(async () => {
+    const session = await getSession();
+    if (!session) throw new Error("No autorizado");
+    const parsed = notificationPrefSchema.safeParse(input);
+    if (!parsed.success) return fail(firstIssue(parsed.error));
+    const { kind, enabled } = parsed.data;
+    const patientKind = (PATIENT_NOTIFY_KINDS as readonly string[]).includes(kind);
+    if (patientKind !== (session.user.role === "PATIENT")) return fail("No autorizado");
+    await prisma.notificationPrefs.upsert({
+      where: { userId: session.user.id },
+      update: { [kind]: enabled },
+      create: { userId: session.user.id, [kind]: enabled },
     });
     return ok(undefined);
   });

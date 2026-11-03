@@ -1,5 +1,9 @@
 import { timingSafeEqual } from "node:crypto";
-import { sendAppointmentReminders } from "@/lib/appointment-reminders";
+import {
+  sendAppointmentDayBeforePushes,
+  sendAppointmentReminders,
+  sendAppointmentSoonPushes,
+} from "@/lib/appointment-reminders";
 import { NOTIFICATIONS_ENABLED } from "@/lib/constants";
 import { prisma } from "@/lib/db";
 import { digestEmail, summarizeDigest } from "@/lib/digest";
@@ -42,7 +46,11 @@ async function runReminders(now: Date) {
       ? 1
       : 0;
   }
-  return { candidates: candidates.length, sent };
+  return {
+    candidates: candidates.length,
+    sent,
+    appointmentsSoon: await sendAppointmentSoonPushes(now),
+  };
 }
 
 async function runDigests(now: Date) {
@@ -76,8 +84,9 @@ async function handle(req: Request, ctx: RouteContext<"/api/cron/[job]">) {
   const now = new Date();
   // Recordatorio de turnos por mail: no depende de los avisos push, solo de tener SMTP.
   if (job === "turnos") {
-    if (!process.env.SMTP_URL) return Response.json({ skipped: "mail sin configurar" });
-    return Response.json(await sendAppointmentReminders(now));
+    const push = await sendAppointmentDayBeforePushes(now);
+    if (!process.env.SMTP_URL) return Response.json({ skipped: "mail sin configurar", push });
+    return Response.json({ ...(await sendAppointmentReminders(now)), push });
   }
   if (!NOTIFICATIONS_ENABLED) return Response.json({ skipped: "avisos apagados" });
   if (job === "recordatorios") {

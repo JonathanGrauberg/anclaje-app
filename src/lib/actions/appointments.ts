@@ -2,11 +2,14 @@
 
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { findLinkedPatient } from "@/lib/access";
 import { audit } from "@/lib/audit";
-import { fromLocalInputValue } from "@/lib/dates";
+import { dayKey, fromLocalInputValue } from "@/lib/dates";
 import { prisma } from "@/lib/db";
 import { createManagedPatient } from "@/lib/managed-patients";
+import { notifyPatient, notifyProfessional } from "@/lib/notify";
+import { pushMessages } from "@/lib/push-messages";
 import { patientForAction, professionalForAction } from "@/lib/session";
 import {
   createAppointmentSchema,
@@ -73,6 +76,13 @@ export async function createAppointment(input: CreateAppointmentInput) {
       patientId,
       meta: { count: repeatWeeks },
     });
+    after(() =>
+      notifyPatient(
+        patientId,
+        "appointmentChanges",
+        pushMessages.appointmentCreated(first, repeatWeeks),
+      ),
+    );
     refresh();
     return ok({
       count: repeatWeeks,
@@ -117,6 +127,11 @@ export async function updateAppointment(input: UpdateAppointmentInput) {
       entityId: a.id,
       patientId: a.patientId,
     });
+    if (startsAt.getTime() > Date.now()) {
+      after(() =>
+        notifyPatient(a.patientId, "appointmentChanges", pushMessages.appointmentChanged(startsAt)),
+      );
+    }
     refresh();
     return ok(undefined);
   });
@@ -148,6 +163,15 @@ export async function cancelAppointment(id: string, scope: "one" | "following" =
       patientId: a.patientId,
       meta: { status: "CANCELLED", count: res.count },
     });
+    if (a.startsAt.getTime() > Date.now()) {
+      after(() =>
+        notifyPatient(
+          a.patientId,
+          "appointmentChanges",
+          pushMessages.appointmentCancelled(a.startsAt, res.count),
+        ),
+      );
+    }
     refresh();
     return ok({ count: res.count });
   });
@@ -168,6 +192,19 @@ export async function cancelMyAppointment(id: string) {
       data: { status: "CANCELLED", cancelledBy: "PATIENT", cancelledAt: new Date() },
     });
     if (res.count === 0) return fail("No encontramos ese turno");
+    const a = await prisma.appointment.findUnique({
+      where: { id: String(id) },
+      select: { professionalId: true, startsAt: true },
+    });
+    if (a) {
+      after(() =>
+        notifyProfessional(
+          a.professionalId,
+          "patientCancelled",
+          pushMessages.patientCancelled(a.startsAt, dayKey(a.startsAt)),
+        ),
+      );
+    }
     refresh();
     return ok(undefined);
   });

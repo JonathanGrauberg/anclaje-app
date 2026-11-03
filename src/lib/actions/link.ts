@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { audit } from "@/lib/audit";
 import { CONSENT_VERSION } from "@/lib/consent";
 import { prisma } from "@/lib/db";
@@ -8,6 +9,8 @@ import { appUrl, sendEmailQuietly } from "@/lib/email";
 import { patientLinkedEmail } from "@/lib/emails";
 import { normalizeCode } from "@/lib/invitations";
 import { mergeManagedPatient } from "@/lib/managed-patients";
+import { notifyProfessional } from "@/lib/notify";
+import { pushMessages } from "@/lib/push-messages";
 import { allow } from "@/lib/rate-limit";
 import { patientForAction } from "@/lib/session";
 import {
@@ -92,6 +95,9 @@ export async function acceptInvitation(input: AcceptInvitationInput) {
         "vinculación",
       );
     }
+    after(() =>
+      notifyProfessional(result.professionalId, "patientLinked", pushMessages.patientLinked()),
+    );
     revalidatePath("/app", "layout");
     return ok(undefined);
   });

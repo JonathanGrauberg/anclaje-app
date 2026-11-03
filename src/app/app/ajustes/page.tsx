@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
-import { cleanEnv } from "@/lib/push";
-import { NOTIFICATIONS_ENABLED } from "@/lib/constants";
 import Link from "next/link";
 import { AppointmentEmailToggle } from "@/components/appointment-email-toggle";
 import { ChangePasswordForm } from "@/components/change-password-form";
+import { NotificationPrefs, type NotificationPrefItem } from "@/components/notification-prefs";
 import { PageHeader } from "@/components/ui/misc";
+import { NOTIFICATIONS_ENABLED } from "@/lib/constants";
 import { formatDate } from "@/lib/dates";
 import { prisma } from "@/lib/db";
+import { cleanEnv } from "@/lib/push";
+import { NOTIFY_DEFAULTS } from "@/lib/push-messages";
 import { requirePatient } from "@/lib/session";
 import { DataSection } from "./data-section";
 import { RemindersForm } from "./reminders-form";
@@ -14,12 +16,40 @@ import { CodeEntry, SharingDefaultsForm, UnlinkButton } from "./settings-forms";
 
 export const metadata: Metadata = { title: "Ajustes" };
 
+const PATIENT_NOTIFICATIONS: NotificationPrefItem[] = [
+  {
+    kind: "appointmentDayBefore",
+    label: "Turno de mañana",
+    hint: "El día anterior, a la mañana.",
+  },
+  {
+    kind: "appointmentSoon",
+    label: "Turno en un rato",
+    hint: "Unas 2 horas antes.",
+  },
+  {
+    kind: "appointmentChanges",
+    label: "Cambios en tus turnos",
+    hint: "Si te dan un turno nuevo, lo cambian o lo cancelan.",
+  },
+  {
+    kind: "feedback",
+    label: "Devoluciones",
+    hint: "Cuando tu psicóloga o psicólogo te deja una devolución.",
+  },
+  {
+    kind: "assignments",
+    label: "Tareas, material y cuestionarios",
+    hint: "Cuando te comparten algo nuevo.",
+  },
+];
+
 export default async function SettingsPage({ searchParams }: PageProps<"/app/ajustes">) {
   const { user, patient } = await requirePatient();
   const justLinked = (await searchParams).vinculado === "1";
   const shared = { patientId: patient.id, visibility: "SHARED" as const };
 
-  const [links, sharedCounts, reminder] = await Promise.all([
+  const [links, sharedCounts, reminder, prefs] = await Promise.all([
     prisma.careLink.findMany({
       where: { patientId: patient.id, status: "ACTIVE" },
       orderBy: { createdAt: "asc" },
@@ -33,6 +63,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/app/aju
         ])
       : null,
     prisma.reminderSettings.findUnique({ where: { userId: user.id } }),
+    prisma.notificationPrefs.findUnique({ where: { userId: user.id } }),
   ]);
   const defaults = patient.sharingDefaults ?? {
     journal: "PRIVATE",
@@ -146,6 +177,16 @@ export default async function SettingsPage({ searchParams }: PageProps<"/app/aju
               days: reminder?.days ?? [0, 1, 2, 3, 4, 5, 6],
             }}
           />
+          <div className="bg-card flex flex-col gap-3 rounded-2xl border p-4">
+            <p className="text-muted-foreground text-sm">
+              Otros avisos, en los dispositivos donde los activaste. Nunca muestran lo que
+              escribiste ni nombres: solo qué hay de nuevo.
+            </p>
+            <NotificationPrefs
+              items={PATIENT_NOTIFICATIONS}
+              initial={{ ...NOTIFY_DEFAULTS, ...prefs }}
+            />
+          </div>
         </section>
       )}
 

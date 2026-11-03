@@ -155,6 +155,7 @@ model User {
   professionalProfile ProfessionalProfile?
   pushSubscriptions   PushSubscription[]
   reminderSettings    ReminderSettings?
+  notificationPrefs   NotificationPrefs?
   auditLogs           AuditLog[]
 
   @@map("user")
@@ -880,25 +881,44 @@ model ReminderSettings {
   lastSentAt DateTime?
 }
 
+/// Qué avisos al celular quiere recibir cada persona (además del recordatorio de registro).
+/// Sin fila, valen los valores por defecto. Los avisos nunca llevan contenido clínico ni nombres.
+model NotificationPrefs {
+  id                   String  @id @default(cuid())
+  userId               String  @unique
+  user                 User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Paciente
+  appointmentDayBefore Boolean @default(true) // el día anterior al turno
+  appointmentSoon      Boolean @default(false) // unas 2 horas antes
+  appointmentChanges   Boolean @default(true) // turno nuevo, cambiado o cancelado
+  feedback             Boolean @default(true) // devolución nueva
+  assignments          Boolean @default(true) // tarea, material o cuestionario nuevo
+  // Profesional
+  patientCancelled     Boolean @default(true) // un paciente avisó que no va
+  patientLinked        Boolean @default(true) // un paciente aceptó la invitación
+}
+
 /// Turno de sesión. Lo crea la profesional; el paciente lo ve y puede avisar que no va.
 /// No guarda contenido clínico: solo fecha, modalidad y lugar/link.
 model Appointment {
-  id             String              @id @default(cuid())
-  professionalId String
-  professional   ProfessionalProfile @relation(fields: [professionalId], references: [id], onDelete: Cascade)
-  patientId      String
-  patient        PatientProfile      @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  startsAt       DateTime
-  durationMin    Int                 @default(50)
-  modality       AppointmentModality @default(IN_PERSON)
-  place          String? // dirección o link de la videollamada
-  status         AppointmentStatus   @default(SCHEDULED)
-  cancelledBy    AuthorKind?
-  cancelledAt    DateTime?
-  seriesId       String? // turnos creados juntos como semanales
-  reminderSentAt DateTime? // recordatorio por mail del día anterior (se manda una sola vez)
-  createdAt      DateTime            @default(now())
-  updatedAt      DateTime            @updatedAt
+  id              String              @id @default(cuid())
+  professionalId  String
+  professional    ProfessionalProfile @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  patientId       String
+  patient         PatientProfile      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  startsAt        DateTime
+  durationMin     Int                 @default(50)
+  modality        AppointmentModality @default(IN_PERSON)
+  place           String? // dirección o link de la videollamada
+  status          AppointmentStatus   @default(SCHEDULED)
+  cancelledBy     AuthorKind?
+  cancelledAt     DateTime?
+  seriesId        String? // turnos creados juntos como semanales
+  reminderSentAt  DateTime? // recordatorio por mail del día anterior (se manda una sola vez)
+  pushDayBeforeAt DateTime? // aviso al celular del día anterior (una sola vez)
+  pushSoonAt      DateTime? // aviso al celular unas 2 horas antes (una sola vez)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
 
   @@index([professionalId, startsAt])
   @@index([patientId, startsAt])
