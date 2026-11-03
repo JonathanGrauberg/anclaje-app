@@ -85,11 +85,14 @@ export function NewAppointmentForm({
   patients,
   defaultPatientId,
   defaultDay,
+  fixedPatient = false,
 }: {
   patients: { id: string; name: string; withoutApp: boolean }[];
   defaultPatientId?: string;
   /** Día elegido en el calendario ("YYYY-MM-DD"): se propone a las 9. */
   defaultDay?: string;
+  /** Desde la ficha del paciente: el paciente ya viene elegido y no se cambia. */
+  fixedPatient?: boolean;
 }) {
   const uid = useId();
   const [patientId, setPatientId] = useState(
@@ -109,137 +112,139 @@ export function NewAppointmentForm({
   const [done, setDone] = useState<string | null>(null);
   const [pending, start] = useTransition();
 
+  const form = (
+    <form
+      className="grid gap-3 sm:grid-cols-3"
+      onSubmit={(e) => {
+        e.preventDefault();
+        setDone(null);
+        setCreated(null);
+        start(async () => {
+          const res = await createAppointment(
+            patientId === NEW
+              ? { newPatient, ...fields, repeatWeeks }
+              : { patientId, ...fields, repeatWeeks },
+          );
+          if (!res.ok) return setError(res.error);
+          setError(null);
+          setDone(res.data.count === 1 ? "Turno agendado." : `${res.data.count} turnos agendados.`);
+          setFields((f) => ({ ...f, startsAt: "" }));
+          if (res.data.newPatient) {
+            // El paciente nuevo ya aparece en la lista: queda elegido.
+            setCreated(res.data.newPatient);
+            setPatientId(res.data.newPatient.id);
+            setNewPatient({ name: "", contact: "" });
+          }
+        });
+      }}
+    >
+      {fixedPatient ? null : (
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor={`${uid}-patient`}>Paciente</Label>
+          <select
+            id={`${uid}-patient`}
+            value={patientId}
+            onChange={(e) => setPatientId(e.target.value)}
+            className={selectClass}
+            required
+          >
+            <option value="">Elegí…</option>
+            {patients.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+                {p.withoutApp ? " (sin la app)" : ""}
+              </option>
+            ))}
+            <option value={NEW}>+ Paciente nuevo, sin la app</option>
+          </select>
+          {selectedPatient?.withoutApp && (
+            <p className="text-muted-foreground text-xs">
+              No tiene la app.{" "}
+              <Link
+                href={`/pro/pacientes/${selectedPatient.id}`}
+                className="text-primary underline underline-offset-2"
+              >
+                Invitalo desde su ficha
+              </Link>
+            </p>
+          )}
+        </div>
+      )}
+      {patientId === NEW && (
+        <div className="bg-muted/60 grid gap-3 rounded-xl p-3 sm:col-span-3 sm:grid-cols-2">
+          <p className="text-muted-foreground text-sm sm:col-span-2">
+            Para alguien que no usa la app (o todavía no): queda en tu agenda y podés llevar su
+            historia clínica. Después lo podés invitar desde su ficha.
+          </p>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor={`${uid}-new-name`}>Nombre del paciente</Label>
+            <Input
+              id={`${uid}-new-name`}
+              value={newPatient.name}
+              maxLength={120}
+              required
+              onChange={(e) => setNewPatient((v) => ({ ...v, name: e.target.value }))}
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor={`${uid}-new-contact`}>Contacto (opcional)</Label>
+            <Input
+              id={`${uid}-new-contact`}
+              value={newPatient.contact}
+              maxLength={300}
+              placeholder="Teléfono o mail"
+              onChange={(e) => setNewPatient((v) => ({ ...v, contact: e.target.value }))}
+            />
+          </div>
+        </div>
+      )}
+      <AppointmentFields value={fields} onChange={setFields} />
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor={`${uid}-repeat`}>Repetir</Label>
+        <select
+          id={`${uid}-repeat`}
+          value={repeatWeeks}
+          onChange={(e) => setRepeatWeeks(Number(e.target.value))}
+          className={selectClass}
+        >
+          <option value={1}>Solo este turno</option>
+          {[4, 8, 12, 26].map((n) => (
+            <option key={n} value={n}>
+              Todas las semanas, {n === 26 ? "6 meses" : `${n} semanas`}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="flex flex-wrap items-center gap-3 sm:col-span-3">
+        <Button type="submit" disabled={pending}>
+          {pending ? "Agendando…" : "Agendar"}
+        </Button>
+        <FieldError>{error}</FieldError>
+        {done && (
+          <span role="status" className="text-primary text-sm">
+            {done}
+            {created && (
+              <>
+                {" "}
+                {created.name} todavía no tiene la app:{" "}
+                <Link
+                  href={`/pro/pacientes/${created.id}`}
+                  className="underline underline-offset-2"
+                >
+                  ver su ficha e invitarlo
+                </Link>
+                .
+              </>
+            )}
+          </span>
+        )}
+      </div>
+    </form>
+  );
+  if (fixedPatient) return form;
   return (
     <Card>
-      <CardContent>
-        <form
-          className="grid gap-3 sm:grid-cols-3"
-          onSubmit={(e) => {
-            e.preventDefault();
-            setDone(null);
-            setCreated(null);
-            start(async () => {
-              const res = await createAppointment(
-                patientId === NEW
-                  ? { newPatient, ...fields, repeatWeeks }
-                  : { patientId, ...fields, repeatWeeks },
-              );
-              if (!res.ok) return setError(res.error);
-              setError(null);
-              setDone(
-                res.data.count === 1 ? "Turno agendado." : `${res.data.count} turnos agendados.`,
-              );
-              setFields((f) => ({ ...f, startsAt: "" }));
-              if (res.data.newPatient) {
-                // El paciente nuevo ya aparece en la lista: queda elegido.
-                setCreated(res.data.newPatient);
-                setPatientId(res.data.newPatient.id);
-                setNewPatient({ name: "", contact: "" });
-              }
-            });
-          }}
-        >
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor={`${uid}-patient`}>Paciente</Label>
-            <select
-              id={`${uid}-patient`}
-              value={patientId}
-              onChange={(e) => setPatientId(e.target.value)}
-              className={selectClass}
-              required
-            >
-              <option value="">Elegí…</option>
-              {patients.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                  {p.withoutApp ? " (sin la app)" : ""}
-                </option>
-              ))}
-              <option value={NEW}>+ Paciente nuevo, sin la app</option>
-            </select>
-            {selectedPatient?.withoutApp && (
-              <p className="text-muted-foreground text-xs">
-                No tiene la app.{" "}
-                <Link
-                  href={`/pro/pacientes/${selectedPatient.id}`}
-                  className="text-primary underline underline-offset-2"
-                >
-                  Invitalo desde su ficha
-                </Link>
-              </p>
-            )}
-          </div>
-          {patientId === NEW && (
-            <div className="bg-muted/60 grid gap-3 rounded-xl p-3 sm:col-span-3 sm:grid-cols-2">
-              <p className="text-muted-foreground text-sm sm:col-span-2">
-                Para alguien que no usa la app (o todavía no): queda en tu agenda y podés llevar su
-                historia clínica. Después lo podés invitar desde su ficha.
-              </p>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor={`${uid}-new-name`}>Nombre del paciente</Label>
-                <Input
-                  id={`${uid}-new-name`}
-                  value={newPatient.name}
-                  maxLength={120}
-                  required
-                  onChange={(e) => setNewPatient((v) => ({ ...v, name: e.target.value }))}
-                />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor={`${uid}-new-contact`}>Contacto (opcional)</Label>
-                <Input
-                  id={`${uid}-new-contact`}
-                  value={newPatient.contact}
-                  maxLength={300}
-                  placeholder="Teléfono o mail"
-                  onChange={(e) => setNewPatient((v) => ({ ...v, contact: e.target.value }))}
-                />
-              </div>
-            </div>
-          )}
-          <AppointmentFields value={fields} onChange={setFields} />
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor={`${uid}-repeat`}>Repetir</Label>
-            <select
-              id={`${uid}-repeat`}
-              value={repeatWeeks}
-              onChange={(e) => setRepeatWeeks(Number(e.target.value))}
-              className={selectClass}
-            >
-              <option value={1}>Solo este turno</option>
-              {[4, 8, 12, 26].map((n) => (
-                <option key={n} value={n}>
-                  Todas las semanas, {n === 26 ? "6 meses" : `${n} semanas`}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="flex flex-wrap items-center gap-3 sm:col-span-3">
-            <Button type="submit" disabled={pending}>
-              {pending ? "Agendando…" : "Agendar"}
-            </Button>
-            <FieldError>{error}</FieldError>
-            {done && (
-              <span role="status" className="text-primary text-sm">
-                {done}
-                {created && (
-                  <>
-                    {" "}
-                    {created.name} todavía no tiene la app:{" "}
-                    <Link
-                      href={`/pro/pacientes/${created.id}`}
-                      className="underline underline-offset-2"
-                    >
-                      ver su ficha e invitarlo
-                    </Link>
-                    .
-                  </>
-                )}
-              </span>
-            )}
-          </div>
-        </form>
-      </CardContent>
+      <CardContent>{form}</CardContent>
     </Card>
   );
 }

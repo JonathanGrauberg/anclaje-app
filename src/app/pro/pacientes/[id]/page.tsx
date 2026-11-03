@@ -26,6 +26,7 @@ import { getPatterns, getScoreSeries, parseRange } from "@/lib/queries/patterns"
 import { AssessmentsPanel } from "./assessments-panel";
 import { ClinicalRecordForm } from "./clinical-record-form";
 import { CopingEditor } from "./coping-editor";
+import { GiveAppointment } from "./give-appointment";
 import { ManagedPatientActions } from "./managed-patient-actions";
 import { NotesPanel } from "./notes-panel";
 import { TasksPanel } from "./tasks-panel";
@@ -123,20 +124,23 @@ export default async function PatientRecordPage({
             aceptado el {formatDate(link.consentAcceptedAt ?? link.createdAt)}
           </p>
         )}
-        <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+          <GiveAppointment patient={{ id: patient.id, name, withoutApp }} />
           <span className="flex items-center gap-1.5 font-medium">
             <CalendarDays className="text-primary size-4" aria-hidden />
             {nextAppointment
               ? `Próximo turno: ${formatAppointmentShort(nextAppointment)}`
               : "Sin turno agendado"}
           </span>
-          <Link
-            href={`/pro/agenda?paciente=${patient.id}`}
-            className="text-primary underline underline-offset-2"
-          >
-            {nextAppointment ? "Ver agenda" : "Agendar turno"}
-          </Link>
-        </p>
+          {nextAppointment && (
+            <Link
+              href={`/pro/agenda?dia=${dayKey(nextAppointment)}`}
+              className="text-primary underline underline-offset-2"
+            >
+              Ver en la agenda
+            </Link>
+          )}
+        </div>
       </div>
 
       <nav
