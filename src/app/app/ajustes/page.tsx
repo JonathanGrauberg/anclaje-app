@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cleanEnv } from "@/lib/push";
 import { NOTIFICATIONS_ENABLED } from "@/lib/constants";
 import Link from "next/link";
 import { AppointmentEmailToggle } from "@/components/appointment-email-toggle";
@@ -138,7 +139,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/app/aju
             </p>
           </div>
           <RemindersForm
-            vapidKey={process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? null}
+            vapidKey={cleanEnv(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY) ?? null}
             initial={{
               enabled: reminder?.enabled ?? false,
               time: reminder?.time ?? "20:00",

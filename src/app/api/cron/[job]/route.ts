@@ -4,7 +4,7 @@ import { NOTIFICATIONS_ENABLED } from "@/lib/constants";
 import { prisma } from "@/lib/db";
 import { digestEmail, summarizeDigest } from "@/lib/digest";
 import { appUrl, sendEmail } from "@/lib/email";
-import { pushConfigured, sendPushToUser } from "@/lib/push";
+import { pushConfigError, pushConfigured, sendPushToUser } from "@/lib/push";
 import { getPatientsWithAttention } from "@/lib/queries/pro";
 import { isDigestDue, isReminderDue, reminderMessage } from "@/lib/reminders";
 
@@ -26,7 +26,11 @@ function authorized(req: Request) {
 }
 
 async function runReminders(now: Date) {
-  if (!pushConfigured()) return { skipped: "push sin configurar" };
+  if (!pushConfigured()) {
+    const error = pushConfigError();
+    if (error) throw new Error(`Claves VAPID inválidas: ${error}`);
+    return { skipped: "push sin configurar" };
+  }
   const candidates = await prisma.reminderSettings.findMany({
     where: { enabled: true, user: { pushSubscriptions: { some: {} } } },
   });
@@ -76,7 +80,15 @@ async function handle(req: Request, ctx: RouteContext<"/api/cron/[job]">) {
     return Response.json(await sendAppointmentReminders(now));
   }
   if (!NOTIFICATIONS_ENABLED) return Response.json({ skipped: "avisos apagados" });
-  if (job === "recordatorios") return Response.json(await runReminders(now));
+  if (job === "recordatorios") {
+    try {
+      return Response.json(await runReminders(now));
+    } catch (e) {
+      // Sin datos de nadie: solo qué falló, para verlo en la prueba de cron-job.org.
+      console.error("[cron] recordatorios:", (e as Error).message);
+      return Response.json({ error: (e as Error).message }, { status: 500 });
+    }
+  }
   if (job === "resumen") return Response.json(await runDigests(now));
   return Response.json({ error: "Tarea desconocida" }, { status: 404 });
 }
