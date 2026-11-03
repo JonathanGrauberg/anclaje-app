@@ -382,3 +382,8 @@ salvo que se indique lo contrario.
   manual (admin) hasta que estén Google y los planes.
 - **Favicon:** `src/app/icon.svg` sin fondo, verde en modo claro y blanco en modo oscuro (media query
   dentro del SVG). El ícono de iPhone y los de la PWA siguen con fondo crema, que es lo que piden.
+- **WhatsApp:** sin la API de Meta (cobra cada mensaje que inicia la app) ni bots no oficiales
+  (contra las reglas, riesgo de bloqueo del número). La app arma un link `wa.me` con el texto escrito
+  y la profesional lo manda desde su número: recordar turno, avisar cancelación, mandar invitación.
+  El texto no lleva nada clínico. Si el paciente sin la app tiene celular en su contacto, abre su
+  chat; si no (o si usa la app, que no guarda teléfono), WhatsApp deja elegir el chat.
