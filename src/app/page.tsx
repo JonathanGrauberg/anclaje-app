@@ -1,4 +1,5 @@
 import {
+  BellRing,
   BookOpenText,
   CalendarCheck,
   ClipboardList,
@@ -13,6 +14,7 @@ import {
   ShieldCheck,
   Sparkles,
   UserRoundCheck,
+  Wallet,
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -25,7 +27,7 @@ import { getSession, homeForRole, type Role } from "@/lib/session";
 export const metadata: Metadata = {
   title: { absolute: "Anclaje · Un ancla entre sesión y sesión" },
   description:
-    "La app para psicólogas y psicólogos y sus pacientes: registro emocional, diario, autorregistros, agenda e historia clínica. Todo cifrado.",
+    "La app para psicólogas y psicólogos y sus pacientes: registro emocional, diario, autorregistros, agenda, historia clínica y honorarios. Todo cifrado.",
   robots: { index: true, follow: true },
 };
 
@@ -72,6 +74,16 @@ const forYou = [
     icon: ClipboardList,
     title: "Evaluaciones y tareas",
     text: "Armá tus cuestionarios, asigná tareas y recursos de tu biblioteca.",
+  },
+  {
+    icon: Wallet,
+    title: "Honorarios y cobros",
+    text: "Tu lista de precios a mano, precios por paciente y lo cobrado en el mes, sin planillas aparte.",
+  },
+  {
+    icon: BellRing,
+    title: "Avisos al celular",
+    text: "Te enterás cuando un paciente avisa que no puede venir o se suma a la app. Sin nombres en el aviso.",
   },
 ];
 
@@ -161,8 +173,8 @@ export default async function Home() {
               </h1>
               <p className="text-muted-foreground max-w-xl text-lg leading-relaxed">
                 Tus pacientes registran cómo se sienten durante la semana, a su ritmo y sin culpa.
-                Vos llegás a cada sesión con contexto, y con tu agenda e historia clínica en el
-                mismo lugar.
+                Vos llegás a cada sesión con contexto, y con tu agenda, historia clínica y
+                honorarios en el mismo lugar.
               </p>
               <div className="flex flex-wrap gap-3">
                 <Button asChild size="lg">
