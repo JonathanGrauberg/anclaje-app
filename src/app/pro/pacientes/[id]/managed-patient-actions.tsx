@@ -69,7 +69,7 @@ export function ManagedPatientActions({
           onClick={() => {
             if (
               !confirm(
-                `¿Dar de baja a ${name}? Se cancelan sus turnos futuros. Si tiene historia clínica, se guarda y lo podés reactivar desde "Agregar paciente"; si no, se borra.`,
+                `¿Dar de baja a ${name}? Se cancelan sus turnos futuros. Si tiene historia clínica o cobros, se guarda y lo podés reactivar desde "Agregar paciente"; si no, se borra.`,
               )
             )
               return;

@@ -33,6 +33,17 @@ import { NotesPanel } from "./notes-panel";
 import { TasksPanel } from "./tasks-panel";
 import { TopicsPanel } from "./topics-panel";
 import { patientName } from "@/lib/patients";
+import { PaymentsList } from "@/components/fees/payments-list";
+import { PatientPricesEditor } from "@/components/fees/prices-editor";
+import { RegisterPayment } from "@/components/fees/register-payment";
+import { formatMoney } from "@/lib/fees";
+import {
+  ensureDefaultPrices,
+  getLastServices,
+  getPatientPayments,
+  getPatientPrices,
+  getServicePrices,
+} from "@/lib/queries/fees";
 
 export const metadata: Metadata = { title: "Ficha del paciente" };
 
@@ -43,6 +54,7 @@ const TABS = [
   { id: "tareas", label: "Tareas" },
   { id: "evaluaciones", label: "Evaluaciones" },
   { id: "patrones", label: "Patrones" },
+  { id: "honorarios", label: "Honorarios" },
 ] as const;
 type TabId = (typeof TABS)[number]["id"];
 
@@ -66,7 +78,7 @@ export default async function PatientRecordPage({
 
   // Paciente sin la app: no hay nada compartido, solo la historia clínica (y los turnos).
   const withoutApp = !patient.userId;
-  const tabs = withoutApp ? TABS.filter((t) => t.id === "historia") : TABS;
+  const tabs = withoutApp ? TABS.filter((t) => t.id === "historia" || t.id === "honorarios") : TABS;
   const tabParam = one(sp.tab) === "notas" ? "historia" : one(sp.tab); // "notas" era el nombre viejo
   const tab: TabId = tabs.some((t) => t.id === tabParam)
     ? (tabParam as TabId)
@@ -95,9 +107,15 @@ export default async function PatientRecordPage({
   const baseUrl = (process.env.BETTER_AUTH_URL ?? "http://localhost:3000").replace(/\/$/, "");
   const link = patient.links[0];
   const base = `/pro/pacientes/${patient.id}`;
-  const nextAppointment = (await getNextAppointments(professional.id, [patient.id])).get(
-    patient.id,
-  );
+  await ensureDefaultPrices(professional.id);
+  const [nextAppointments, services, special, lastServices] = await Promise.all([
+    getNextAppointments(professional.id, [patient.id]),
+    getServicePrices(professional.id),
+    getPatientPrices(professional.id, patient.id),
+    getLastServices(professional.id, patient.id),
+  ]);
+  const nextAppointment = nextAppointments.get(patient.id);
+  const specialPrices = Object.fromEntries(special);
 
   return (
     <div className="flex flex-col gap-6">
@@ -141,6 +159,14 @@ export default async function PatientRecordPage({
         )}
         <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
           <GiveAppointment patient={{ id: patient.id, name, withoutApp }} />
+          <RegisterPayment
+            patients={[{ id: patient.id, name }]}
+            services={services}
+            patientPrices={{ [patient.id]: specialPrices }}
+            lastServices={lastServices}
+            fixedPatientId={patient.id}
+            variant="soft"
+          />
           <span className="flex items-center gap-1.5 font-medium">
             <CalendarDays className="text-primary size-4" aria-hidden />
             {nextAppointment
@@ -197,6 +223,14 @@ export default async function PatientRecordPage({
           patientId={patient.id}
           days={parseRange(sp.dias)}
           base={`${base}?tab=patrones`}
+        />
+      )}
+      {tab === "honorarios" && (
+        <FeesTab
+          professionalId={professional.id}
+          patientId={patient.id}
+          services={services}
+          special={specialPrices}
         />
       )}
       {tab === "evaluaciones" && (
@@ -618,6 +652,68 @@ async function PatternsTab({
               <ScoreChart key={s.assessmentId} series={s} />
             ))}
           </div>
+        )}
+      </section>
+    </div>
+  );
+}
+
+async function FeesTab({
+  professionalId,
+  patientId,
+  services,
+  special,
+}: {
+  professionalId: string;
+  patientId: string;
+  services: { id: string; name: string; price: number }[];
+  special: Record<string, number>;
+}) {
+  const { payments, monthTotal } = await getPatientPayments(professionalId, patientId);
+  return (
+    <div className="grid gap-6 xl:grid-cols-[1fr_360px]">
+      <section aria-labelledby="pf-prices" className="flex min-w-0 flex-col gap-3">
+        <div>
+          <h2 id="pf-prices" className="text-lg font-semibold">
+            Precios para este paciente
+          </h2>
+          <p className="text-muted-foreground text-sm">
+            Si le cobrás distinto que tu lista, ponelo acá. Vacío = el de tu lista.{" "}
+            <Link
+              href="/pro/honorarios?tab=precios"
+              className="text-primary underline underline-offset-2"
+            >
+              Cambiar tu lista
+            </Link>
+          </p>
+        </div>
+        {services.length === 0 ? (
+          <EmptyState title="Tu lista de precios está vacía">
+            <Link href="/pro/honorarios?tab=precios" className="text-primary underline">
+              Cargá tus precios
+            </Link>
+          </EmptyState>
+        ) : (
+          <PatientPricesEditor patientId={patientId} services={services} special={special} />
+        )}
+      </section>
+      <section aria-labelledby="pf-payments" className="flex min-w-0 flex-col gap-3">
+        <div>
+          <h2 id="pf-payments" className="text-lg font-semibold">
+            Cobros
+          </h2>
+          <p className="text-muted-foreground text-sm">
+            Este mes: <span className="text-foreground font-medium">{formatMoney(monthTotal)}</span>
+          </p>
+        </div>
+        {payments.length === 0 ? (
+          <p className="text-muted-foreground bg-card/60 rounded-2xl border border-dashed p-4 text-sm">
+            Todavía no anotaste cobros de este paciente. Usá «Registrar cobro», arriba.
+          </p>
+        ) : (
+          <PaymentsList
+            payments={payments.map((p) => ({ ...p, paidAt: p.paidAt.toISOString() }))}
+          />
         )}
       </section>
     </div>

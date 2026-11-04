@@ -399,3 +399,13 @@ salvo que se indique lo contrario.
   cifrado (`User.phoneEnc`) y ya listo para wa.me (549… en Argentina). El del paciente lo ve su
   profesional en la ficha y lo usan los botones de WhatsApp; el de la profesional no lo ven los
   pacientes. Opcional para todos.
+- **Honorarios:** cada profesional tiene su lista de precios (arranca una sola vez con valores de
+  referencia de noviembre de 2026, que edita, borra o amplía; editables directo en la grilla, se
+  guardan solos). En la ficha de cada paciente puede poner un precio especial por servicio (vacío
+  = el de la lista). "Registrar cobro" (en Honorarios y en la ficha) propone el último servicio que
+  se le cobró a ese paciente y su precio; el monto se puede cambiar. Montos en pesos enteros. Es
+  solo de la profesional: el paciente no ve nada. No hay texto libre en los cobros (el concepto es
+  el nombre del servicio o "Otro"), así no se cuelan detalles clínicos sin cifrar. Si el paciente
+  borra su cuenta, el cobro queda sin paciente (es el registro contable de ella); un paciente sin
+  la app con cobros se archiva en vez de borrarse. Por ahora no hay "pendiente de cobro" (haría
+  falta marcar asistencia en los turnos).

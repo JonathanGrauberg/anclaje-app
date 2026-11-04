@@ -70,6 +70,17 @@ export async function mergeManagedPatient(
   await tx.assessmentAssignment.updateMany(move);
   await tx.feedback.updateMany(move);
   await tx.auditLog.updateMany(move);
+  await tx.payment.updateMany(move);
+
+  // Precios especiales: uno por servicio; si ya había uno en la cuenta real, queda ese.
+  const priced = await tx.patientPrice.findMany({
+    where: { patientId: targetId },
+    select: { serviceId: true },
+  });
+  await tx.patientPrice.updateMany({
+    where: { patientId: managedId, serviceId: { notIn: priced.map((p) => p.serviceId) } },
+    data: { patientId: targetId },
+  });
 
   // Recursos: uno por paciente; si ya lo tenía asignado, queda el de la cuenta real.
   const already = await tx.resourceAssignment.findMany({

@@ -61,7 +61,7 @@ export async function updateManagedPatient(input: UpdateManagedPatientInput) {
 }
 
 /**
- * Dar de baja a un paciente sin la app. Si no tiene historia clínica cargada se borra del todo
+ * Dar de baja a un paciente sin la app. Si no tiene historia clínica ni cobros se borra del todo
  * (por ejemplo, uno de prueba). Si tiene, se archiva: se conserva (Ley 26.529) y se puede
  * reactivar. En los dos casos se cancelan sus turnos futuros.
  */
@@ -72,11 +72,13 @@ export async function removeManagedPatient(patientId: string) {
     const patient = await findManagedPatient(prisma, professional.id, patientId);
     if (!patient) return fail("No encontramos ese paciente");
 
-    const [notes, record] = await Promise.all([
+    // Si tiene historia clínica o cobros, se archiva (no se pierden); si no, se borra.
+    const [notes, record, payments] = await Promise.all([
       prisma.clinicalNote.count({ where: { patientId } }),
       prisma.clinicalRecord.findFirst({ where: { patientId }, select: { id: true } }),
+      prisma.payment.count({ where: { patientId } }),
     ]);
-    const archived = notes > 0 || !!record;
+    const archived = notes > 0 || !!record || payments > 0;
     if (archived) {
       const now = new Date();
       await prisma.$transaction([

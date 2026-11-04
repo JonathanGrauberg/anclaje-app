@@ -9,6 +9,7 @@ import {
   Settings,
   ShieldCheck,
   UserPlus,
+  Wallet,
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -18,6 +19,7 @@ import { cn } from "@/lib/utils";
 const nav = [
   { href: "/pro", label: "Pacientes", icon: LayoutDashboard },
   { href: "/pro/agenda", label: "Agenda", icon: CalendarDays },
+  { href: "/pro/honorarios", label: "Honorarios", icon: Wallet },
   { href: "/pro/invitaciones", label: "Agregar paciente", icon: UserPlus },
   { href: "/pro/respuestas-rapidas", label: "Respuestas rápidas", icon: MessageSquareQuote },
   { href: "/pro/biblioteca", label: "Biblioteca", icon: BookOpen },

@@ -70,6 +70,14 @@ enum AppointmentModality {
   ONLINE
 }
 
+enum PaymentMethod {
+  CASH
+  TRANSFER
+  MERCADO_PAGO
+  HEALTH_INSURANCE
+  OTHER
+}
+
 enum AppointmentStatus {
   SCHEDULED
   CANCELLED
@@ -228,10 +236,15 @@ model ProfessionalProfile {
   /// Mandar a sus pacientes un mail recordando el turno el día anterior.
   appointmentReminders Boolean         @default(true)
   lastDigestAt         DateTime?
+  /// Cuándo se le cargó la lista de precios de referencia (una sola vez, aunque después la vacíe).
+  pricesSeededAt       DateTime?
   createdAt            DateTime        @default(now())
   updatedAt            DateTime        @updatedAt
 
   links           CareLink[]
+  servicePrices   ServicePrice[]
+  patientPrices   PatientPrice[]
+  payments        Payment[]
   invitations     Invitation[]
   feedbacks       Feedback[]
   quickReplies    QuickReply[]
@@ -284,6 +297,8 @@ model PatientProfile {
   invitationsFor      Invitation[]           @relation("InvitationTarget")
   appointments        Appointment[]
   clinicalRecords     ClinicalRecord[]
+  patientPrices       PatientPrice[]
+  payments            Payment[]
 }
 
 /// Vínculo profesional–paciente. Con status ACTIVE la profesional ve lo compartido.
@@ -938,4 +953,58 @@ model Lead {
   contactedAt DateTime?
 
   @@index([createdAt])
+}
+
+/// Lista de precios de la profesional: es una referencia para ella, el paciente no la ve.
+/// Montos en pesos enteros.
+model ServicePrice {
+  id             String              @id @default(cuid())
+  professionalId String
+  professional   ProfessionalProfile @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  name           String
+  price          Int
+  sortOrder      Int                 @default(0)
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  patientPrices PatientPrice[]
+  payments      Payment[]
+
+  @@index([professionalId, sortOrder])
+}
+
+/// Precio especial de un servicio para un paciente (si no hay, vale el de la lista).
+model PatientPrice {
+  id             String              @id @default(cuid())
+  professionalId String
+  professional   ProfessionalProfile @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  patientId      String
+  patient        PatientProfile      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  serviceId      String
+  service        ServicePrice        @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  price          Int
+  updatedAt      DateTime            @updatedAt
+
+  @@unique([patientId, serviceId])
+  @@index([professionalId, patientId])
+}
+
+/// Un cobro. Es el registro de la profesional: si el paciente borra su cuenta, el cobro queda
+/// (sin paciente). `concept` guarda el nombre del servicio al momento de cobrar.
+model Payment {
+  id             String              @id @default(cuid())
+  professionalId String
+  professional   ProfessionalProfile @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  patientId      String?
+  patient        PatientProfile?     @relation(fields: [patientId], references: [id], onDelete: SetNull)
+  serviceId      String?
+  service        ServicePrice?       @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  concept        String
+  amount         Int
+  method         PaymentMethod       @default(CASH)
+  paidAt         DateTime
+  createdAt      DateTime            @default(now())
+
+  @@index([professionalId, paidAt])
+  @@index([patientId, paidAt])
 }
