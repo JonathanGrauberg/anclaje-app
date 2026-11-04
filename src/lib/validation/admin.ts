@@ -1,8 +1,11 @@
 import { z } from "zod";
+import { JURISDICTION_CODES } from "@/lib/licenses";
 
 export const createProfessionalSchema = z.object({
   name: z.string().trim().min(2, "Escribí el nombre").max(120),
   email: z.email({ message: "Email inválido" }).max(254),
+  /** Provincia de la matrícula (o MN). Va junto con el número: así queda igual que en el alta propia. */
+  licenseJurisdiction: z.union([z.enum(JURISDICTION_CODES), z.literal("")]).optional(),
   licenseNumber: z.string().trim().max(60).optional(),
 });
 export type CreateProfessionalInput = z.infer<typeof createProfessionalSchema>;

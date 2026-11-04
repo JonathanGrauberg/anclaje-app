@@ -23,6 +23,7 @@ export async function createStaffUser(
     name: string;
     role: StaffRole;
     licenseNumber?: string | null;
+    licenseJurisdiction?: string | null;
     withProfessionalProfile?: boolean;
   },
 ) {
@@ -53,6 +54,7 @@ export async function createStaffUser(
           create: {
             displayName: input.name,
             licenseNumber: input.licenseNumber || null,
+            licenseJurisdiction: input.licenseNumber ? input.licenseJurisdiction || null : null,
             verifiedAt: new Date(), // la dio de alta el admin
           },
         },

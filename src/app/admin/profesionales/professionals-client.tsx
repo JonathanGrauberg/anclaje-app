@@ -12,6 +12,7 @@ import {
   verifyProfessional,
 } from "@/lib/actions/admin";
 import { createProfessionalSchema, type CreateProfessionalInput } from "@/lib/validation/admin";
+import { JURISDICTIONS } from "@/lib/licenses";
 import { TempPassword } from "../temp-password";
 
 type Created = { email: string; tempPassword: string };
@@ -21,7 +22,7 @@ export function CreateProfessionalForm() {
   const [error, setError] = useState<string | null>(null);
   const form = useForm<CreateProfessionalInput>({
     resolver: zodResolver(createProfessionalSchema),
-    defaultValues: { name: "", email: "", licenseNumber: "" },
+    defaultValues: { name: "", email: "", licenseJurisdiction: "ER", licenseNumber: "" },
   });
   const { errors, isSubmitting } = form.formState;
 
@@ -35,7 +36,12 @@ export function CreateProfessionalForm() {
           const res = await createProfessional(values);
           if (!res.ok) return setError(res.error);
           setCreated(res.data);
-          form.reset();
+          form.reset({
+            name: "",
+            email: "",
+            licenseJurisdiction: values.licenseJurisdiction,
+            licenseNumber: "",
+          });
         })}
       >
         <div className="flex flex-col gap-1.5">
@@ -59,10 +65,31 @@ export function CreateProfessionalForm() {
           />
           <FieldError>{errors.email?.message}</FieldError>
         </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="pro-license">Matrícula (opcional)</Label>
-          <Input id="pro-license" autoComplete="off" {...form.register("licenseNumber")} />
-          <FieldError>{errors.licenseNumber?.message}</FieldError>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="pro-jurisdiction">Dónde está matriculada</Label>
+            <select
+              id="pro-jurisdiction"
+              className="border-input bg-card h-12 rounded-xl border px-3 text-base"
+              {...form.register("licenseJurisdiction")}
+            >
+              {JURISDICTIONS.map(([code, label]) => (
+                <option key={code} value={code}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="pro-license">Matrícula (opcional)</Label>
+            <Input
+              id="pro-license"
+              inputMode="numeric"
+              autoComplete="off"
+              {...form.register("licenseNumber")}
+            />
+            <FieldError>{errors.licenseNumber?.message}</FieldError>
+          </div>
         </div>
         <FieldError>{error}</FieldError>
         <div>

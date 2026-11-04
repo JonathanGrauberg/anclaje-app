@@ -16,6 +16,7 @@ import {
   type CrisisLineInput,
 } from "@/lib/validation/admin";
 import { assessmentDocSchema } from "@/lib/validation/assessment";
+import { normalizeLicense } from "@/lib/licenses";
 import { fail, firstIssue, ok, safe } from "./result";
 
 // Administración. Todas verifican rol ADMIN en el servidor y quedan en el AuditLog.
@@ -27,9 +28,12 @@ export async function createProfessional(input: CreateProfessionalInput) {
     const parsed = createProfessionalSchema.safeParse(input);
     if (!parsed.success) return fail(firstIssue(parsed.error));
     try {
+      // Mismo formato que en el alta propia: número solo con dígitos, más la provincia.
+      const licenseNumber = normalizeLicense(parsed.data.licenseNumber ?? "") || null;
       const { user, tempPassword } = await createStaffUser(prisma, {
         ...parsed.data,
-        licenseNumber: parsed.data.licenseNumber || null,
+        licenseNumber,
+        licenseJurisdiction: parsed.data.licenseJurisdiction || null,
         role: "PROFESSIONAL",
       });
       await audit({
@@ -51,6 +55,8 @@ export async function createProfessional(input: CreateProfessionalInput) {
       return ok({ email: user.email, tempPassword });
     } catch (e) {
       if (e instanceof AccountError) return fail(e.message);
+      if ((e as { code?: string }).code === "P2002")
+        return fail("Ya hay una profesional con esa matrícula en esa provincia.");
       throw e;
     }
   });
