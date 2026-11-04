@@ -113,8 +113,8 @@ export default async function AdminHome() {
         >
           <ShieldAlert className="size-5 shrink-0" aria-hidden />
           {s.pros.unverified === 1
-            ? "1 profesional se dio de alta con Google y falta verificar su matrícula."
-            : `${s.pros.unverified} profesionales se dieron de alta con Google y falta verificar su matrícula.`}
+            ? "Falta verificar la matrícula de 1 profesional (se dio de alta sola o cambió su matrícula)."
+            : `Falta verificar la matrícula de ${s.pros.unverified} profesionales (se dieron de alta solas o cambiaron su matrícula).`}
         </Link>
       )}
 

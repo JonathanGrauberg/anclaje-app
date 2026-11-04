@@ -69,10 +69,13 @@ export async function updateProfessionalProfile(input: ProfessionalProfileInput)
     const { displayName, licenseJurisdiction, licenseNumber, phone } = parsed.data;
 
     // La matrícula cargada a mano por el admin puede tener puntos o letras: se compara normalizada,
-    // para no perder la verificación cuando solo se cambia otro dato.
+    // para no perder la verificación cuando solo se cambia otro dato. Las cuentas que crea el admin
+    // no tienen provincia: completarla con el mismo número tampoco cuenta como cambio.
+    const sameNumber = licenseNumber === normalizeLicense(professional.licenseNumber ?? "");
     const licenseChanged =
-      licenseJurisdiction !== professional.licenseJurisdiction ||
-      licenseNumber !== normalizeLicense(professional.licenseNumber ?? "");
+      !sameNumber ||
+      (professional.licenseJurisdiction !== null &&
+        licenseJurisdiction !== professional.licenseJurisdiction);
     const samePhone = (await currentPhone(userId)) === phone;
     if (!licenseChanged && displayName === professional.displayName && samePhone)
       return ok(undefined);
