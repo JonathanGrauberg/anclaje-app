@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Manual de marca .anclaje</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  --bg: #faf7f2; --fg: #2a2833; --muted: #66626f; --line: #e6dfd4; --plate: #ffffff; --plate-2: #f1ece4;
+  --ink: #426f64; --ink-soft: #e3efea; --gold: #fcc107; --bad: #b4443a;
+  --sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--sans); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+.wrap { max-width: 1040px; margin: 0 auto; padding: 40px 16px 96px; display: flex; flex-direction: column; gap: 80px; }
+h1, h2, h3 { margin: 0; letter-spacing: -0.02em; text-wrap: balance; }
+h2 { font-size: 1.75rem; font-weight: 600; }
+h3 { font-size: 1.05rem; font-weight: 600; }
+p { margin: 0; max-width: 65ch; }
+.eyebrow { font-family: var(--mono); font-size: .75rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.lede { color: var(--muted); font-size: 1.05rem; }
+section { display: flex; flex-direction: column; gap: 24px; break-inside: avoid; }
+.head { display: flex; flex-direction: column; gap: 8px; }
+code { font-family: var(--mono); font-size: .85em; }
+
+/* Logotipo: Inter 600, espaciado −2,5 %. El punto es el punto de la tipografía, en dorado. */
+.wordmark { font-weight: 600; letter-spacing: -0.025em; color: var(--fg); line-height: 1; white-space: nowrap; }
+.wordmark .dot { color: var(--gold); }
+.lockup { display: inline-flex; align-items: center; gap: .32em; }
+.lockup svg { width: 1.45em; height: 1.45em; flex: none; margin: 0 -.24em 0 -.24em; }
+.mark { color: var(--ink); display: contents; }
+
+.cover { display: grid; gap: 40px; align-items: end; grid-template-columns: minmax(0,1.3fr) minmax(0,1fr); padding-bottom: 40px; border-bottom: 1px solid var(--line); }
+.cover-side { display: flex; flex-direction: column; gap: 12px; }
+
+.plates { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(230px,1fr)); }
+.plate { margin: 0; border-radius: 20px; padding: 28px; min-height: 180px; display: flex; flex-direction: column; justify-content: space-between; gap: 20px; border: 1px solid var(--line); background: var(--plate); }
+.plate .stage { flex: 1; display: grid; place-items: center; }
+.plate figcaption { font-size: .85rem; color: var(--muted); }
+.plate.cream { background: #faf7f2; } .plate.cream .wordmark { color: #2a2833; } .plate.cream .mark { color: #426f64; }
+.plate.night { background: #16151b; border-color: #34313d; } .plate.night .wordmark { color: #ece8e2; } .plate.night .mark { color: #8fc4b5; } .plate.night figcaption { color: #a9a4b2; }
+.plate.green { background: #426f64; border-color: #426f64; } .plate.green .wordmark, .plate.green .mark { color: #fff; } .plate.green figcaption { color: #e3efea; }
+
+.build { display: grid; gap: 24px; grid-template-columns: minmax(0,1.4fr) minmax(0,1fr); align-items: center; }
+.build-fig { background: var(--plate); border: 1px solid var(--line); border-radius: 20px; padding: 32px 16px; }
+.build-fig svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+.rules { display: flex; flex-direction: column; gap: 14px; margin: 0; padding: 0; list-style: none; }
+.rules li { display: grid; grid-template-columns: 2rem minmax(0,1fr); gap: 12px; }
+.rules b { font-family: var(--mono); font-weight: 500; color: var(--ink); font-size: .85rem; padding-top: 2px; }
+
+.icons { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-end; }
+.icon-item { display: flex; flex-direction: column; align-items: center; gap: 10px; font-size: .8rem; color: var(--muted); }
+.app-icon { background: #faf7f2; border-radius: 22%; display: grid; place-items: center; box-shadow: 0 0 0 1px #e6dfd4; color: #426f64; }
+.app-icon svg { width: 74%; height: 74%; }
+
+.swatches { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); }
+.swatch { border: 1px solid var(--line); border-radius: 18px; overflow: hidden; background: var(--plate); }
+.chip { height: 96px; position: relative; }
+.chip .pair { position: absolute; right: 10px; bottom: 10px; width: 34px; height: 34px; border-radius: 50%; box-shadow: 0 0 0 2px var(--plate); }
+.swatch-body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 6px; }
+.swatch-body p { font-size: .85rem; color: var(--muted); }
+.hex { font-family: var(--mono); font-size: .78rem; border: 1px solid var(--line); background: var(--plate-2); border-radius: 8px; padding: 2px 8px; margin-right: 4px; }
+.note { border-left: 3px solid var(--gold); padding: 10px 0 10px 16px; color: var(--muted); font-size: .92rem; }
+
+.type-grid { display: grid; gap: 16px; grid-template-columns: minmax(0,1.2fr) minmax(0,1fr); }
+.specimen { background: var(--plate); border: 1px solid var(--line); border-radius: 20px; padding: 28px; display: flex; flex-direction: column; gap: 16px; }
+.aa { font-size: 6rem; font-weight: 600; letter-spacing: -0.04em; line-height: .9; }
+.scale-row { display: grid; grid-template-columns: 5.5rem minmax(0,1fr); gap: 12px; align-items: baseline; border-bottom: 1px solid var(--line); padding-bottom: 12px; }
+.scale-row:last-child { border-bottom: 0; }
+.scale-row code { color: var(--muted); font-size: .72rem; }
+
+.voice { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); }
+.say { border-radius: 18px; padding: 20px; border: 1px solid var(--line); background: var(--plate); }
+.say ul { margin: 8px 0 0; padding-left: 1.1rem; }
+.tag { font-family: var(--mono); font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; font-weight: 500; }
+.yes { color: var(--ink); } .no { color: var(--bad); }
+
+.donts { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); }
+.dont .plate { min-height: 130px; position: relative; }
+.dont .x { position: absolute; top: 10px; right: 12px; font-family: var(--mono); font-size: .72rem; color: var(--bad); text-transform: uppercase; }
+.dont p { font-size: .88rem; color: var(--muted); margin-top: 10px; }
+
+.files { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); }
+.file { background: var(--plate); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; }
+.file code { color: var(--ink); font-weight: 500; }
+.file p { font-size: .88rem; color: var(--muted); margin-top: 4px; }
+
+.foot { font-size: .82rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 20px; }
+
+@media (max-width: 760px) { .cover, .build, .type-grid { grid-template-columns: minmax(0,1fr); } }
+@media print {
+  @page { size: A4; margin: 14mm; }
+  body { font-size: 12px; }
+  .wrap { padding: 0; gap: 36px; max-width: none; }
+  section { page-break-inside: avoid; }
+  .page-break { page-break-before: always; }
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="faro" viewBox="0 0 64 64">
+      <g fill="currentColor" stroke="currentColor" stroke-linejoin="round">
+        <path d="M26.5 15 L32 9 L37.5 15 Z" stroke-width="1.2"/>
+        <rect x="24" y="26" width="16" height="2.8" rx="1.4" stroke="none"/>
+        <path d="M26.6 30.6 H37.4 L38.8 40 H25.2 Z" stroke-width="1"/>
+        <path d="M24.7 43.2 H39.3 L40.9 54 H23.1 Z" stroke-width="1"/>
+      </g>
+      <circle cx="32" cy="20.2" r="4.6" fill="#fcc107"/>
+      <path d="M12 58.5 Q17 55.5 22 58.5 T32 58.5 T42 58.5 T52 58.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="wrap">
+
+  <header class="cover">
+    <div class="head" style="gap:20px">
+      <span class="eyebrow">Manual de marca · v2 · noviembre 2026</span>
+      <span class="lockup" style="font-size:clamp(3rem,10vw,6rem)"><span class="mark"><svg><use href="#faro"/></svg></span><span class="wordmark"><span class="dot">.</span>anclaje</span></span>
+    </div>
+    <div class="cover-side">
+      <p class="lede">.anclaje acompaña a pacientes de psicoterapia entre sesión y sesión, y a su psicóloga. La marca transmite lo mismo que un faro: algo quieto que orienta, sin apurar.</p>
+      <p class="lede">Es de la misma familia que .budgets: nombre en minúscula, precedido por un punto dorado.</p>
+    </div>
+  </header>
+
+  <section>
+    <div class="head">
+      <span class="eyebrow">01 · Logo</span>
+      <h2>El faro y el nombre</h2>
+      <p class="lede">Dos partes: el faro (isotipo) y el nombre con su punto (logotipo). El punto dorado delante de “anclaje” repite la luz del faro.</p>
+    </div>
+    <div class="plates">
+      <figure class="plate cream"><div class="stage"><span class="lockup" style="font-size:2.2rem"><span class="mark"><svg><use href="#faro"/></svg></span><span class="wordmark"><span class="dot">.</span>anclaje</span></span></div><figcaption>Principal, sobre crema</figcaption></figure>
+      <figure class="plate night"><div class="stage"><span class="lockup" style="font-size:2.2rem"><span class="mark"><svg><use href="#faro"/></svg></span><span class="wordmark"><span class="dot">.</span>anclaje</span></span></div><figcaption>Sobre oscuro: el verde se aclara</figcaption></figure>
+      <figure class="plate green"><div class="stage"><span class="lockup" style="font-size:2.2rem"><span class="mark"><svg><use href="#faro"/></svg></span><span class="wordmark"><span class="dot">.</span>anclaje</span></span></div><figcaption>Sobre verde: blanco, el punto sigue dorado</figcaption></figure>
+      <figure class="plate"><div class="stage"><span class="wordmark" style="font-size:3rem"><span class="dot">.</span>anclaje</span></div><figcaption>Solo el nombre: textos, mails, firmas</figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <div class="head">
+      <span class="eyebrow">02 · Construcción</span>
+      <h2>Cómo se arma</h2>
+    </div>
+    <div class="build">
+      <div class="build-fig">
+        <svg viewBox="0 0 560 170" width="560" role="img" aria-label="El punto es el punto de la tipografía, en dorado">
+          <text x="40" y="118" font-family="Inter, system-ui, sans-serif" font-weight="600" font-size="120" letter-spacing="-3" fill="#2a2833"><tspan fill="#fcc107">.</tspan>anclaje</text>
+          <line x1="10" x2="550" y1="118" y2="118" stroke="#426f64" stroke-dasharray="4 4"/>
+          <text x="12" y="140" font-family="JetBrains Mono, monospace" font-size="11" fill="#66626f">línea de base</text>
+          <text x="12" y="160" font-family="JetBrains Mono, monospace" font-size="11" fill="#66626f">el punto = el “.” de Inter Semibold, en dorado #fcc107</text>
+        </svg>
+      </div>
+      <ul class="rules">
+        <li><b>a</b><span>El punto es el <strong>punto de la tipografía</strong>, del tamaño normal, pintado de dorado. Igual que en .budgets.</span></li>
+        <li><b>b</b><span>El nombre va siempre en <strong>minúscula</strong>, Inter Semibold, espaciado −2,5 %, todo junto: <code>.anclaje</code>.</span></li>
+        <li><b>c</b><span>Faro y nombre: el faro mide 1,45 veces el tamaño de la letra y queda centrado con las minúsculas.</span></li>
+        <li><b>d</b><span>Alrededor del logo dejá libre, como mínimo, el alto de la “a”.</span></li>
+        <li><b>e</b><span>Tamaño mínimo: faro de 16 px; logo completo de 100 px de ancho (más chico, el punto se pierde).</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <div class="head">
+      <span class="eyebrow">03 · Isotipo</span>
+      <h2>El faro solo</h2>
+      <p class="lede">Ícono de la app, favicon y foto de perfil. Grilla de 64 × 64: techo, luz, galería, torre con una franja y el agua. Sin rayos, para que se entienda chico.</p>
+    </div>
+    <div class="icons">
+      <div class="icon-item"><div class="app-icon" style="width:120px;height:120px"><svg><use href="#faro"/></svg></div>Ícono de la app</div>
+      <div class="icon-item"><div class="app-icon" style="width:64px;height:64px"><svg><use href="#faro"/></svg></div>64 px</div>
+      <div class="icon-item"><div class="app-icon" style="width:32px;height:32px"><svg><use href="#faro"/></svg></div>32 px</div>
+      <div class="icon-item"><div class="app-icon" style="width:16px;height:16px;border-radius:3px"><svg><use href="#faro"/></svg></div>16 px</div>
+    </div>
+  </section>
+
+  <section class="page-break">
+    <div class="head">
+      <span class="eyebrow">04 · Color</span>
+      <h2>La paleta</h2>
+      <p class="lede">Verde profundo que da calma, crema cálido de fondo y el dorado de la luz, que se usa poco.</p>
+    </div>
+    <div class="swatches">
+      <div class="swatch"><div class="chip" style="background:#fcc107"></div><div class="swatch-body"><h3>Dorado faro</h3><div><span class="hex">#fcc107</span></div><p>El punto del nombre y la luz del faro. Nunca para texto ni botones.</p></div></div>
+      <div class="swatch"><div class="chip" style="background:#426f64"><span class="pair" style="background:#8fc4b5"></span></div><div class="swatch-body"><h3>Verde ancla</h3><div><span class="hex">#426f64</span><span class="hex">#8fc4b5</span></div><p>Principal: faro, botones, links. El claro es para modo oscuro.</p></div></div>
+      <div class="swatch"><div class="chip" style="background:#faf7f2;box-shadow:inset 0 -1px 0 #e6dfd4"><span class="pair" style="background:#16151b"></span></div><div class="swatch-body"><h3>Crema / Noche</h3><div><span class="hex">#faf7f2</span><span class="hex">#16151b</span></div><p>Fondos, en modo claro y oscuro.</p></div></div>
+      <div class="swatch"><div class="chip" style="background:#2a2833"><span class="pair" style="background:#ece8e2"></span></div><div class="swatch-body"><h3>Tinta</h3><div><span class="hex">#2a2833</span><span class="hex">#ece8e2</span></div><p>Texto y nombre del logo, en claro y en oscuro.</p></div></div>
+      <div class="swatch"><div class="chip" style="background:#e3efea"><span class="pair" style="background:#f6e7dc"></span></div><div class="swatch-body"><h3>Verde suave / Arena</h3><div><span class="hex">#e3efea</span><span class="hex">#f6e7dc</span></div><p>Avisos, etiquetas y tarjetas destacadas.</p></div></div>
+      <div class="swatch"><div class="chip" style="background:#b4443a"><span class="pair" style="background:#fbe6e2"></span></div><div class="swatch-body"><h3>Alerta</h3><div><span class="hex">#b4443a</span><span class="hex">#fbe6e2</span></div><p>Solo para ayuda urgente y errores.</p></div></div>
+    </div>
+    <p class="note">El dorado sobre crema tiene poco contraste (1,6 : 1): es un acento. El punto acompaña al nombre, nunca se usa solo como letra o como fondo de texto.</p>
+  </section>
+
+  <section>
+    <div class="head">
+      <span class="eyebrow">05 · Tipografía</span>
+      <h2>Inter, en toda la marca</h2>
+      <p class="lede">Una sola familia, gratuita (Google Fonts). Logo y títulos en Semibold; texto corrido en Regular.</p>
+    </div>
+    <div class="type-grid">
+      <div class="specimen">
+        <span class="aa">Aa</span>
+        <p style="font-size:1.3rem;font-weight:500">¿Cómo venís hoy? Anotá lo que sentiste, a tu ritmo.</p>
+        <p style="font-family:var(--mono);color:var(--muted);font-size:.85rem">abcdefghijklmnñopqrstuvwxyz · 0123456789 · ¿? ¡! áéíóú</p>
+      </div>
+      <div class="specimen">
+        <div class="scale-row"><code>Título 30</code><span style="font-size:1.875rem;font-weight:600;letter-spacing:-0.02em;line-height:1.2">Tu plan de calma</span></div>
+        <div class="scale-row"><code>Sección 18</code><span style="font-size:1.125rem;font-weight:600">Próximos turnos</span></div>
+        <div class="scale-row"><code>Texto 16</code><span>Escribí lo que quieras. Es privado.</span></div>
+        <div class="scale-row"><code>Nota 12</code><span style="font-size:.75rem;color:var(--muted)">Lo ve solo tu psicóloga.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="head">
+      <span class="eyebrow">06 · Voz</span>
+      <h2>Cómo habla .anclaje</h2>
+      <p class="lede">Español rioplatense con voseo. Con el paciente, cercana y sin lenguaje clínico. Con la psicóloga, clara y profesional. Nunca culpa, nunca apura, nada de rachas ni premios.</p>
+    </div>
+    <div class="voice">
+      <div class="say"><span class="tag yes">Así sí</span><ul><li>¿Cómo venís?</li><li>Guardá lo que sentiste.</li><li>Cuando quieras, seguimos.</li><li>Lo ve solo tu psicóloga.</li></ul></div>
+      <div class="say"><span class="tag no">Así no</span><ul><li>Registrar estado afectivo</li><li>¡Llevás 5 días seguidos! 🔥</li><li>No completaste tu tarea.</li><li>Usted debe ingresar sus datos.</li></ul></div>
+    </div>
+  </section>
+
+  <section class="page-break">
+    <div class="head">
+      <span class="eyebrow">07 · Cuidados</span>
+      <h2>Lo que no se hace con el logo</h2>
+    </div>
+    <div class="donts">
+      <div class="dont"><div class="plate cream"><span class="x">No</span><div class="stage"><span class="wordmark" style="font-size:2rem"><span style="display:inline-block;width:.55em;height:.55em;border-radius:50%;background:#fcc107;margin-right:.06em"></span>anclaje</span></div></div><p>Agrandar el punto a un círculo (era la versión vieja).</p></div>
+      <div class="dont"><div class="plate cream"><span class="x">No</span><div class="stage"><span class="wordmark" style="font-size:2rem"><span style="color:#e07a3f">.</span>anclaje</span></div></div><p>Cambiar el dorado por otro color, o dejar el punto del color del texto.</p></div>
+      <div class="dont"><div class="plate cream"><span class="x">No</span><div class="stage"><span class="wordmark" style="font-size:2rem;text-transform:uppercase;letter-spacing:.04em"><span class="dot">.</span>anclaje</span></div></div><p>Escribirlo en mayúsculas o con otro espaciado.</p></div>
+      <div class="dont"><div class="plate cream"><span class="x">No</span><div class="stage"><span class="lockup" style="font-size:2rem;flex-direction:row-reverse"><span class="mark"><svg><use href="#faro"/></svg></span><span class="wordmark"><span class="dot">.</span>anclaje</span></span></div></div><p>Mover el faro a la derecha del nombre.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="head">
+      <span class="eyebrow">08 · Archivos</span>
+      <h2>Qué hay en cada carpeta</h2>
+      <p class="lede">Cada logo viene en SVG (vectorial, para imprimir o escalar; el texto ya está en trazos, no hace falta tener Inter instalada) y en PNG con fondo transparente.</p>
+    </div>
+    <div class="files">
+      <div class="file"><code>1-logo-completo</code><p>Faro + .anclaje en una línea. La versión de uso general: web, encabezados, firmas.</p></div>
+      <div class="file"><code>2-logo-vertical</code><p>Faro arriba y nombre abajo. Para piezas cuadradas o verticales (historias, folletos).</p></div>
+      <div class="file"><code>3-logotipo-solo-nombre</code><p>Solo .anclaje, para cuando el faro ya está cerca o el espacio es angosto.</p></div>
+      <div class="file"><code>4-isotipo-faro</code><p>El faro solo, sin fondo, en 1024, 256 y 64 px.</p></div>
+      <div class="file"><code>5-iconos-y-perfil</code><p>Ícono de la app (con esquinas redondeadas) y fotos de perfil para redes, en crema, verde y noche.</p></div>
+      <div class="file"><code>Variantes</code><p><em>color</em> (fondo claro) · <em>para-fondo-oscuro</em> · <em>blanco</em> (sobre fotos o verde) · y las tres con fondo incluido: <em>sobre-crema</em>, <em>sobre-noche</em>, <em>sobre-verde</em>.</p></div>
+    </div>
+  </section>
+
+  <p class="foot">Los valores salen del código de la app: <code>src/lib/brand.ts</code> (faro y colores), <code>src/components/logo.tsx</code> (logo) y <code>src/app/globals.css</code> (paleta).</p>
+</div>
+</body>
+</html>

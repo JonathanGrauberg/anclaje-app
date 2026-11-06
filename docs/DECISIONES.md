@@ -329,8 +329,9 @@ salvo que se indique lo contrario.
 ## Marca, panel de uso e ingreso con Google (nov 2026)
 
 - **Marca:** el dorado de la luz y del punto es `#fcc107` (el mismo de webi y .budgets). El punto
-  delante de "anclaje" mide la altura x de Inter (0,55 em) y apoya en la base. Manual de marca
-  publicado aparte (artifact).
+  delante de "anclaje" es el punto de la tipografía, de tamaño normal, en dorado (igual que
+  .budgets; antes era un círculo del alto de la "x"). Manual de marca y logos en `docs/marca`
+  (se regeneran con `scripts/generar-marca.py`).
 - **Panel de admin (Resumen):** solo números agregados, separados en profesionales y pacientes:
   cuentas, activos en 7 y 30 días, pacientes sin la app, uso de los últimos 30 días y altas por mes.
   De los pacientes **no** se lista nadie (ni nombre ni email): saber que alguien hace terapia es un

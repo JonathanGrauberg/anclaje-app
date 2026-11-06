@@ -25,7 +25,7 @@ function layout(paragraphs: string[], button?: { label: string; url: string }, f
     : "";
   return `<!doctype html><html lang="es"><body style="margin:0;background:#faf7f2;font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;color:#2a2833">
 <div style="max-width:520px;margin:0 auto;padding:32px 20px">
-<p style="margin:0 0 28px;font-size:20px;font-weight:600;letter-spacing:-0.02em"><span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:#fcc107;margin-right:2px"></span>anclaje</p>
+<p style="margin:0 0 28px;font-size:20px;font-weight:600;letter-spacing:-0.02em"><span style="color:#fcc107">.</span>anclaje</p>
 <div style="background:#ffffff;border:1px solid #e6dfd4;border-radius:20px;padding:28px">${body}${cta}</div>
 ${foot}
 </div></body></html>`;
