@@ -65,7 +65,7 @@ export function SignUpForm({ next }: { next: string | null }) {
     <Card>
       <CardContent className="flex flex-col gap-5 p-6">
         <div>
-          <h1 className="text-2xl font-semibold">Creá tu cuenta</h1>
+          <h1 className="text-2xl font-semibold">Creá tu cuenta de paciente</h1>
           <p className="text-muted-foreground mt-1 text-sm">
             Lo que escribas es tuyo. Vos decidís qué compartir con tu psicóloga.
           </p>

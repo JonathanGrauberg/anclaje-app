@@ -1,13 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 import { AccountError, createStaffUser, resetStaffPassword } from "@/lib/accounts";
 import { rekey } from "@/lib/assessments/doc";
 import { createAssessmentFromDoc } from "@/lib/assessments/repo";
 import { audit } from "@/lib/audit";
 import { prisma } from "@/lib/db";
 import { appUrl, contactEmail, sendEmailQuietly } from "@/lib/email";
-import { welcomeProfessionalEmail } from "@/lib/emails";
+import { accountToProfessionalEmail, welcomeProfessionalEmail } from "@/lib/emails";
 import { adminForAction } from "@/lib/session";
 import {
   createProfessionalSchema,
@@ -102,6 +103,76 @@ export async function verifyProfessional(professionalId: string) {
     revalidatePath("/admin/profesionales");
     revalidatePath("/admin");
     return ok(undefined);
+  });
+}
+
+/**
+ * Alguien se registró como paciente pero es profesional: el admin escribe su email exacto y la
+ * cuenta pasa a profesional. Solo si la cuenta está "vacía" (sin vínculos ni registros), así no se
+ * pierde ni se expone nada clínico. Se cierran sus sesiones; al volver a entrar carga su matrícula
+ * en /alta-profesional y queda "sin verificar" como cualquier alta propia.
+ */
+export async function convertPatientToProfessional(email: string) {
+  return safe(async () => {
+    const admin = await adminForAction();
+    const parsed = z.email().safeParse(String(email).trim().toLowerCase());
+    if (!parsed.success) return fail("Escribí el email completo de la cuenta.");
+    const user = await prisma.user.findUnique({
+      where: { email: parsed.data },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        patientProfile: { select: { id: true } },
+      },
+    });
+    if (!user) return fail("No hay ninguna cuenta con ese email.");
+    if (user.role !== "PATIENT") return fail("Esa cuenta ya es de profesional o de admin.");
+
+    const patientId = user.patientProfile?.id;
+    if (patientId) {
+      const where = { patientId };
+      const counts = await Promise.all([
+        prisma.careLink.count({ where }),
+        prisma.emotionEntry.count({ where }),
+        prisma.journalEntry.count({ where }),
+        prisma.cbtRecord.count({ where }),
+        prisma.sessionTopic.count({ where }),
+        prisma.assessmentResponse.count({ where }),
+        prisma.task.count({ where }),
+        prisma.appointment.count({ where }),
+      ]);
+      if (counts.some((n) => n > 0)) {
+        return fail(
+          "Esa cuenta ya tiene registros o está vinculada con una profesional. Para no perder nada, no se pasa desde acá: que cree una cuenta nueva como profesional con otro email.",
+        );
+      }
+    }
+
+    await prisma.$transaction([
+      ...(patientId ? [prisma.patientProfile.delete({ where: { id: patientId } })] : []),
+      prisma.user.update({ where: { id: user.id }, data: { role: "PROFESSIONAL" } }),
+      prisma.session.deleteMany({ where: { userId: user.id } }),
+    ]);
+    await audit({
+      actorId: admin.id,
+      action: "update",
+      entityType: "User",
+      entityId: user.id,
+      meta: { field: "role", from: "PATIENT", to: "PROFESSIONAL" },
+    });
+    await sendEmailQuietly(
+      {
+        to: user.email,
+        replyTo: contactEmail(),
+        ...accountToProfessionalEmail({ name: user.name, loginUrl: appUrl("/ingresar") }),
+      },
+      "cuenta a profesional",
+    );
+    revalidatePath("/admin/profesionales");
+    revalidatePath("/admin");
+    return ok({ name: user.name, email: user.email });
   });
 }
 

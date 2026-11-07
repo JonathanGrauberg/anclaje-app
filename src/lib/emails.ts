@@ -127,6 +127,19 @@ export function leadSignupEmail(a: {
   );
 }
 
+/** Se registró como paciente siendo profesional: el admin le pasó la cuenta a profesional. */
+export function accountToProfessionalEmail(a: { name: string; loginUrl: string }): EmailContent {
+  return build(
+    "Tu cuenta de Anclaje ya es de profesional",
+    [
+      `Hola, ${firstName(a.name) ?? a.name}. Ya pasamos tu cuenta a cuenta profesional.`,
+      "Entrá con el mismo email y la misma contraseña. La primera vez te pedimos tu matrícula y después ya tenés tu panel.",
+    ],
+    { label: "Entrar a Anclaje", url: a.loginUrl },
+    "Si no pediste este cambio, respondé este mail y lo revisamos.",
+  );
+}
+
 /** Aviso de seguridad: cambiaron los datos o la contraseña de la cuenta. */
 export function accountChangedEmail(a: {
   name: string;

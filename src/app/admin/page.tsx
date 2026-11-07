@@ -2,10 +2,12 @@ import { ShieldAlert } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
-import { PageHeader } from "@/components/ui/misc";
-import { TIME_ZONE } from "@/lib/dates";
+import { Badge, PageHeader } from "@/components/ui/misc";
+import { formatDate, TIME_ZONE } from "@/lib/dates";
 import { prisma } from "@/lib/db";
+import { freeDaysLeft } from "@/lib/launch";
 import { requireAdmin } from "@/lib/session";
+import { StatGroup } from "./stat-group";
 
 export const metadata: Metadata = { title: "Resumen" };
 
@@ -47,6 +49,17 @@ async function getUsageStats() {
     assessments,
     appointments,
     signups,
+    topics,
+    tasksDone,
+    feedbacks,
+    payments,
+    reminders,
+    pushUsers,
+    leads,
+    leadsMailed,
+    leadEmails,
+    proSignups,
+    recentPros,
   ] = await Promise.all([
     prisma.user.count({ where: pro }),
     prisma.user.count({ where: { ...pro, lastActiveAt: { gte: d7 } } }),
@@ -71,7 +84,29 @@ async function getUsageStats() {
       },
       select: { role: true, createdAt: true },
     }),
+    prisma.sessionTopic.count({ where: { createdAt: { gte: d30 }, ...real } }),
+    prisma.task.count({ where: { completedAt: { gte: d30 }, ...real } }),
+    prisma.feedback.count({ where: { createdAt: { gte: d30 }, ...real } }),
+    prisma.payment.count({ where: { createdAt: { gte: d30 } } }),
+    prisma.reminderSettings.count({ where: { enabled: true, user: pat } }),
+    prisma.user.count({ where: { pushSubscriptions: { some: {} } } }),
+    prisma.lead.count(),
+    prisma.lead.count({ where: { signupLinkSentAt: { not: null } } }),
+    prisma.lead.findMany({ select: { email: true } }),
+    prisma.user.findMany({ where: pro, select: { createdAt: true } }),
+    prisma.professionalProfile.findMany({
+      where: { user: pro },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+      select: { id: true, displayName: true, createdAt: true, verifiedAt: true },
+    }),
   ]);
+
+  // Interesados que ya crearon su cuenta (mismo email).
+  const leadSet = [...new Set(leadEmails.map((l) => l.email.trim().toLowerCase()))];
+  const leadsWithAccount = leadSet.length
+    ? await prisma.user.count({ where: { email: { in: leadSet }, role: { not: "PATIENT" } } })
+    : 0;
 
   // Altas por mes (los últimos 6), separadas por rol.
   const months: { key: string; patients: number; pros: number }[] = [];
@@ -96,7 +131,21 @@ async function getUsageStats() {
     },
     patients: { total: patients, active7: patients7, active30: patients30, managed },
     activeLinks,
-    usage: { entries: entries + journal + cbt, assessments, appointments },
+    usage: {
+      entries,
+      journal,
+      cbt,
+      topics,
+      assessments,
+      tasksDone,
+      feedbacks,
+      appointments,
+      payments,
+    },
+    notifications: { reminders, pushUsers },
+    leads: { total: leads, mailed: leadsMailed, withAccount: leadsWithAccount },
+    founders: proSignups.filter((u) => freeDaysLeft(u.createdAt) > 0).length,
+    recentPros,
     months,
   };
 }
@@ -130,8 +179,53 @@ export default async function AdminHome() {
           { label: "Cuentas", value: s.pros.total, hint: `${s.pros.google} entran con Google` },
           { label: "Activas esta semana", value: s.pros.active7, of: s.pros.total },
           { label: "Activas en 30 días", value: s.pros.active30, of: s.pros.total },
+          {
+            label: "Gratis para siempre",
+            value: s.founders,
+            hint: "Se sumaron en el lanzamiento",
+          },
         ]}
       />
+
+      <StatGroup
+        title="Interesados (landing)"
+        stats={[
+          { label: "Dejaron sus datos", value: s.leads.total },
+          { label: "Les mandaste el mail", value: s.leads.mailed, of: s.leads.total },
+          { label: "Ya crearon su cuenta", value: s.leads.withAccount, of: s.leads.total },
+        ]}
+      />
+
+      {s.recentPros.length > 0 && (
+        <section aria-labelledby="recent-title" className="flex flex-col gap-3">
+          <h2 id="recent-title" className="text-lg font-semibold">
+            Últimas profesionales en sumarse
+          </h2>
+          <Card>
+            <CardContent className="p-0">
+              <ul className="divide-y text-sm">
+                {s.recentPros.map((p) => (
+                  <li
+                    key={p.id}
+                    className="flex flex-wrap items-center justify-between gap-2 px-4 py-3"
+                  >
+                    <Link
+                      href={`/admin/profesionales/${p.id}`}
+                      className="text-primary font-medium underline-offset-4 hover:underline"
+                    >
+                      {p.displayName}
+                    </Link>
+                    <span className="text-muted-foreground flex items-center gap-2">
+                      {!p.verifiedAt && <Badge>Sin verificar</Badge>}
+                      {formatDate(p.createdAt)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        </section>
+      )}
 
       <StatGroup
         title="Pacientes"
@@ -154,9 +248,32 @@ export default async function AdminHome() {
       <StatGroup
         title="Uso en los últimos 30 días"
         stats={[
-          { label: "Registros", value: s.usage.entries, hint: "Rueda, diario y autorregistros" },
+          { label: "Rueda de emociones", value: s.usage.entries, hint: "Registros" },
+          { label: "Diario", value: s.usage.journal, hint: "Entradas (privadas o compartidas)" },
+          { label: "Autorregistros", value: s.usage.cbt },
+          { label: "Temas para la sesión", value: s.usage.topics },
           { label: "Evaluaciones completadas", value: s.usage.assessments },
+          { label: "Tareas hechas", value: s.usage.tasksDone },
+          { label: "Devoluciones", value: s.usage.feedbacks, hint: "De profesionales a pacientes" },
           { label: "Turnos", value: s.usage.appointments, hint: "Agendados para estos días" },
+          { label: "Cobros cargados", value: s.usage.payments, hint: "Solo la cantidad" },
+        ]}
+      />
+
+      <StatGroup
+        title="Avisos"
+        stats={[
+          {
+            label: "Pacientes con recordatorio",
+            value: s.notifications.reminders,
+            of: s.patients.total,
+            hint: "Para registrar cómo están",
+          },
+          {
+            label: "Con avisos al celular",
+            value: s.notifications.pushUsers,
+            hint: "Pacientes y profesionales",
+          },
         ]}
       />
 
@@ -200,35 +317,5 @@ export default async function AdminHome() {
         </p>
       </section>
     </div>
-  );
-}
-
-function StatGroup({
-  title,
-  stats,
-}: {
-  title: string;
-  stats: { label: string; value: number; of?: number; hint?: string }[];
-}) {
-  return (
-    <section className="flex flex-col gap-3">
-      <h2 className="text-lg font-semibold">{title}</h2>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((st) => (
-          <Card key={st.label}>
-            <CardContent className="flex flex-col gap-1">
-              <p className="text-muted-foreground text-sm">{st.label}</p>
-              <p className="text-3xl font-semibold tabular-nums">
-                {st.value}
-                {st.of !== undefined && (
-                  <span className="text-muted-foreground text-base font-normal"> de {st.of}</span>
-                )}
-              </p>
-              {st.hint && <p className="text-muted-foreground text-xs">{st.hint}</p>}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </section>
   );
 }

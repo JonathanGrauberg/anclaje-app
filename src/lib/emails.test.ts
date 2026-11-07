@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  accountToProfessionalEmail,
   appointmentReminderEmail,
   extractEmail,
   patientLinkedEmail,
@@ -68,5 +69,18 @@ describe("mail dentro del contacto", () => {
     expect(extractEmail("11 5555-0000 · Ana@Mail.com")).toBe("ana@mail.com");
     expect(extractEmail("solo teléfono 343 4000000")).toBeNull();
     expect(extractEmail(null)).toBeNull();
+  });
+});
+
+describe("cuenta pasada a profesional", () => {
+  it("saluda por el nombre y explica que carga la matrícula", () => {
+    const m = accountToProfessionalEmail({
+      name: "Patricia Gómez",
+      loginUrl: "https://x/ingresar",
+    });
+    expect(m.subject).toContain("profesional");
+    expect(m.text).toContain("Hola, Patricia.");
+    expect(m.text).toContain("matrícula");
+    expect(m.text).toContain("https://x/ingresar");
   });
 });

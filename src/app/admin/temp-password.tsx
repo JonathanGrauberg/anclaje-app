@@ -48,9 +48,7 @@ export function TempPassword({
       </div>
       <details className="bg-card rounded-xl px-3 py-2">
         <summary className="cursor-pointer font-medium">Ver el mensaje</summary>
-        <p className="mt-2 whitespace-pre-line">
-          {message("••••••")}
-        </p>
+        <p className="mt-2 whitespace-pre-line">{message("••••••")}</p>
       </details>
       <p className="text-muted-foreground">
         No la vas a poder ver de nuevo. Pasala por WhatsApp u otro canal que no sea el mismo email.

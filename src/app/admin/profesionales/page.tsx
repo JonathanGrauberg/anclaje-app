@@ -1,12 +1,19 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/misc";
 import { Badge } from "@/components/ui/misc";
 import { formatDate, formatRelative } from "@/lib/dates";
+import { freeDaysLeft } from "@/lib/launch";
 import { jurisdictionName } from "@/lib/licenses";
 import { prisma } from "@/lib/db";
 import { requireAdmin } from "@/lib/session";
-import { CreateProfessionalForm, ResetPasswordButton, VerifyButton } from "./professionals-client";
+import {
+  ConvertPatientForm,
+  CreateProfessionalForm,
+  ResetPasswordButton,
+  VerifyButton,
+} from "./professionals-client";
 
 export const metadata: Metadata = { title: "Profesionales" };
 
@@ -43,15 +50,8 @@ export default async function AdminProfessionalsPage() {
     <div className="flex flex-col gap-8">
       <PageHeader
         title="Profesionales"
-        description="El registro público solo crea pacientes. Las cuentas profesionales se dan de alta acá."
+        description="Las profesionales se registran solas en Crear cuenta (quedan sin verificar hasta que revisás la matrícula). También podés darlas de alta vos."
       />
-
-      <section aria-labelledby="new-title" className="flex max-w-xl flex-col gap-3">
-        <h2 id="new-title" className="text-lg font-semibold">
-          Nueva profesional
-        </h2>
-        <CreateProfessionalForm />
-      </section>
 
       <section aria-labelledby="list-title" className="flex flex-col gap-3">
         <h2 id="list-title" className="text-lg font-semibold">
@@ -92,7 +92,17 @@ export default async function AdminProfessionalsPage() {
                 {professionals.map((p) => (
                   <tr key={p.id} className="border-b last:border-0">
                     <td className="px-4 py-3 font-medium">
-                      {p.displayName}
+                      <Link
+                        href={`/admin/profesionales/${p.id}`}
+                        className="text-primary underline-offset-4 hover:underline"
+                      >
+                        {p.displayName}
+                      </Link>
+                      {freeDaysLeft(p.createdAt) > 0 && (
+                        <span className="text-muted-foreground block text-xs font-normal">
+                          Gratis para siempre
+                        </span>
+                      )}
                       {p.user.role === "ADMIN" && (
                         <span className="text-muted-foreground ml-2 text-xs">(admin)</span>
                       )}
@@ -142,6 +152,25 @@ export default async function AdminProfessionalsPage() {
           Para dar de baja una cuenta profesional, escribile al equipo técnico: hay que decidir qué
           pasa con sus pacientes vinculados antes de borrarla.
         </p>
+      </section>
+
+      <section aria-labelledby="convert-title" className="flex max-w-xl flex-col gap-3">
+        <h2 id="convert-title" className="text-lg font-semibold">
+          Se registró como paciente por error
+        </h2>
+        <p className="text-muted-foreground text-sm">
+          Escribí el email exacto con el que se registró. Si la cuenta todavía no tiene registros ni
+          vínculos, pasa a profesional: entra con la misma contraseña y carga su matrícula. No se
+          listan pacientes: solo se busca ese email.
+        </p>
+        <ConvertPatientForm />
+      </section>
+
+      <section aria-labelledby="new-title" className="flex max-w-xl flex-col gap-3">
+        <h2 id="new-title" className="text-lg font-semibold">
+          Nueva profesional
+        </h2>
+        <CreateProfessionalForm />
       </section>
     </div>
   );

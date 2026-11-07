@@ -519,3 +519,19 @@ salvo que se indique lo contrario.
   interesado: más pasos para el admin sin ganar nada (la matrícula se verifica igual).
   El alta la crea el servidor (no el `signUp` público de Better Auth, que siempre crea pacientes) y
   después el cliente inicia sesión con la contraseña elegida.
+- **"Crear cuenta" arranca en psicóloga/o:** sin `?tipo=` ni `?next=`, `/registrarse` muestra el
+  alta de profesionales; los pacientes llegan casi siempre con la invitación (`?next=/vincular/…`),
+  que abre la de paciente, o eligen "Paciente". Las dos opciones son tarjetas grandes con ícono
+  bajo "¿Quién sos?", para que no se complete la equivocada sin darse cuenta.
+- **Paciente → profesional (admin):** si alguien se registró como paciente siendo profesional, en
+  /admin/profesionales el admin escribe su email exacto (no se listan pacientes) y la cuenta pasa a
+  `PROFESSIONAL`: se borra su perfil de paciente, se cierran sus sesiones y le llega un mail. Al
+  volver a entrar con la misma contraseña carga su matrícula en `/alta-profesional` y queda "sin
+  verificar". Solo si la cuenta está vacía (sin vínculos, registros, evaluaciones, tareas ni turnos);
+  si no, que cree otra cuenta con otro email, así no se pierde ni se mueve nada clínico.
+- **Más datos en el admin:** el Resumen suma interesados (anotados, mail enviado, ya con cuenta),
+  profesionales "gratis para siempre", las últimas altas, el uso de 30 días por función y los avisos
+  activados. Cada profesional tiene su ficha (`/admin/profesionales/[id]`) con cantidades: pacientes
+  con y sin la app, invitaciones, turnos, tests, evaluaciones, tareas, materiales, devoluciones,
+  notas e historias (solo cuántas), servicios y cobros (cuántos, nunca montos: es su ingreso). Nunca
+  se muestra quiénes son los pacientes ni contenido. La demo no cuenta.

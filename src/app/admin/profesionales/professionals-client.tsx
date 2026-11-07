@@ -1,12 +1,13 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { BadgeCheck, KeyRound } from "lucide-react";
+import { ArrowRightLeft, BadgeCheck, KeyRound } from "lucide-react";
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { FieldError, Input, Label } from "@/components/ui/input";
 import {
+  convertPatientToProfessional,
   createProfessional,
   resetProfessionalPassword,
   verifyProfessional,
@@ -159,5 +160,56 @@ export function VerifyButton({ professionalId, name }: { professionalId: string;
     >
       <BadgeCheck aria-hidden /> {pending ? "Guardando…" : "Marcar verificada"}
     </Button>
+  );
+}
+
+/** Se registró como paciente siendo profesional: pasar su cuenta (vacía) a profesional. */
+export function ConvertPatientForm() {
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [done, setDone] = useState<string | null>(null);
+  const [pending, start] = useTransition();
+  return (
+    <form
+      className="flex flex-col gap-3"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (!confirm(`¿Pasar la cuenta ${email.trim()} a profesional? Se le cierra la sesión.`))
+          return;
+        start(async () => {
+          setError(null);
+          setDone(null);
+          const res = await convertPatientToProfessional(email);
+          if (!res.ok) return setError(res.error);
+          setDone(
+            `Listo: ${res.data.name} (${res.data.email}) ya es profesional. Le mandamos un mail: entra con la misma contraseña y carga su matrícula.`,
+          );
+          setEmail("");
+        });
+      }}
+    >
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="convert-email">Email de la cuenta</Label>
+        <div className="flex flex-wrap gap-2">
+          <Input
+            id="convert-email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="min-w-56 flex-1"
+            required
+          />
+          <Button type="submit" variant="outline" disabled={pending}>
+            <ArrowRightLeft aria-hidden /> {pending ? "Pasando…" : "Pasar a profesional"}
+          </Button>
+        </div>
+      </div>
+      <FieldError>{error}</FieldError>
+      {done && (
+        <p role="status" className="text-primary text-sm">
+          {done}
+        </p>
+      )}
+    </form>
   );
 }
