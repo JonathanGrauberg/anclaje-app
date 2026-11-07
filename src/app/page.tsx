@@ -60,7 +60,7 @@ const forPatients = [
   {
     icon: LifeBuoy,
     title: "Ayuda urgente",
-    text: "Un botón con las líneas de su zona, incluido el Hospital Escuela de Salud Mental de Paraná.",
+    text: "Un botón en todas las pantallas con el 911, el SAME y la línea de Asistencia al Suicida, más líneas locales.",
   },
 ];
 
@@ -349,6 +349,50 @@ export default async function Home() {
               Capturas reales de la app, con una paciente de ejemplo. Se instala desde el navegador,
               sin pasar por las tiendas. En el celular, deslizá para ver más.
             </p>
+
+            {/* Botón de ayuda urgente */}
+            <div className="grid items-center gap-10 rounded-[2rem] bg-[#1e3331] p-6 text-white sm:p-10 lg:grid-cols-[1.1fr_1fr]">
+              <div className="flex flex-col gap-5">
+                <span className="flex size-12 items-center justify-center rounded-2xl bg-[#f08b80]/20 text-[#f8b4ab]">
+                  <LifeBuoy className="size-6" aria-hidden />
+                </span>
+                <h3 className="text-3xl font-extrabold tracking-[-0.03em] text-balance sm:text-4xl">
+                  Un botón de Ayuda, siempre a mano
+                </h3>
+                <p className="text-lg text-white/85">
+                  En todas las pantallas de la app hay un botón de Ayuda. Con un toque, tu paciente
+                  llama al 911, al SAME (107) o a la línea de Asistencia al Suicida: 135 en CABA y
+                  Gran Buenos Aires, <span className="whitespace-nowrap">0800-345-1435</span> en
+                  todo el país. Gratis y las 24 horas.
+                </p>
+                <ul className="flex flex-col gap-3 text-white/85">
+                  <li className="flex gap-3">
+                    <span className="mt-2 size-1.5 shrink-0 rounded-full bg-[#fcc107]" />
+                    Sumamos líneas locales de cada zona, como el Hospital Escuela de Salud Mental de
+                    Paraná, siempre con la aclaración de dónde atienden.
+                  </li>
+                  <li className="flex gap-3">
+                    <span className="mt-2 size-1.5 shrink-0 rounded-full bg-[#fcc107]" />
+                    Si en una evaluación marca una respuesta de riesgo, la app le muestra en el
+                    momento su plan de calma y las líneas de ayuda, y a vos te queda el aviso en el
+                    panel.
+                  </li>
+                </ul>
+                <p className="text-sm text-white/60">
+                  Anclaje no es un servicio de urgencias: es un puente para que pida ayuda rápido.
+                </p>
+              </div>
+              <div className="mx-auto w-full max-w-[300px] rounded-[2.6rem] bg-black/30 p-2.5 shadow-[0_30px_60px_-25px_rgba(0,0,0,0.6)]">
+                <Image
+                  src="/landing/app-ayuda.webp"
+                  alt="El botón de Ayuda abierto: 911, SAME 107, Asistencia al Suicida 135 y 0800, y el Hospital Escuela de Paraná."
+                  width={780}
+                  height={1688}
+                  sizes="300px"
+                  className="w-full rounded-[2.1rem]"
+                />
+              </div>
+            </div>
 
             {/* Lo que hace la profesional con todo eso */}
             <div className="grid items-center gap-10 rounded-[2rem] bg-white/70 p-6 sm:p-10 lg:grid-cols-[1fr_1.1fr]">

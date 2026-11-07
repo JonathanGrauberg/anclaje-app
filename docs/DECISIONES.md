@@ -485,3 +485,7 @@ salvo que se indique lo contrario.
   cuenta, vínculos y notificaciones siguen usando `patientForAction`, que rechaza la demo. En la
   demo no se muestran los Ajustes ni "Salir". Las demos no cuentan en las métricas del admin, y no
   tienen que contar para el límite de pacientes cuando haya planes.
+- **Landing: botón de Ayuda (nov 2026):** bloque que explica el botón de Ayuda con la captura del
+  panel abierto. Se nombran las líneas nacionales (911, SAME 107, Asistencia al Suicida 135 en
+  CABA/GBA y 0800-345-1435 en todo el país); el Hospital Escuela de Paraná figura como ejemplo de
+  línea local, siempre con su zona aclarada, así nadie de otra provincia cree que es la suya.
