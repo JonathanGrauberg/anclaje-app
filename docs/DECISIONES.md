@@ -458,3 +458,11 @@ salvo que se indique lo contrario.
   paciente de ejemplo, en marco de celular; en mobile se deslizan de costado. Las capturas se
   sacan con Playwright + Edge contra el local (390×844 a 2x, webp) y viven en `public/landing/`.
   Si cambia el diseño, hay que volver a sacarlas.
+- **Modo claro por defecto, oscuro a elección (nov 2026):** antes el modo seguía al sistema. Ahora
+  todos ven el claro (queda mejor con la marca) y hay un botón sol/luna en el encabezado del
+  paciente y en la barra del panel. La elección se guarda en el navegador (`localStorage`,
+  `anclaje-modo`) y un script en `<head>` la aplica antes de pintar. La variante `dark:` de
+  Tailwind y los tokens oscuros dependen de `data-mode="dark"` en `<html>`.
+- **Barra del paciente con muesca (nov 2026):** barra verde noche flotante; la sección activa sube
+  en un círculo dorado y la barra tiene un recorte (máscara radial) que lo sigue con un resorte
+  (`motion`, respeta "reducir movimiento"). Debajo del círculo va el nombre de la sección.

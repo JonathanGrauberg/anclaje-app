@@ -2,6 +2,10 @@
 @import "tw-animate-css";
 
 /* Clases que solo aplican dentro del diseño en prueba: nuevo:bg-block-sun, etc. */
+/* Modo oscuro: solo si la persona lo elige (data-mode="dark" en <html>, botón de la luna).
+   Por defecto, claro, aunque el sistema esté en oscuro. */
+@custom-variant dark (&:where([data-mode="dark"], [data-mode="dark"] *));
+
 @custom-variant nuevo (&:where([data-theme="nuevo"], [data-theme="nuevo"] *));
 
 /* Paleta calma y cálida. Los componentes usan tokens, no colores sueltos, así el modo oscuro
@@ -35,32 +39,31 @@
   --radius: 1rem;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #16151b;
-    --foreground: #ece8e2;
-    --card: #201e27;
-    --card-foreground: #ece8e2;
-    --muted: #2a2832;
-    --muted-foreground: #a9a4b2;
-    --border: #34313d;
-    --input: #403c4a;
-    --ring: #8fc4b5;
-    --primary: #8fc4b5;
-    --primary-foreground: #14231f;
-    --primary-soft: #23332f;
-    --accent: #3a2c27;
-    --accent-foreground: #f2c9b4;
-    --danger: #f08b80;
-    --danger-foreground: #2a0f0c;
-    --danger-soft: #3a1f1d;
-    --success: #8fcf9f;
-    --wheel-text: #22212a;
-    --wheel-stroke: #16151b;
-    --sun-soft: #3a321c;
-    --sky-soft: #1d2830;
-    --lilac-soft: #27222f;
-  }
+:root[data-mode="dark"] {
+  color-scheme: dark;
+  --background: #16151b;
+  --foreground: #ece8e2;
+  --card: #201e27;
+  --card-foreground: #ece8e2;
+  --muted: #2a2832;
+  --muted-foreground: #a9a4b2;
+  --border: #34313d;
+  --input: #403c4a;
+  --ring: #8fc4b5;
+  --primary: #8fc4b5;
+  --primary-foreground: #14231f;
+  --primary-soft: #23332f;
+  --accent: #3a2c27;
+  --accent-foreground: #f2c9b4;
+  --danger: #f08b80;
+  --danger-foreground: #2a0f0c;
+  --danger-soft: #3a1f1d;
+  --success: #8fcf9f;
+  --wheel-text: #22212a;
+  --wheel-stroke: #16151b;
+  --sun-soft: #3a321c;
+  --sky-soft: #1d2830;
+  --lilac-soft: #27222f;
 }
 
 /* Diseño en prueba ("nuevo"): fondo más claro, bloques de color grandes y bordes más redondos,
@@ -81,26 +84,24 @@
   --block-forest: #4f786e;
   --block-forest-foreground: #ffffff;
   --block-night: #1e3331;
-  --nav-h: 4rem;
+  --nav-h: 5rem;
 }
 
-@media (prefers-color-scheme: dark) {
-  [data-theme="nuevo"] {
-    --background: #141a19;
-    --card: #1d2523;
-    --muted: #243030;
-    --border: #2c3836;
-    --block-sun: #e6b10f;
-    --block-sun-foreground: #201a06;
-    --block-sun-deep: #c9821a;
-    --block-sun-soft: #3a321c;
-    --block-sage: #33504a;
-    --block-sage-foreground: #d6ebe4;
-    --block-sage-soft: #22302d;
-    --block-forest: #3b6058;
-    --block-forest-foreground: #f1f7f5;
-    --block-night: #0f1918;
-  }
+[data-mode="dark"] [data-theme="nuevo"] {
+  --background: #141a19;
+  --card: #1d2523;
+  --muted: #243030;
+  --border: #2c3836;
+  --block-sun: #e6b10f;
+  --block-sun-foreground: #201a06;
+  --block-sun-deep: #c9821a;
+  --block-sun-soft: #3a321c;
+  --block-sage: #33504a;
+  --block-sage-foreground: #d6ebe4;
+  --block-sage-soft: #22302d;
+  --block-forest: #3b6058;
+  --block-forest-foreground: #f1f7f5;
+  --block-night: #0f1918;
 }
 
 @theme inline {

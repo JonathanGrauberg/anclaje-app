@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ColorModeToggle } from "@/components/color-mode-toggle";
 import { InstallAppBanner } from "@/components/install-app-banner";
 import { Logo } from "@/components/logo";
 import { SignOutButton } from "@/components/sign-out-button";
@@ -25,14 +26,18 @@ export default async function ProfessionalLayout({ children }: LayoutProps<"/pro
           <Link href="/pro">
             <Logo withText className="nuevo:text-white" />
           </Link>
-          <div className="nuevo:[&_button]:text-white/80 nuevo:[&_button:hover]:bg-white/10 nuevo:[&_button:hover]:text-white md:hidden">
+          <div className="nuevo:[&_button]:text-white/80 nuevo:[&_button:hover]:bg-white/10 nuevo:[&_button:hover]:text-white flex items-center gap-1 md:hidden">
+            <ColorModeToggle className="nuevo:text-white/80 nuevo:hover:bg-white/10 nuevo:hover:text-white" />
             <SignOutButton />
           </div>
         </div>
         <ProNav isAdmin={user.role === "ADMIN"} />
         <div className="nuevo:[&_button]:text-white/80 nuevo:[&_button:hover]:bg-white/10 nuevo:[&_button:hover]:text-white hidden px-5 py-6 md:block">
           <p className="text-sm font-medium">{professional.displayName}</p>
-          <SignOutButton />
+          <div className="mt-1 flex items-center gap-1">
+            <SignOutButton />
+            <ColorModeToggle className="nuevo:text-white/80 nuevo:hover:bg-white/10 nuevo:hover:text-white" />
+          </div>
         </div>
       </aside>
       <main className="mx-auto w-full max-w-6xl flex-1 px-5 py-8 md:px-10">{children}</main>

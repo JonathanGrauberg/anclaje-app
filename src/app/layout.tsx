@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { ServiceWorkerRegister } from "@/components/service-worker";
+import { COLOR_MODE_SCRIPT } from "@/lib/color-mode";
 import "./globals.css";
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
@@ -19,15 +20,17 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#faf7f2" },
-    { media: "(prefers-color-scheme: dark)", color: "#16151b" },
-  ],
+  themeColor: "#faf7f2",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="es-AR" className={`${inter.variable} h-full antialiased`}>
+    // suppressHydrationWarning: el script de abajo pone data-mode antes de que cargue React.
+    <html lang="es-AR" className={`${inter.variable} h-full antialiased`} suppressHydrationWarning>
+      <head>
+        {/* Modo oscuro elegido con el botón: se aplica antes de pintar, así no hay parpadeo. */}
+        <script dangerouslySetInnerHTML={{ __html: COLOR_MODE_SCRIPT }} />
+      </head>
       <body className="flex min-h-full flex-col font-sans">
         {children}
         <ServiceWorkerRegister />
