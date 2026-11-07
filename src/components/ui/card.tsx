@@ -6,6 +6,7 @@ export function Card({ className, ...props }: React.ComponentProps<"div">) {
     <div
       className={cn(
         "bg-card text-card-foreground rounded-2xl border shadow-[0_1px_2px_rgba(0,0,0,0.03)]",
+        "nuevo:border-transparent nuevo:shadow-[0_10px_30px_-14px_rgba(30,51,49,0.28)]",
         className,
       )}
       {...props}

@@ -184,7 +184,7 @@ export default async function PatientHome() {
 }
 
 function WheelPreview() {
-  const colors = ["#F5A9BC", "#A9D9B4", "#C6B5E6", "#FFC690", "#F9E08A", "#C8CED8"];
+  const colors = ["#F27C99", "#6FC68C", "#9D87DC", "#FFA552", "#F7CF3D", "#8FA3BF"];
   return (
     <svg
       viewBox="-50 -50 100 100"

@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Clases que solo aplican dentro del diseño en prueba: nuevo:bg-block-sun, etc. */
+@custom-variant nuevo (&:where([data-theme="nuevo"], [data-theme="nuevo"] *));
+
 /* Paleta calma y cálida. Los componentes usan tokens, no colores sueltos, así el modo oscuro
    (por preferencia del sistema) funciona en todos lados. */
 :root {
@@ -78,7 +81,7 @@
   --block-forest: #4f786e;
   --block-forest-foreground: #ffffff;
   --block-night: #1e3331;
-  --nav-h: 4.75rem;
+  --nav-h: 4rem;
 }
 
 @media (prefers-color-scheme: dark) {

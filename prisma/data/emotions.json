@@ -3,7 +3,7 @@
   "families": [
     {
       "label": "Ira",
-      "color": "#F5A9BC",
+      "color": "#F27C99",
       "children": [
         { "label": "Herido", "children": ["Apenado", "Devastado"] },
         { "label": "Amenazado", "children": ["Atacado", "Celoso"] },
@@ -17,7 +17,7 @@
     },
     {
       "label": "Asco",
-      "color": "#A9D9B4",
+      "color": "#6FC68C",
       "children": [
         { "label": "Disconforme", "children": ["Moralista", "Reacio"] },
         { "label": "Decepcionado", "children": ["Repugnante", "Revoltoso"] },
@@ -27,7 +27,7 @@
     },
     {
       "label": "Tristeza",
-      "color": "#C6B5E6",
+      "color": "#9D87DC",
       "children": [
         { "label": "Culpable", "children": ["Arrepentido", "Avergonzado"] },
         { "label": "Abandonado", "children": ["Ignorado", "Victimizado"] },
@@ -39,7 +39,7 @@
     },
     {
       "label": "Felicidad",
-      "color": "#FFC690",
+      "color": "#FFA552",
       "children": [
         { "label": "Optimista", "children": ["Inspirado", "Abierto"] },
         { "label": "Íntimo", "children": ["Bromista", "Sensible"] },
@@ -53,7 +53,7 @@
     },
     {
       "label": "Sorpresa",
-      "color": "#F9E08A",
+      "color": "#F7CF3D",
       "children": [
         { "label": "Entusiasmado", "children": ["Enérgico", "Entusiasta"] },
         { "label": "Asombrado", "children": ["Impresionado", "Estupefacto"] },
@@ -63,7 +63,7 @@
     },
     {
       "label": "Miedo",
-      "color": "#C8CED8",
+      "color": "#8FA3BF",
       "children": [
         { "label": "Humillado", "children": ["Ridiculizado", "Irrespetado"] },
         { "label": "Rechazado", "children": ["Alienado", "Marginado"] },

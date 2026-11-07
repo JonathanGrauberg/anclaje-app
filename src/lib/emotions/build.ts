@@ -63,7 +63,7 @@ export function buildEmotionRows(json: EmotionJson): EmotionNodeRow[] {
         parentId: familyId,
         level: 2,
         label: secondary.label,
-        color: secondary.color ?? lighten(family.color, 0.35),
+        color: secondary.color ?? lighten(family.color, 0.25),
         sortOrder: j,
       });
       secondary.children.forEach((tertiary, k) => {
@@ -73,7 +73,7 @@ export function buildEmotionRows(json: EmotionJson): EmotionNodeRow[] {
           parentId: secondaryId,
           level: 3,
           label: t.label,
-          color: ("color" in t && t.color) || lighten(family.color, 0.6),
+          color: ("color" in t && t.color) || lighten(family.color, 0.45),
           sortOrder: k,
         });
       });

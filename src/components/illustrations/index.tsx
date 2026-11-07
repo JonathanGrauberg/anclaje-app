@@ -41,7 +41,15 @@ export function ArmchairScene({ className }: Props) {
       <rect x="72" y="88" width="70" height="18" rx="8" fill={C.greenLight} />
       <rect x="52" y="72" width="24" height="52" rx="12" fill={C.greenDark} />
       <rect x="138" y="72" width="24" height="52" rx="12" fill={C.greenDark} />
-      <rect x="88" y="62" width="38" height="28" rx="10" fill={C.cream} transform="rotate(-8 107 76)" />
+      <rect
+        x="88"
+        y="62"
+        width="38"
+        height="28"
+        rx="10"
+        fill={C.cream}
+        transform="rotate(-8 107 76)"
+      />
       <circle cx="107" cy="76" r="4" fill={C.orange} />
       {/* mesita y lámpara */}
       <rect x="172" y="96" width="40" height="6" rx="3" fill={C.wood} />
@@ -64,10 +72,22 @@ export function NotebookScene({ className }: Props) {
       <path d="M146 30 L82 22 V96 L146 100 Z" fill={C.cream} />
       <rect x="77" y="20" width="6" height="78" rx="3" fill={C.wood} />
       {[40, 52, 64, 76].map((y) => (
-        <path key={y} d={`M24 ${y} L68 ${y - 5}`} stroke={C.sage} strokeWidth="3" strokeLinecap="round" />
+        <path
+          key={y}
+          d={`M24 ${y} L68 ${y - 5}`}
+          stroke={C.sage}
+          strokeWidth="3"
+          strokeLinecap="round"
+        />
       ))}
       {[40, 52, 64].map((y) => (
-        <path key={y} d={`M92 ${y - 5} L136 ${y}`} stroke={C.sage} strokeWidth="3" strokeLinecap="round" />
+        <path
+          key={y}
+          d={`M92 ${y - 5} L136 ${y}`}
+          stroke={C.sage}
+          strokeWidth="3"
+          strokeLinecap="round"
+        />
       ))}
       <circle cx="122" cy="80" r="7" fill={C.gold} />
       <g transform="rotate(-38 120 50)">

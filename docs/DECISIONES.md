@@ -429,3 +429,12 @@ salvo que se indique lo contrario.
   `/diseno?v=clasico` (cookie `anclaje-diseno`); nadie más lo ve. Los colores son variables
   `--block-*` en `globals.css`, con su versión oscura. Por ahora cambia el inicio y la barra; las
   demás pantallas toman el fondo y los bordes nuevos. Si queda, se pasa a ser el diseño por defecto.
+- **Rueda con colores más vivos (nov 2026):** los seis colores de familia pasan de pastel a tonos
+  más saturados del mismo matiz, y los niveles 2 y 3 se aclaran menos (25 % y 45 % en vez de 35 % y
+  60 %). Se mantiene el texto oscuro con contraste AA. El seed (que corre en cada deploy) actualiza
+  los colores en la base.
+- **Diseño "nuevo", segunda vuelta:** sin el "+" grande (no todas las terapias usan la rueda): la
+  barra es una pastilla chica flotante y solo la sección actual muestra su nombre. Las pantallas
+  internas usan `PageHeader` con `tone` (sage/sun/forest/night) que en el diseño nuevo se dibuja
+  como encabezado de color; las `Card` pierden el borde y ganan sombra. Todo con la variante de
+  Tailwind `nuevo:`, así el diseño actual y el lado profesional no cambian.

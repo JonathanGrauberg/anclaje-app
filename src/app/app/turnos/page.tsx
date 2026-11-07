@@ -17,6 +17,7 @@ export default async function MyAppointmentsPage() {
   return (
     <>
       <PageHeader
+        tone="sun"
         back={{ href: "/app", label: "Inicio" }}
         title="Mis turnos"
         description="Los turnos que te dio tu psicóloga. Si no podés ir, avisale desde acá."

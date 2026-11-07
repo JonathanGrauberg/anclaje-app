@@ -48,6 +48,7 @@ export default async function TasksPage() {
   return (
     <div className="flex flex-col gap-8">
       <PageHeader
+        tone="sage"
         back={{ href: "/app", label: "Inicio" }}
         title="Mis tareas y evaluaciones"
         description="Lo que te propuso tu psicóloga. Sin apuro y sin rachas: a tu ritmo."
