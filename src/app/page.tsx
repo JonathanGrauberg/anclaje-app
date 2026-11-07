@@ -129,7 +129,8 @@ const steps = [
 
 export default async function Home() {
   // Con sesión abierta la landing se ve igual (para mostrarla), pero con el acceso al panel.
-  const session = await getSession();
+  // Si la base no responde, la landing se muestra igual (como sin sesión).
+  const session = await getSession().catch(() => null);
   const panel = session ? homeForRole((session.user.role ?? "PATIENT") as Role) : null;
 
   return (
