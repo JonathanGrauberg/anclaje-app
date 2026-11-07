@@ -414,3 +414,7 @@ salvo que se indique lo contrario.
   la forma redondeada oscura (recursos del diseño, en `public/landing/` como WebP); tarjetas
   "Para vos" / "Para tus pacientes" con su living; sección de seguridad con el sillón. Las fotos
   son decorativas (`alt=""`). Los originales están en la carpeta de trabajo "Utilidades landing".
+- **Lanzamiento gratis (nov 2026):** la landing muestra "Gratis hasta el 30 de noviembre · quedan N
+  días" en el hero y un contador en #probar. La fecha vive en `FREE_UNTIL` de `src/lib/launch.ts`
+  (inclusive, hora de Buenos Aires); pasada la fecha, el contador desaparece solo. El link para
+  difundir es `/#probar`, que lleva directo al formulario.

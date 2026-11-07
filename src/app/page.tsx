@@ -21,6 +21,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { LeadForm } from "@/components/landing/lead-form";
 import { Logo } from "@/components/logo";
+import { formatFreeUntil, freeDaysLeft } from "@/lib/launch";
 import { getSession, homeForRole, type Role } from "@/lib/session";
 
 export const metadata: Metadata = {
@@ -132,6 +133,9 @@ export default async function Home() {
   // Si la base no responde, la landing se muestra igual (como sin sesión).
   const session = await getSession().catch(() => null);
   const panel = session ? homeForRole((session.user.role ?? "PATIENT") as Role) : null;
+  // Lanzamiento: gratis hasta FREE_UNTIL (src/lib/launch.ts). Pasada la fecha, no se muestra.
+  const daysLeft = freeDaysLeft();
+  const freeUntil = formatFreeUntil();
 
   return (
     <div className="flex flex-1 flex-col">
@@ -197,6 +201,15 @@ export default async function Home() {
 
           <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 pt-8 sm:px-8 lg:justify-center lg:pt-0 lg:pb-24">
             <div className="flex max-w-xl flex-col gap-5 lg:ml-auto lg:max-w-[62%] lg:items-center lg:text-center">
+              {daysLeft > 0 && (
+                <a
+                  href="#probar"
+                  className="w-fit rounded-full bg-[#fcc107] px-4 py-1.5 text-sm font-semibold text-[#1e3331] shadow-lg transition-transform hover:-translate-y-0.5"
+                >
+                  Gratis hasta el {freeUntil} ·{" "}
+                  {daysLeft === 1 ? "último día" : `quedan ${daysLeft} días`}
+                </a>
+              )}
               <h1 className="text-[2.75rem] leading-[0.95] font-extrabold tracking-[-0.045em] text-balance drop-shadow-[0_6px_24px_rgba(0,0,0,0.35)] sm:text-6xl lg:text-7xl xl:text-[5.25rem]">
                 Un ancla entre sesión y sesión.
               </h1>
@@ -345,9 +358,33 @@ export default async function Home() {
                   Probala con tus pacientes
                 </h2>
                 <p className="text-muted-foreground text-lg">
-                  Estamos sumando a los primeros profesionales. Mientras tanto, es sin costo.
+                  Estamos sumando a los primeros profesionales.
+                  {daysLeft > 0 && <> Aprovechá: es gratis hasta el {freeUntil}.</>}
                 </p>
               </div>
+              {daysLeft > 0 && (
+                <div
+                  className="flex items-center gap-5 rounded-3xl bg-[#1e3331] p-5 text-white shadow-lg sm:p-6"
+                  role="note"
+                >
+                  <div className="flex size-20 shrink-0 flex-col items-center justify-center rounded-2xl bg-[#fcc107] text-[#1e3331]">
+                    <span className="text-3xl leading-none font-extrabold tabular-nums">
+                      {daysLeft}
+                    </span>
+                    <span className="text-xs font-semibold">{daysLeft === 1 ? "día" : "días"}</span>
+                  </div>
+                  <div>
+                    <p className="text-lg font-semibold">
+                      {daysLeft === 1
+                        ? "¡Hoy es el último día para sumarte gratis!"
+                        : `Quedan ${daysLeft} días para sumarte gratis.`}
+                    </p>
+                    <p className="text-sm text-white/75">
+                      Gratis hasta el {freeUntil}. ¡No te la pierdas!
+                    </p>
+                  </div>
+                </div>
+              )}
               <ol className="flex flex-col gap-5">
                 {steps.map((s, i) => (
                   <li key={s.title} className="flex gap-4">
