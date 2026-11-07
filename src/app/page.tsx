@@ -22,7 +22,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { LeadForm } from "@/components/landing/lead-form";
 import { Logo } from "@/components/logo";
-import { formatFreeUntil, freeDaysLeft } from "@/lib/launch";
+import {
+  BASE_MONTHLY,
+  formatFreeUntil,
+  formatPesos,
+  freeDaysLeft,
+  PLANS,
+  planDiscount,
+} from "@/lib/launch";
 import { getSession, homeForRole, type Role } from "@/lib/session";
 
 export const metadata: Metadata = {
@@ -213,11 +220,16 @@ export default async function Home() {
             <div className="flex max-w-xl flex-col gap-5 lg:ml-auto lg:max-w-[62%] lg:items-center lg:text-center">
               {daysLeft > 0 && (
                 <a
-                  href="#probar"
-                  className="w-fit rounded-full bg-[#fcc107] px-4 py-1.5 text-sm font-semibold text-[#1e3331] shadow-lg transition-transform hover:-translate-y-0.5"
+                  href="#planes"
+                  className="flex w-fit flex-col rounded-3xl bg-[#fcc107] px-4 py-2 text-sm text-[#1e3331] shadow-lg transition-transform hover:-translate-y-0.5 lg:items-center"
                 >
-                  Gratis hasta el {freeUntil} ·{" "}
-                  {daysLeft === 1 ? "último día" : `quedan ${daysLeft} días`}
+                  <span className="font-bold">
+                    Obtené la app gratis hasta el {freeUntil} ·{" "}
+                    {daysLeft === 1 ? "último día" : `quedan ${daysLeft} días`}
+                  </span>
+                  <span className="text-xs font-medium opacity-80">
+                    Desde diciembre, {formatPesos(BASE_MONTHLY)} por mes. Ver planes
+                  </span>
                 </a>
               )}
               <h1 className="text-[2.75rem] leading-[0.95] font-extrabold tracking-[-0.045em] text-balance drop-shadow-[0_6px_24px_rgba(0,0,0,0.35)] sm:text-6xl lg:text-7xl xl:text-[5.25rem]">
@@ -498,6 +510,113 @@ export default async function Home() {
           </div>
         </section>
 
+        {/* Planes: precios desde diciembre, tachados mientras dure el período gratis */}
+        <section id="planes" className="scroll-mt-8 bg-[#f1ece4]">
+          <div className="mx-auto flex max-w-7xl flex-col gap-12 px-4 py-20 sm:px-8 md:py-28">
+            <div className="flex max-w-2xl flex-col gap-3">
+              <p className="text-primary text-sm font-semibold tracking-widest uppercase">Planes</p>
+              <h2 className="text-4xl font-extrabold tracking-[-0.035em] text-balance sm:text-5xl">
+                {daysLeft > 0 ? `Obtenela gratis hasta el ${freeUntil}` : "Elegí cómo querés pagar"}
+              </h2>
+              <p className="text-muted-foreground text-lg">
+                {daysLeft > 0
+                  ? "Sumate ahora y usala sin pagar nada. Desde diciembre, elegís el plan que más te sirva."
+                  : "Todo incluido, en los tres planes. Cuanto más largo, menos pagás por mes."}{" "}
+                Tus pacientes usan la app sin pagar.
+              </p>
+            </div>
+            <ul className="grid gap-6 md:grid-cols-3">
+              {PLANS.map((plan) => {
+                const discount = planDiscount(plan.monthly);
+                const total = plan.monthly * plan.months;
+                const best = plan.id === "anual";
+                return (
+                  <li
+                    key={plan.id}
+                    className={
+                      best
+                        ? "relative flex flex-col gap-6 rounded-[2rem] bg-[#1e3331] p-7 text-white shadow-[0_30px_60px_-25px_rgba(30,51,49,0.6)]"
+                        : "bg-card relative flex flex-col gap-6 rounded-[2rem] p-7 shadow-[0_10px_30px_-14px_rgba(30,51,49,0.28)]"
+                    }
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <h3 className="text-xl font-bold">{plan.label}</h3>
+                      {discount > 0 && (
+                        <span className="rounded-full bg-[#fcc107] px-3 py-1 text-xs font-bold text-[#1e3331]">
+                          Ahorrás {discount} %
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <p className="flex items-baseline gap-2">
+                        <span
+                          className={
+                            daysLeft > 0
+                              ? "text-3xl font-extrabold tabular-nums line-through decoration-[#f08b80] decoration-[3px] opacity-60"
+                              : "text-4xl font-extrabold tabular-nums"
+                          }
+                        >
+                          {daysLeft > 0 && <span className="sr-only">Antes </span>}
+                          {formatPesos(plan.monthly)}
+                        </span>
+                        <span className={best ? "text-white/70" : "text-muted-foreground"}>
+                          por mes
+                        </span>
+                      </p>
+                      <p
+                        className={best ? "text-sm text-white/70" : "text-muted-foreground text-sm"}
+                      >
+                        {plan.months === 1
+                          ? "Pagás mes a mes."
+                          : `${formatPesos(total)} cada ${plan.months === 12 ? "año" : "6 meses"}.`}
+                      </p>
+                    </div>
+                    {daysLeft > 0 && (
+                      <p className="flex flex-col border-t border-current/15 pt-5">
+                        <span
+                          className={
+                            best
+                              ? "text-4xl font-extrabold tracking-tight text-[#fcc107]"
+                              : "text-primary text-4xl font-extrabold tracking-tight"
+                          }
+                        >
+                          Gratis
+                        </span>
+                        <span className="font-semibold">hasta el {freeUntil}</span>
+                      </p>
+                    )}
+                    <a
+                      href="#probar"
+                      className={
+                        best
+                          ? "mt-auto rounded-full bg-white px-5 py-3 text-center font-semibold text-[#1e3331] transition-transform active:scale-[0.98]"
+                          : "bg-primary text-primary-foreground mt-auto rounded-full px-5 py-3 text-center font-semibold transition-transform active:scale-[0.98]"
+                      }
+                    >
+                      {daysLeft > 0 ? "Quiero probarla gratis" : "Quiero este plan"}
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+            <div className="flex flex-col gap-4">
+              <p className="font-semibold">Los tres planes incluyen todo:</p>
+              <ul className="grid gap-x-8 gap-y-2 sm:grid-cols-2 lg:grid-cols-3">
+                {PLAN_FEATURES.map((f) => (
+                  <li key={f} className="flex items-start gap-2.5">
+                    <span className="bg-primary mt-2 size-1.5 shrink-0 rounded-full" aria-hidden />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <p className="text-muted-foreground text-sm">
+                Precios en pesos argentinos. No te pedimos tarjeta para probarla: no se cobra nada
+                automáticamente.
+              </p>
+            </div>
+          </div>
+        </section>
+
         {/* Cómo empezar + formulario */}
         <section id="probar" className="scroll-mt-8">
           <div className="mx-auto grid max-w-7xl gap-12 px-4 py-20 sm:px-8 md:py-28 lg:grid-cols-[1fr_1.2fr]">
@@ -511,7 +630,13 @@ export default async function Home() {
                 </h2>
                 <p className="text-muted-foreground text-lg">
                   Estamos sumando a los primeros profesionales.
-                  {daysLeft > 0 && <> Aprovechá: es gratis hasta el {freeUntil}.</>}
+                  {daysLeft > 0 && (
+                    <>
+                      {" "}
+                      Aprovechá: es gratis hasta el {freeUntil}. Desde diciembre,{" "}
+                      {formatPesos(BASE_MONTHLY)} por mes.
+                    </>
+                  )}
                 </p>
               </div>
               {daysLeft > 0 && (
@@ -648,9 +773,21 @@ const PRO_CONTROLS = [
   },
 ];
 
+const PLAN_FEATURES = [
+  "La app para tus pacientes: rueda, diario, autorregistros, plan de calma y botón de Ayuda",
+  "Lo que comparten, ordenado antes de cada sesión",
+  "Devoluciones, tareas y biblioteca de recursos",
+  "Evaluaciones con puntaje automático",
+  "Agenda con recordatorios por mail",
+  "Historia clínica y notas privadas",
+  "Honorarios y cobros",
+  "Todo cifrado y con acceso solo tuyo",
+];
+
 const NAV = [
   ["#como-funciona", "Cómo funciona"],
   ["#app-paciente", "Lo que ve tu paciente"],
+  ["#planes", "Precios"],
   ["#seguridad", "Seguridad"],
   ["#probar", "Contacto"],
 ] as const;

@@ -21,3 +21,23 @@ export function formatFreeUntil(until = FREE_UNTIL) {
     timeZone: "UTC",
   }).format(new Date(`${until}T12:00:00Z`));
 }
+
+// Precios a partir de diciembre (pesos argentinos, por mes). Mientras dure el período gratis, la
+// landing los muestra tachados. Ver DECISIONES.md.
+export const PLANS = [
+  { id: "mensual", label: "1 mes", months: 1, monthly: 20_000 },
+  { id: "semestral", label: "6 meses", months: 6, monthly: 18_000 },
+  { id: "anual", label: "1 año", months: 12, monthly: 15_000 },
+] as const;
+
+export const BASE_MONTHLY = PLANS[0].monthly;
+
+/** "$20.000" */
+export function formatPesos(n: number) {
+  return "$" + new Intl.NumberFormat("es-AR", { maximumFractionDigits: 0 }).format(n);
+}
+
+/** Descuento redondeado frente al plan mensual (10 = 10 %). */
+export function planDiscount(monthly: number) {
+  return Math.round((1 - monthly / BASE_MONTHLY) * 100);
+}

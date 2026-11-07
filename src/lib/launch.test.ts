@@ -1,5 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { formatFreeUntil, freeDaysLeft } from "./launch";
+import { formatFreeUntil, formatPesos, freeDaysLeft, planDiscount } from "./launch";
+
+describe("planes", () => {
+  it("formatea pesos con punto de miles", () => {
+    expect(formatPesos(20000)).toBe("$20.000");
+    expect(formatPesos(180000)).toBe("$180.000");
+  });
+  it("calcula el descuento frente al mensual", () => {
+    expect(planDiscount(18000)).toBe(10);
+    expect(planDiscount(15000)).toBe(25);
+  });
+});
 
 describe("contador del lanzamiento", () => {
   it("cuenta los días que quedan, incluido hoy, en hora de Buenos Aires", () => {

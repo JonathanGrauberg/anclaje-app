@@ -489,3 +489,10 @@ salvo que se indique lo contrario.
   panel abierto. Se nombran las líneas nacionales (911, SAME 107, Asistencia al Suicida 135 en
   CABA/GBA y 0800-345-1435 en todo el país); el Hospital Escuela de Paraná figura como ejemplo de
   línea local, siempre con su zona aclarada, así nadie de otra provincia cree que es la suya.
+- **Precios en la landing (nov 2026):** "Gratis hasta el X" se leía raro sin precio. Ahora el hero
+  dice "Obtené la app gratis hasta el 30 de noviembre" y abajo "Desde diciembre, $20.000 por mes",
+  y hay una sección de planes: 1 mes ($20.000/mes), 6 meses ($18.000/mes, −10 %, $108.000) y 1 año
+  ($15.000/mes, −25 %, $180.000). Mientras dura el período gratis los precios van tachados con
+  "Gratis hasta el 30 de noviembre"; después se muestran normales. Los tres planes incluyen todo
+  (sin límite de pacientes anunciado). Los precios viven en `PLANS` de `src/lib/launch.ts`.
+  Todavía no hay cobro: no se pide tarjeta.
