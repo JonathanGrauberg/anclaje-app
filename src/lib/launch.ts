@@ -1,7 +1,8 @@
 import { dayKey } from "@/lib/dates";
 
-// Lanzamiento: hasta esta fecha (inclusive, hora de Buenos Aires) la app es gratis para quien se
-// sume. Para cambiarla, editá FREE_UNTIL. Pasada la fecha, la landing deja de mostrar el contador.
+// Lanzamiento: quien se suma hasta esta fecha (inclusive, hora de Buenos Aires) usa la app gratis
+// PARA SIEMPRE (son las primeras testers). Para cambiarla, editá FREE_UNTIL. Pasada la fecha, la
+// landing deja de mostrar el contador y los precios se ven sin tachar.
 export const FREE_UNTIL = "2026-11-30";
 
 const DAY = 86_400_000;
@@ -22,8 +23,8 @@ export function formatFreeUntil(until = FREE_UNTIL) {
   }).format(new Date(`${until}T12:00:00Z`));
 }
 
-// Precios a partir de diciembre (pesos argentinos, por mes). Mientras dure el período gratis, la
-// landing los muestra tachados. Ver DECISIONES.md.
+// Precios para quien se sume después de FREE_UNTIL (pesos argentinos, por mes). Mientras dure la
+// promo, la landing los muestra tachados. Ver DECISIONES.md.
 export const PLANS = [
   { id: "mensual", label: "1 mes", months: 1, monthly: 20_000 },
   { id: "semestral", label: "6 meses", months: 6, monthly: 18_000 },
@@ -31,6 +32,8 @@ export const PLANS = [
 ] as const;
 
 export const BASE_MONTHLY = PLANS[0].monthly;
+/** El precio por mes más bajo (plan anual), para el "desde $…". */
+export const MIN_MONTHLY = Math.min(...PLANS.map((p) => p.monthly));
 
 /** "$20.000" */
 export function formatPesos(n: number) {

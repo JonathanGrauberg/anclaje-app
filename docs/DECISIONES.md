@@ -496,3 +496,10 @@ salvo que se indique lo contrario.
   "Gratis hasta el 30 de noviembre"; después se muestran normales. Los tres planes incluyen todo
   (sin límite de pacientes anunciado). Los precios viven en `PLANS` de `src/lib/launch.ts`.
   Todavía no hay cobro: no se pide tarjeta.
+- **Quien se suma hasta el 30 de noviembre, gratis para siempre (nov 2026):** corrige la entrada
+  anterior: no es "gratis hasta el 30 y después pagás". Las primeras profesionales (casi seguro
+  conocidas) son las testers y el arranque del boca a boca: no pagan nunca. Quien se sume desde el
+  1 de diciembre paga según los planes. Si se anotan demasiadas de golpe, la idea es poner un tope
+  de cupos (por cantidad), no cambiar la fecha. Al cobrar, el criterio para "gratis para siempre"
+  es la fecha de alta de la cuenta, o la del pedido en el formulario (`Lead.createdAt`) si la
+  cuenta se creó después a partir de ese pedido.

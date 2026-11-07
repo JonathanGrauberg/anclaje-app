@@ -23,7 +23,7 @@ import Link from "next/link";
 import { LeadForm } from "@/components/landing/lead-form";
 import { Logo } from "@/components/logo";
 import {
-  BASE_MONTHLY,
+  MIN_MONTHLY,
   formatFreeUntil,
   formatPesos,
   freeDaysLeft,
@@ -150,7 +150,8 @@ export default async function Home() {
   // Si la base no responde, la landing se muestra igual (como sin sesión).
   const session = await getSession().catch(() => null);
   const panel = session ? homeForRole((session.user.role ?? "PATIENT") as Role) : null;
-  // Lanzamiento: gratis hasta FREE_UNTIL (src/lib/launch.ts). Pasada la fecha, no se muestra.
+  // Lanzamiento: quien se suma hasta FREE_UNTIL (src/lib/launch.ts) la usa gratis para siempre.
+  // Pasada la fecha, no se muestra.
   const daysLeft = freeDaysLeft();
   const freeUntil = formatFreeUntil();
 
@@ -224,11 +225,11 @@ export default async function Home() {
                   className="flex w-fit flex-col rounded-3xl bg-[#fcc107] px-4 py-2 text-sm text-[#1e3331] shadow-lg transition-transform hover:-translate-y-0.5 lg:items-center"
                 >
                   <span className="font-bold">
-                    Obtené la app gratis hasta el {freeUntil} ·{" "}
+                    Sumate antes del {freeUntil} y usala gratis para siempre ·{" "}
                     {daysLeft === 1 ? "último día" : `quedan ${daysLeft} días`}
                   </span>
                   <span className="text-xs font-medium opacity-80">
-                    Desde diciembre, {formatPesos(BASE_MONTHLY)} por mes. Ver planes
+                    Después, desde {formatPesos(MIN_MONTHLY)} por mes. Ver planes
                   </span>
                 </a>
               )}
@@ -510,17 +511,19 @@ export default async function Home() {
           </div>
         </section>
 
-        {/* Planes: precios desde diciembre, tachados mientras dure el período gratis */}
+        {/* Planes: precios para quien se sume desde diciembre; tachados mientras dure la promo */}
         <section id="planes" className="scroll-mt-8 bg-[#f1ece4]">
           <div className="mx-auto flex max-w-7xl flex-col gap-12 px-4 py-20 sm:px-8 md:py-28">
             <div className="flex max-w-2xl flex-col gap-3">
               <p className="text-primary text-sm font-semibold tracking-widest uppercase">Planes</p>
               <h2 className="text-4xl font-extrabold tracking-[-0.035em] text-balance sm:text-5xl">
-                {daysLeft > 0 ? `Obtenela gratis hasta el ${freeUntil}` : "Elegí cómo querés pagar"}
+                {daysLeft > 0
+                  ? `Sumate antes del ${freeUntil} y es gratis para siempre`
+                  : "Elegí cómo querés pagar"}
               </h2>
               <p className="text-muted-foreground text-lg">
                 {daysLeft > 0
-                  ? "Sumate ahora y usala sin pagar nada. Desde diciembre, elegís el plan que más te sirva."
+                  ? `Las y los profesionales que se sumen hasta el ${freeUntil} no pagan nunca: la app queda de regalo. Quien llegue después elige uno de estos planes.`
                   : "Todo incluido, en los tres planes. Cuanto más largo, menos pagás por mes."}{" "}
                 Tus pacientes usan la app sin pagar.
               </p>
@@ -582,7 +585,9 @@ export default async function Home() {
                         >
                           Gratis
                         </span>
-                        <span className="font-semibold">hasta el {freeUntil}</span>
+                        <span className="font-semibold">
+                          para siempre, si te sumás antes del {freeUntil}
+                        </span>
                       </p>
                     )}
                     <a
@@ -593,7 +598,7 @@ export default async function Home() {
                           : "bg-primary text-primary-foreground mt-auto rounded-full px-5 py-3 text-center font-semibold transition-transform active:scale-[0.98]"
                       }
                     >
-                      {daysLeft > 0 ? "Quiero probarla gratis" : "Quiero este plan"}
+                      {daysLeft > 0 ? "Quiero sumarme gratis" : "Quiero este plan"}
                     </a>
                   </li>
                 );
@@ -610,8 +615,8 @@ export default async function Home() {
                 ))}
               </ul>
               <p className="text-muted-foreground text-sm">
-                Precios en pesos argentinos. No te pedimos tarjeta para probarla: no se cobra nada
-                automáticamente.
+                Precios en pesos argentinos, para quien se sume desde el 1 de diciembre. No te
+                pedimos tarjeta.
               </p>
             </div>
           </div>
@@ -633,7 +638,7 @@ export default async function Home() {
                   {daysLeft > 0 && (
                     <>
                       {" "}
-                      Aprovechá: es gratis hasta el {freeUntil}. Desde diciembre,{" "}
+                      Si te sumás hasta el {freeUntil}, la usás gratis para siempre. Después, desde{" "}
                       {formatPesos(BASE_MONTHLY)} por mes.
                     </>
                   )}
@@ -653,11 +658,11 @@ export default async function Home() {
                   <div>
                     <p className="text-lg font-semibold">
                       {daysLeft === 1
-                        ? "¡Hoy es el último día para sumarte gratis!"
-                        : `Quedan ${daysLeft} días para sumarte gratis.`}
+                        ? "¡Hoy es el último día para sumarte gratis para siempre!"
+                        : `Quedan ${daysLeft} días para sumarte gratis para siempre.`}
                     </p>
                     <p className="text-sm text-white/75">
-                      Gratis hasta el {freeUntil}. ¡No te la pierdas!
+                      Quien se sume hasta el {freeUntil} no paga nunca. ¡No te la pierdas!
                     </p>
                   </div>
                 </div>
