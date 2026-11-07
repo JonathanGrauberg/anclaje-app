@@ -539,19 +539,19 @@ export default async function Home() {
 
 const PATIENT_SCREENS = [
   {
-    src: "/landing/app-inicio.webp",
+    src: "/landing/app-inicio-v2.webp",
     alt: "Inicio de la app del paciente: saludo, su próxima sesión y accesos a la rueda, el diario y más.",
     title: "Su inicio",
     text: "Ve su próxima sesión y tiene a mano todo lo que le propusiste.",
   },
   {
-    src: "/landing/app-rueda.webp",
+    src: "/landing/app-rueda-v2.webp",
     alt: "La rueda de las emociones con seis familias: miedo, ira, asco, tristeza, felicidad y sorpresa.",
     title: "La rueda de las emociones",
     text: "Pone en palabras lo que siente en segundos, con la intensidad.",
   },
   {
-    src: "/landing/app-proxima-sesion.webp",
+    src: "/landing/app-proxima-sesion-v2.webp",
     alt: "Lista de temas que la paciente quiere hablar en la próxima sesión.",
     title: "Para la próxima sesión",
     text: "Anota lo que quiere hablar, y vos lo ves antes de arrancar.",
