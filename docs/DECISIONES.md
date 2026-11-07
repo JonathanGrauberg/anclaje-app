@@ -438,3 +438,7 @@ salvo que se indique lo contrario.
   internas usan `PageHeader` con `tone` (sage/sun/forest/night) que en el diseño nuevo se dibuja
   como encabezado de color; las `Card` pierden el borde y ganan sombra. Todo con la variante de
   Tailwind `nuevo:`, así el diseño actual y el lado profesional no cambian.
+- **El diseño nuevo pasa a ser el predeterminado (nov 2026):** todas las pacientes ven el diseño
+  nuevo. Quien prefiera el anterior puede volver con `/diseno?v=clasico` (guarda la cookie
+  `anclaje-diseno=clasico` en ese navegador) y regresar con `/diseno?v=nuevo` (la borra). El
+  diseño clásico queda en el código por ahora; si nadie lo usa, se puede borrar más adelante.
