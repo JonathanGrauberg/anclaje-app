@@ -503,3 +503,8 @@ salvo que se indique lo contrario.
   de cupos (por cantidad), no cambiar la fecha. Al cobrar, el criterio para "gratis para siempre"
   es la fecha de alta de la cuenta, o la del pedido en el formulario (`Lead.createdAt`) si la
   cuenta se creó después a partir de ese pedido.
+- **Mensaje de acceso para WhatsApp (admin):** al crear una profesional o generarle una contraseña
+  nueva, el panel ofrece "Copiar mensaje para WhatsApp" con usuario, contraseña temporal, link para
+  ingresar y el pedido de cambiarla en Ajustes → Contraseña (`src/lib/admin-messages.ts`). Solo se
+  copia al portapapeles: no se arma un link `wa.me` porque la contraseña quedaría en una URL. La vista
+  previa en pantalla muestra la contraseña tapada. El mail de bienvenida sigue sin llevarla.

@@ -15,7 +15,7 @@ import { createProfessionalSchema, type CreateProfessionalInput } from "@/lib/va
 import { JURISDICTIONS } from "@/lib/licenses";
 import { TempPassword } from "../temp-password";
 
-type Created = { email: string; tempPassword: string };
+type Created = { email: string; tempPassword: string; name: string };
 
 export function CreateProfessionalForm() {
   const [created, setCreated] = useState<Created | null>(null);
@@ -35,7 +35,7 @@ export function CreateProfessionalForm() {
           setError(null);
           const res = await createProfessional(values);
           if (!res.ok) return setError(res.error);
-          setCreated(res.data);
+          setCreated({ ...res.data, name: values.name });
           form.reset({
             name: "",
             email: "",
@@ -98,16 +98,26 @@ export function CreateProfessionalForm() {
           </Button>
         </div>
       </form>
-      {created && <TempPassword email={created.email} password={created.tempPassword} />}
+      {created && (
+        <TempPassword
+          kind="alta"
+          name={created.name}
+          email={created.email}
+          password={created.tempPassword}
+        />
+      )}
     </div>
   );
 }
 
 export function ResetPasswordButton({ userId, name }: { userId: string; name: string }) {
   const [pending, start] = useTransition();
-  const [result, setResult] = useState<Created | null>(null);
+  const [result, setResult] = useState<Omit<Created, "name"> | null>(null);
 
-  if (result) return <TempPassword email={result.email} password={result.tempPassword} />;
+  if (result)
+    return (
+      <TempPassword kind="nueva" name={name} email={result.email} password={result.tempPassword} />
+    );
   return (
     <Button
       variant="ghost"
