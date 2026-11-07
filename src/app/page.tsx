@@ -284,54 +284,52 @@ export default async function Home() {
           </div>
         </section>
 
-        {/* Seguridad */}
-        <section
-          id="seguridad"
-          className="relative isolate scroll-mt-8 overflow-hidden bg-[#4f786e] text-white"
-        >
-          <div className="absolute inset-y-0 right-0 -z-10 hidden w-[58%] lg:block">
-            <Image
-              src="/landing/sillon.webp"
-              alt=""
-              fill
-              sizes="58vw"
-              className="object-cover object-left"
-            />
-            {/* Funde el borde de la foto con el color de la sección */}
-            <div className="absolute inset-y-0 left-0 w-48 bg-gradient-to-r from-[#4f786e] to-transparent" />
-          </div>
-          <div className="mx-auto grid max-w-7xl gap-10 px-4 py-20 sm:px-8 md:py-28 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1fr)]">
-            <div className="flex flex-col gap-8">
-              <h2 className="text-5xl leading-[0.95] font-extrabold tracking-[-0.045em] sm:text-6xl xl:text-7xl">
-                Lo que <span className="text-[#1d2f2c]">se dice</span> en terapia{" "}
-                <span className="text-[#1d2f2c]">queda</span> en terapia
-              </h2>
-              <p className="max-w-md text-lg text-white/85">
-                Son datos sensibles y los tratamos así: ante la duda, privado. Cada paciente puede
-                descargar o borrar todo lo suyo cuando quiera.
-              </p>
-              <ul className="grid gap-3 sm:grid-cols-2">
-                {security.map(({ icon: Icon, title, text }) => (
-                  <li
-                    key={title}
-                    className="flex flex-col gap-2 rounded-2xl bg-[#1d2f2c]/35 p-5 ring-1 ring-white/10 backdrop-blur-sm"
-                  >
-                    <Icon className="size-5 text-[#fcc107]" aria-hidden />
-                    <h3 className="font-semibold">{title}</h3>
-                    <p className="text-sm leading-relaxed text-white/80">{text}</p>
-                  </li>
-                ))}
-              </ul>
+        {/* Seguridad: arriba el lema y el sillón, abajo las cuatro garantías en una fila */}
+        <section id="seguridad" className="scroll-mt-8 bg-[#4f786e] text-white">
+          <div className="relative isolate overflow-hidden">
+            <div className="absolute inset-y-0 right-0 -z-10 hidden w-1/2 lg:block">
+              <Image
+                src="/landing/sillon.webp"
+                alt=""
+                fill
+                sizes="50vw"
+                className="object-cover object-[40%_88%]"
+              />
+              {/* Funde el borde de la foto con el color de la sección */}
+              <div className="absolute inset-y-0 left-0 w-40 bg-gradient-to-r from-[#4f786e] to-transparent" />
+            </div>
+            <div className="mx-auto grid max-w-7xl px-4 sm:px-8 lg:min-h-[26rem] lg:grid-cols-2">
+              <div className="flex flex-col justify-center gap-6 py-14 lg:py-16 lg:pr-10">
+                <h2 className="text-5xl leading-[0.95] font-extrabold tracking-[-0.045em] text-balance sm:text-6xl">
+                  Lo que <span className="text-[#1d2f2c]">se dice</span> en terapia{" "}
+                  <span className="text-[#1d2f2c]">queda</span> en terapia
+                </h2>
+                <p className="max-w-md text-lg text-white/85">
+                  Son datos sensibles y los tratamos así: ante la duda, privado. Cada paciente puede
+                  descargar o borrar todo lo suyo cuando quiera.
+                </p>
+              </div>
+            </div>
+            <div className="relative h-64 sm:h-80 lg:hidden">
+              <Image
+                src="/landing/sillon.webp"
+                alt=""
+                fill
+                sizes="100vw"
+                className="object-cover object-[45%_85%]"
+              />
             </div>
           </div>
-          <div className="relative h-72 sm:h-96 lg:hidden">
-            <Image
-              src="/landing/sillon.webp"
-              alt=""
-              fill
-              sizes="100vw"
-              className="object-cover object-[30%_70%]"
-            />
+          <div className="bg-[#1d2f2c]/30">
+            <ul className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:grid-cols-2 sm:px-8 lg:grid-cols-4">
+              {security.map(({ icon: Icon, title, text }) => (
+                <li key={title} className="flex flex-col gap-2">
+                  <Icon className="size-5 text-[#fcc107]" aria-hidden />
+                  <h3 className="font-semibold">{title}</h3>
+                  <p className="text-sm leading-relaxed text-white/80">{text}</p>
+                </li>
+              ))}
+            </ul>
           </div>
         </section>
 
