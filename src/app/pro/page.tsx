@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ArmchairScene } from "@/components/illustrations";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge, EmptyState, PageHeader } from "@/components/ui/misc";
@@ -16,6 +17,7 @@ import { formatAppointmentShort, formatDate, formatRelative } from "@/lib/dates"
 import { getNextAppointments } from "@/lib/queries/appointments";
 import { getPatientsWithAttention, type PatientAttention } from "@/lib/queries/pro";
 import { requireProfessional } from "@/lib/session";
+import { getUiTheme } from "@/lib/ui-theme";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Pacientes" };
@@ -37,17 +39,30 @@ export default async function ProfessionalHome({ searchParams }: PageProps<"/pro
       p.unreviewedAssessments,
   );
 
+  const isNew = (await getUiTheme()) === "nuevo";
+  const nextOverall = [...nextAppointments.entries()].sort((a, b) => +a[1] - +b[1])[0];
+  const nextPatient = nextOverall && patients.find((p) => p.id === nextOverall[0]);
+
   return (
     <>
-      <PageHeader
-        title={`Hola, ${professional.displayName}`}
-        description="Lo que compartieron tus pacientes y lo que está esperando una respuesta."
-        action={
-          <Button asChild variant="soft">
-            <Link href="/pro/invitaciones">Agregar paciente</Link>
-          </Button>
-        }
-      />
+      {isNew ? (
+        <ProHero
+          name={professional.displayName}
+          patients={patients.length}
+          needAttention={needAttention.length}
+          next={nextOverall && nextPatient ? { at: nextOverall[1], name: nextPatient.name } : null}
+        />
+      ) : (
+        <PageHeader
+          title={`Hola, ${professional.displayName}`}
+          description="Lo que compartieron tus pacientes y lo que está esperando una respuesta."
+          action={
+            <Button asChild variant="soft">
+              <Link href="/pro/invitaciones">Agregar paciente</Link>
+            </Button>
+          }
+        />
+      )}
 
       {(baja === "archivado" || baja === "borrado") && (
         <p role="status" className="bg-primary-soft text-primary mb-4 rounded-xl px-4 py-3 text-sm">
@@ -76,7 +91,7 @@ export default async function ProfessionalHome({ searchParams }: PageProps<"/pro
               Pide atención
             </h2>
             {needAttention.length === 0 ? (
-              <p className="text-muted-foreground bg-card rounded-2xl border p-4">
+              <p className="text-muted-foreground bg-card nuevo:bg-block-sage-soft nuevo:text-block-sage-foreground nuevo:border-0 nuevo:rounded-3xl rounded-2xl border p-4">
                 Nada pendiente por ahora: no hay pedidos de devolución sin responder ni tareas
                 vencidas.
               </p>
@@ -109,11 +124,79 @@ export default async function ProfessionalHome({ searchParams }: PageProps<"/pro
   );
 }
 
+function ProHero({
+  name,
+  patients,
+  needAttention,
+  next,
+}: {
+  name: string;
+  patients: number;
+  needAttention: number;
+  next: { at: Date; name: string } | null;
+}) {
+  return (
+    <section className="bg-block-sun text-block-sun-foreground relative isolate mb-8 overflow-hidden rounded-[2rem] p-6 pb-0 sm:p-8 sm:pb-0">
+      <div
+        className="bg-block-sun-deep absolute -top-12 -right-12 -z-10 size-52 rounded-full"
+        aria-hidden
+      />
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="flex flex-col gap-4 pb-6 sm:pb-8">
+          <h1 className="text-[2rem] leading-[1.05] font-bold tracking-tight sm:text-4xl">
+            Hola, {name}
+          </h1>
+          <p className="max-w-md text-lg leading-snug font-medium">
+            {next ? (
+              <>
+                Tu próximo turno es con {next.name}: {formatAppointmentShort(next.at)}.
+              </>
+            ) : (
+              "Lo que compartieron tus pacientes y lo que está esperando una respuesta."
+            )}
+          </p>
+          <dl className="flex flex-wrap gap-2 text-sm">
+            <div className="rounded-full bg-white/40 px-4 py-2">
+              <dt className="sr-only">Pacientes</dt>
+              <dd>
+                <strong className="tabular-nums">{patients}</strong>{" "}
+                {patients === 1 ? "paciente" : "pacientes"}
+              </dd>
+            </div>
+            <div className="rounded-full bg-white/40 px-4 py-2">
+              <dt className="sr-only">Piden atención</dt>
+              <dd>
+                <strong className="tabular-nums">{needAttention}</strong>{" "}
+                {needAttention === 1 ? "pide atención" : "piden atención"}
+              </dd>
+            </div>
+          </dl>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href="/pro/invitaciones"
+              className="bg-block-night rounded-full px-5 py-3 text-sm font-semibold text-white transition-transform active:scale-[0.97]"
+            >
+              Agregar paciente
+            </Link>
+            <Link
+              href="/pro/agenda"
+              className="rounded-full bg-white/50 px-5 py-3 text-sm font-semibold transition-colors hover:bg-white/70"
+            >
+              Ver la agenda
+            </Link>
+          </div>
+        </div>
+        <ArmchairScene className="-mr-6 w-56 shrink-0 self-end sm:w-72" />
+      </div>
+    </section>
+  );
+}
+
 function AttentionRow({ patient: p }: { patient: PatientAttention }) {
   return (
     <Link
       href={`/pro/pacientes/${p.id}`}
-      className="bg-card hover:border-primary/40 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border p-4 transition-colors"
+      className="bg-card hover:border-primary/40 nuevo:border-transparent nuevo:shadow-[0_10px_30px_-14px_rgba(30,51,49,0.28)] nuevo:rounded-3xl flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border p-4 transition-colors"
     >
       <span className="font-semibold">{p.name}</span>
       {p.criticalAssessmentAt && (
@@ -163,7 +246,8 @@ function PatientCard({
       <Card
         className={cn(
           "hover:border-primary/40 h-full transition-colors",
-          (p.highIntensityAt || p.criticalAssessmentAt) && "border-danger/40",
+          (p.highIntensityAt || p.criticalAssessmentAt) &&
+            "border-danger/40 nuevo:border-danger/50",
         )}
       >
         <CardContent className="flex flex-col gap-3">
@@ -207,7 +291,7 @@ function PatientCard({
 
 function Stat({ label, value, icon }: { label: string; value: number; icon?: React.ReactNode }) {
   return (
-    <div className="bg-muted rounded-xl p-2">
+    <div className="bg-muted nuevo:bg-block-sage-soft rounded-xl p-2">
       <dt className="text-muted-foreground flex items-center gap-1 text-xs">
         {icon}
         {label}

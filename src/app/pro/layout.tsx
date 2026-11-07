@@ -3,24 +3,34 @@ import { InstallAppBanner } from "@/components/install-app-banner";
 import { Logo } from "@/components/logo";
 import { SignOutButton } from "@/components/sign-out-button";
 import { requireProfessional } from "@/lib/session";
+import { getUiTheme } from "@/lib/ui-theme";
+import { cn } from "@/lib/utils";
 import { ProNav } from "./pro-nav";
 
 export default async function ProfessionalLayout({ children }: LayoutProps<"/pro">) {
-  const { user, professional } = await requireProfessional();
+  const [{ user, professional }, theme] = await Promise.all([requireProfessional(), getUiTheme()]);
+  const isNew = theme === "nuevo";
 
   return (
-    <div className="flex flex-1 flex-col md:flex-row">
-      <aside className="bg-card border-b md:sticky md:top-0 md:h-dvh md:w-64 md:shrink-0 md:border-r md:border-b-0">
+    <div
+      data-theme={isNew ? "nuevo" : undefined}
+      // En el panel no hay barra de abajo: el banner de instalar no se tiene que correr.
+      className={cn(
+        "flex flex-1 flex-col md:flex-row",
+        isNew && "bg-background text-foreground [--nav-h:0px]",
+      )}
+    >
+      <aside className="bg-card nuevo:bg-block-night nuevo:text-white nuevo:border-white/10 border-b md:sticky md:top-0 md:h-dvh md:w-64 md:shrink-0 md:border-r md:border-b-0">
         <div className="flex h-14 items-center justify-between px-5 md:h-16">
           <Link href="/pro">
-            <Logo withText />
+            <Logo withText className="nuevo:text-white" />
           </Link>
-          <div className="md:hidden">
+          <div className="nuevo:[&_button]:text-white/80 nuevo:[&_button:hover]:bg-white/10 nuevo:[&_button:hover]:text-white md:hidden">
             <SignOutButton />
           </div>
         </div>
         <ProNav isAdmin={user.role === "ADMIN"} />
-        <div className="hidden px-5 py-6 md:block">
+        <div className="nuevo:[&_button]:text-white/80 nuevo:[&_button:hover]:bg-white/10 nuevo:[&_button:hover]:text-white hidden px-5 py-6 md:block">
           <p className="text-sm font-medium">{professional.displayName}</p>
           <SignOutButton />
         </div>

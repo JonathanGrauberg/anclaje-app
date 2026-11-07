@@ -38,6 +38,7 @@ export default async function InvitationsPage() {
   return (
     <>
       <PageHeader
+        tone="sage"
         title="Agregar paciente"
         description="Invitalo a la app, o cargalo sin la app para usar la agenda y la historia clínica."
       />

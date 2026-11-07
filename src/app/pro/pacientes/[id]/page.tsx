@@ -119,7 +119,7 @@ export default async function PatientRecordPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col">
+      <div className="nuevo:bg-block-sage-soft nuevo:rounded-[2rem] nuevo:p-6 flex flex-col">
         <BackLink href="/pro" label="Pacientes" />
         <h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">{name}</h1>
         {withoutApp ? (

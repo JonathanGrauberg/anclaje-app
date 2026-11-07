@@ -448,3 +448,8 @@ salvo que se indique lo contrario.
   dejaría averiguar quién se atiende con una psicóloga en Anclaje (dato sensible). Para que no
   lleguen links inútiles, el link de ingreso solo se manda si el email tiene cuenta (la
   recuperación de contraseña ya lo hacía), y un link vencido vuelve a /ingresar con un aviso.
+- **Diseño nuevo también en el panel profesional (nov 2026):** misma cookie y misma variante
+  `nuevo:` que el lado paciente. Barra lateral verde noche con la sección actual en dorado, inicio
+  con un bloque dorado (saludo, próximo turno, cuántos pacientes piden atención y el sillón) y
+  encabezados de color en cada sección. La ficha del paciente tiene su cabecera en salvia suave.
+  Las tarjetas con alerta (intensidad alta, ítem crítico) conservan el borde rojo.

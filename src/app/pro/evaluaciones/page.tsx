@@ -47,6 +47,7 @@ export default async function AssessmentsPage({ searchParams }: PageProps<"/pro/
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
+        tone="sage"
         title="Evaluaciones"
         description="Armá cuestionarios con puntaje, publicalos, asignalos y mirá las respuestas de tus pacientes."
         action={responsesView ? undefined : <ImportJsonButton />}

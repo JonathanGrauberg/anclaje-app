@@ -56,6 +56,7 @@ export default async function FeesPage({ searchParams }: PageProps<"/pro/honorar
   return (
     <>
       <PageHeader
+        tone="forest"
         title="Honorarios"
         description="Tus precios y lo que vas cobrando. Es solo para vos: tus pacientes no lo ven."
         action={

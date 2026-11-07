@@ -39,7 +39,7 @@ export default async function ProSettingsPage() {
     : null;
   return (
     <div className="flex max-w-2xl flex-col gap-8">
-      <PageHeader title="Ajustes" />
+      <PageHeader tone="night" title="Ajustes" />
       <section aria-labelledby="profile-title" className="flex flex-col gap-3">
         <h2 id="profile-title" className="text-lg font-semibold">
           Datos personales

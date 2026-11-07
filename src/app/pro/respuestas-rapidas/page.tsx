@@ -17,6 +17,7 @@ export default async function QuickRepliesPage() {
   return (
     <>
       <PageHeader
+        tone="sage"
         title="Respuestas rápidas"
         description="Frases que usás seguido en las devoluciones. Las insertás con un clic y las podés editar antes de enviar."
       />

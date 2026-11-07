@@ -47,6 +47,7 @@ export default async function LibraryPage({ searchParams }: PageProps<"/pro/bibl
   return (
     <>
       <PageHeader
+        tone="forest"
         title="Biblioteca"
         description="Tu material: PDFs, imágenes, links y fichas de texto. Asignalo a cada paciente."
         action={<NewResourceButton />}

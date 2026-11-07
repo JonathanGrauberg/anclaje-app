@@ -118,6 +118,7 @@ export default async function AgendaPage({ searchParams }: PageProps<"/pro/agend
   return (
     <div className="flex flex-col gap-8">
       <PageHeader
+        tone="sun"
         title="Agenda"
         description="Tus turnos. Los pacientes que usan la app los ven ahí; también podés dar turno a quien no la usa."
       />
