@@ -238,6 +238,8 @@ model ProfessionalProfile {
   lastDigestAt         DateTime?
   /// Cuándo se le cargó la lista de precios de referencia (una sola vez, aunque después la vacíe).
   pricesSeededAt       DateTime?
+  /// Cuándo se le creó la paciente de ejemplo (una sola vez: si la borra, no vuelve).
+  demoCreatedAt        DateTime?
   createdAt            DateTime        @default(now())
   updatedAt            DateTime        @updatedAt
 
@@ -276,6 +278,9 @@ model PatientProfile {
   contactEnc        String?
   /// Recibir por mail el recordatorio del turno del día anterior.
   appointmentEmails Boolean              @default(true)
+  /// Paciente de ejemplo "Sofía (DEMO)" que se crea para cada profesional (ver src/lib/demo.ts).
+  /// No tiene contraseña: solo se ve desde "Ver como paciente".
+  isDemo            Boolean              @default(false)
   createdAt         DateTime             @default(now())
   updatedAt         DateTime             @updatedAt
 

@@ -1,4 +1,5 @@
 import "server-only";
+import { isDemoEmail } from "@/lib/demo-email";
 import nodemailer, { type Transporter } from "nodemailer";
 
 // Envío de emails por SMTP (sirve con cualquier proveedor: Postmark, SES, Resend, Brevo…).
@@ -16,6 +17,7 @@ export type Email = { to: string; subject: string; text: string; html?: string; 
 export const contactEmail = () => process.env.CONTACT_EMAIL || undefined;
 
 export async function sendEmail(email: Email) {
+  if (isDemoEmail(email.to)) return; // pacientes demo: el mail no existe
   const url = process.env.SMTP_URL;
   if (!url) {
     if (process.env.NODE_ENV === "production") throw new Error("Falta configurar SMTP_URL");

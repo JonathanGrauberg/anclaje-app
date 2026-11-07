@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { encryptOptional } from "@/lib/crypto";
 import { prisma } from "@/lib/db";
-import { patientForAction } from "@/lib/session";
+import { patientForContentAction } from "@/lib/session";
 import {
   copingCardSchema,
   taskProgressSchema,
@@ -16,7 +16,7 @@ import { fail, firstIssue, ok, safe } from "./result";
 
 export async function addOwnCopingCard(input: CopingCardInput) {
   return safe(async () => {
-    const patient = await patientForAction();
+    const patient = await patientForContentAction();
     const parsed = copingCardSchema.safeParse(input);
     if (!parsed.success) return fail(firstIssue(parsed.error));
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -47,7 +47,7 @@ export async function addOwnCopingCard(input: CopingCardInput) {
 /** El paciente borra solo las fichas que agregó él. */
 export async function deleteOwnCopingCard(id: string) {
   return safe(async () => {
-    const patient = await patientForAction();
+    const patient = await patientForContentAction();
     const res = await prisma.copingCard.deleteMany({
       where: { id, author: "PATIENT", plan: { patientId: patient.id } },
     });
@@ -59,7 +59,7 @@ export async function deleteOwnCopingCard(id: string) {
 
 export async function updateTaskProgress(input: TaskProgressInput) {
   return safe(async () => {
-    const patient = await patientForAction();
+    const patient = await patientForContentAction();
     const parsed = taskProgressSchema.safeParse(input);
     if (!parsed.success) return fail(firstIssue(parsed.error));
     const { id, done, comment } = parsed.data;

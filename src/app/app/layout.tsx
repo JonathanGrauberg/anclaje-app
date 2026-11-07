@@ -13,7 +13,7 @@ import { getUiTheme } from "@/lib/ui-theme";
 import { cn } from "@/lib/utils";
 
 export default async function PatientLayout({ children }: LayoutProps<"/app">) {
-  await requirePatient();
+  const { isDemoView, user } = await requirePatient();
   const [lines, theme] = await Promise.all([getCrisisLines(), getUiTheme()]);
   const isNew = theme === "nuevo";
 
@@ -22,6 +22,22 @@ export default async function PatientLayout({ children }: LayoutProps<"/app">) {
       data-theme={isNew ? "nuevo" : undefined}
       className={cn("flex flex-1 flex-col", isNew && "bg-background text-foreground")}
     >
+      {isDemoView && (
+        <div
+          role="status"
+          className="bg-block-sun text-block-sun-foreground relative z-40 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 px-4 py-2 text-center text-sm"
+        >
+          <span>
+            Estás viendo la app como <strong>{user.name}</strong>, tu paciente de ejemplo.
+          </span>
+          <a
+            href="/demo/salir"
+            className="rounded-full bg-[#1e3331] px-3 py-1 font-semibold text-white"
+          >
+            Volver a mi panel
+          </a>
+        </div>
+      )}
       <header className="bg-background/85 supports-[backdrop-filter]:bg-background/70 sticky top-0 z-30 border-b border-transparent backdrop-blur">
         <div className="mx-auto flex h-14 max-w-2xl items-center justify-between px-4">
           <Link href="/app" className="rounded-full">
@@ -36,7 +52,7 @@ export default async function PatientLayout({ children }: LayoutProps<"/app">) {
             >
               <Settings className="size-5" aria-hidden />
             </Link>
-            <SignOutButton />
+            {!isDemoView && <SignOutButton />}
           </div>
         </div>
       </header>

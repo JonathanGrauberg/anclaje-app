@@ -40,6 +40,7 @@ export async function findLinkedPatient(professionalId: string, patientId: strin
       userId: true,
       displayName: true,
       contactEnc: true,
+      isDemo: true,
       createdAt: true,
       user: { select: { name: true, email: true, phoneEnc: true } },
       links: {

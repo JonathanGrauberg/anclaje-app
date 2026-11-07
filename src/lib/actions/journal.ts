@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { encrypt, encryptOptional } from "@/lib/crypto";
 import { prisma } from "@/lib/db";
-import { patientForAction } from "@/lib/session";
+import { patientForContentAction } from "@/lib/session";
 import {
   journalSchema,
   shareSchema,
@@ -19,7 +19,7 @@ import { fail, firstIssue, ok, safe } from "./result";
  */
 export async function saveJournal(input: JournalInput) {
   return safe(async () => {
-    const patient = await patientForAction();
+    const patient = await patientForContentAction();
     const parsed = journalSchema.safeParse(input);
     if (!parsed.success) return fail(firstIssue(parsed.error));
     const { id, title, body, emotionIds, share, publish } = parsed.data;
@@ -75,7 +75,7 @@ export async function saveJournal(input: JournalInput) {
 
 export async function updateJournalShare(id: string, input: ShareInput) {
   return safe(async () => {
-    const patient = await patientForAction();
+    const patient = await patientForContentAction();
     const parsed = shareSchema.safeParse(input);
     if (!parsed.success) return fail(firstIssue(parsed.error));
     const { visibility, intention } = parsed.data;
@@ -105,7 +105,7 @@ export async function updateJournalShare(id: string, input: ShareInput) {
 
 export async function deleteJournal(id: string) {
   return safe(async () => {
-    const patient = await patientForAction();
+    const patient = await patientForContentAction();
     const res = await prisma.journalEntry.deleteMany({ where: { id, patientId: patient.id } });
     if (res.count === 0) return fail("No encontramos esa entrada");
     revalidatePath("/app/diario");

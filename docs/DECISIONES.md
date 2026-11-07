@@ -473,3 +473,15 @@ salvo que se indique lo contrario.
   incluido" y aclaramos con asterisco que el PHQ-9 y el GAD-7 vienen con puntuación y rangos, pero
   el texto de los ítems lo pone la profesional (no podemos publicarlo). No se promete que sea
   parte de un plan pago o gratis hasta definir los planes.
+- **Paciente de ejemplo "Sofía (DEMO)" y "Ver como paciente" (nov 2026):** casi todas las
+  profesionales preguntan qué ve el paciente. Cada profesional tiene, la primera vez que entra al
+  panel, una paciente demo con dos semanas de registros (rueda, autorregistro, diario privado y
+  compartido, temas, tareas, plan de calma y una devolución). Se crea una sola vez
+  (`ProfessionalProfile.demoCreatedAt`): si la borra, no vuelve. La usuaria demo no tiene
+  contraseña y su mail es `demo-<id>@demo.anclaje.invalid` (dominio reservado): `sendEmail` nunca
+  le escribe. "Ver la app como paciente" (`/demo/ver`) no cambia de sesión: pone una cookie con el
+  id de la demo y `requirePatient` / `patientForContentAction` la aceptan solo si la paciente es
+  `isDemo` y tiene vínculo activo con quien la pide (se verifica en cada request). Las acciones de
+  cuenta, vínculos y notificaciones siguen usando `patientForAction`, que rechaza la demo. En la
+  demo no se muestran los Ajustes ni "Salir". Las demos no cuentan en las métricas del admin, y no
+  tienen que contar para el límite de pacientes cuando haya planes.

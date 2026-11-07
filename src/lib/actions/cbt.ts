@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { encryptOptional } from "@/lib/crypto";
 import { prisma } from "@/lib/db";
-import { patientForAction } from "@/lib/session";
+import { patientForContentAction } from "@/lib/session";
 import {
   cbtDraftSchema,
   shareSchema,
@@ -15,7 +15,7 @@ import { fail, firstIssue, ok, safe } from "./result";
 
 /** Crea un autorregistro en borrador y abre el asistente. */
 export async function startCbtRecord() {
-  const patient = await patientForAction();
+  const patient = await patientForContentAction();
   const visibility = patient.sharingDefaults?.cbt ?? "SHARED";
   const record = await prisma.cbtRecord.create({
     data: {
@@ -109,14 +109,14 @@ async function writeDraft(patientId: string, input: CbtDraftInput, complete: boo
 
 export async function saveCbtDraft(input: CbtDraftInput) {
   return safe(async () => {
-    const patient = await patientForAction();
+    const patient = await patientForContentAction();
     return writeDraft(patient.id, input, false);
   });
 }
 
 export async function completeCbtRecord(input: CbtDraftInput) {
   return safe(async () => {
-    const patient = await patientForAction();
+    const patient = await patientForContentAction();
     const res = await writeDraft(patient.id, input, true);
     if (res.ok) {
       revalidatePath("/app/autorregistro");
@@ -128,7 +128,7 @@ export async function completeCbtRecord(input: CbtDraftInput) {
 
 export async function updateCbtShare(id: string, input: ShareInput) {
   return safe(async () => {
-    const patient = await patientForAction();
+    const patient = await patientForContentAction();
     const parsed = shareSchema.safeParse(input);
     if (!parsed.success) return fail(firstIssue(parsed.error));
     const { visibility, intention } = parsed.data;
@@ -156,7 +156,7 @@ export async function updateCbtShare(id: string, input: ShareInput) {
 
 export async function deleteCbtRecord(id: string) {
   return safe(async () => {
-    const patient = await patientForAction();
+    const patient = await patientForContentAction();
     const res = await prisma.cbtRecord.deleteMany({ where: { id, patientId: patient.id } });
     if (res.count === 0) return fail("No encontramos ese autorregistro");
     revalidatePath("/app/autorregistro");

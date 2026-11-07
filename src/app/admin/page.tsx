@@ -26,7 +26,9 @@ async function getUsageStats() {
   const d30 = new Date(now - 30 * DAY);
   const since = new Date(now - (MONTHS * 31 + 1) * DAY);
   const pro = { role: "PROFESSIONAL" as const };
-  const pat = { role: "PATIENT" as const };
+  // Las pacientes de ejemplo ("Sofía (DEMO)") no cuentan en las métricas.
+  const pat = { role: "PATIENT" as const, NOT: { patientProfile: { isDemo: true } } };
+  const real = { patient: { isDemo: false } };
 
   const [
     pros,
@@ -55,14 +57,18 @@ async function getUsageStats() {
     prisma.user.count({ where: { ...pat, lastActiveAt: { gte: d7 } } }),
     prisma.user.count({ where: { ...pat, lastActiveAt: { gte: d30 } } }),
     prisma.patientProfile.count({ where: { userId: null } }),
-    prisma.careLink.count({ where: { status: "ACTIVE" } }),
-    prisma.emotionEntry.count({ where: { createdAt: { gte: d30 } } }),
-    prisma.journalEntry.count({ where: { createdAt: { gte: d30 } } }),
-    prisma.cbtRecord.count({ where: { createdAt: { gte: d30 } } }),
+    prisma.careLink.count({ where: { status: "ACTIVE", ...real } }),
+    prisma.emotionEntry.count({ where: { createdAt: { gte: d30 }, ...real } }),
+    prisma.journalEntry.count({ where: { createdAt: { gte: d30 }, ...real } }),
+    prisma.cbtRecord.count({ where: { createdAt: { gte: d30 }, ...real } }),
     prisma.assessmentResponse.count({ where: { status: "COMPLETED", completedAt: { gte: d30 } } }),
     prisma.appointment.count({ where: { startsAt: { gte: d30, lte: new Date(now) } } }),
     prisma.user.findMany({
-      where: { role: { in: ["PATIENT", "PROFESSIONAL"] }, createdAt: { gte: since } },
+      where: {
+        role: { in: ["PATIENT", "PROFESSIONAL"] },
+        createdAt: { gte: since },
+        NOT: { patientProfile: { isDemo: true } },
+      },
       select: { role: true, createdAt: true },
     }),
   ]);

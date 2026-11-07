@@ -157,6 +157,19 @@ export default async function PatientRecordPage({
             )}
           </p>
         )}
+        {patient.isDemo && (
+          <p className="bg-block-sun-soft mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl p-3 text-sm">
+            <span>
+              Es una paciente de ejemplo para que veas cómo funciona. No le llega ningún mail.
+            </span>
+            <a
+              href="/demo/ver"
+              className="rounded-full bg-[#1e3331] px-3 py-1.5 font-semibold text-white"
+            >
+              Ver la app como la ve ella
+            </a>
+          </p>
+        )}
         <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
           <GiveAppointment patient={{ id: patient.id, name, withoutApp }} />
           <RegisterPayment

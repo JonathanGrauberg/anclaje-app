@@ -7,7 +7,7 @@ import { encryptOptional } from "@/lib/crypto";
 import { prisma } from "@/lib/db";
 import { dueAssignmentsWhere } from "@/lib/queries/patient";
 import { scoreAssessment } from "@/lib/scoring";
-import { patientForAction } from "@/lib/session";
+import { patientForContentAction } from "@/lib/session";
 import { answerSchema, type AnswerInput } from "@/lib/validation/assessment";
 import { fail, firstIssue, ok, safe } from "./result";
 
@@ -17,7 +17,7 @@ const DAY = 86_400_000;
 
 /** Empieza (o retoma) la evaluación de una asignación vigente y lleva al cuestionario. */
 export async function startAssessment(assignmentId: string) {
-  const patient = await patientForAction();
+  const patient = await patientForContentAction();
   const assignment = await prisma.assessmentAssignment.findFirst({
     where: { id: assignmentId, ...dueAssignmentsWhere(patient.id) },
     select: { id: true, versionId: true },
@@ -45,7 +45,7 @@ async function ownOpenResponse(responseId: string, patientId: string) {
 
 export async function saveAnswer(input: AnswerInput) {
   return safe(async () => {
-    const patient = await patientForAction();
+    const patient = await patientForContentAction();
     const parsed = answerSchema.safeParse(input);
     if (!parsed.success) return fail(firstIssue(parsed.error));
     const a = parsed.data;
@@ -114,7 +114,7 @@ export async function saveAnswer(input: AnswerInput) {
 
 export async function completeAssessment(responseId: string) {
   return safe(async () => {
-    const patient = await patientForAction();
+    const patient = await patientForContentAction();
     const response = await ownOpenResponse(responseId, patient.id);
     if (!response) return fail("Esta evaluación ya se cerró");
     const version = await getVersion(response.versionId);

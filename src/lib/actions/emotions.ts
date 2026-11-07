@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { HIGH_INTENSITY } from "@/lib/constants";
 import { encryptOptional } from "@/lib/crypto";
 import { prisma } from "@/lib/db";
-import { patientForAction } from "@/lib/session";
+import { patientForContentAction } from "@/lib/session";
 import {
   emotionEntrySchema,
   shareSchema,
@@ -15,7 +15,7 @@ import { fail, firstIssue, ok, safe } from "./result";
 
 export async function saveEmotionEntry(input: EmotionEntryInput) {
   return safe(async () => {
-    const patient = await patientForAction();
+    const patient = await patientForContentAction();
     const parsed = emotionEntrySchema.safeParse(input);
     if (!parsed.success) return fail(firstIssue(parsed.error));
     const { picks, bodyZones, note, share } = parsed.data;
@@ -45,7 +45,7 @@ export async function saveEmotionEntry(input: EmotionEntryInput) {
 
 export async function updateEmotionShare(id: string, input: ShareInput) {
   return safe(async () => {
-    const patient = await patientForAction();
+    const patient = await patientForContentAction();
     const parsed = shareSchema.safeParse(input);
     if (!parsed.success) return fail(firstIssue(parsed.error));
     const { visibility, intention } = parsed.data;
@@ -62,7 +62,7 @@ export async function updateEmotionShare(id: string, input: ShareInput) {
 
 export async function deleteEmotionEntry(id: string) {
   return safe(async () => {
-    const patient = await patientForAction();
+    const patient = await patientForContentAction();
     const res = await prisma.emotionEntry.deleteMany({ where: { id, patientId: patient.id } });
     if (res.count === 0) return fail("No encontramos ese registro");
     revalidatePath("/app/rueda/historial");

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { cache } from "react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { getDemoViewPatient } from "@/lib/demo";
 
 export type Role = "PATIENT" | "PROFESSIONAL" | "ADMIN";
 
@@ -34,14 +35,30 @@ export function homeForRole(role: Role) {
 /** Usuario paciente + su perfil. Redirige si no corresponde. */
 export const requirePatient = cache(async () => {
   const user = await requireUser();
-  if (user.role !== "PATIENT") redirect(homeForRole(user.role));
+  if (user.role !== "PATIENT") {
+    // Una profesional "viendo como paciente": solo su paciente demo (ver src/lib/demo.ts).
+    const demo = await getDemoViewPatient(user.id);
+    if (!demo?.user) redirect(homeForRole(user.role));
+    const { user: demoUser, ...demoPatient } = demo;
+    return {
+      user: {
+        ...user,
+        id: demoUser.id,
+        name: demoUser.name,
+        email: demoUser.email,
+        role: "PATIENT" as Role,
+      },
+      patient: { ...demoPatient, userId: demoUser.id },
+      isDemoView: true,
+    };
+  }
   const patient = await prisma.patientProfile.upsert({
     where: { userId: user.id },
     update: {},
     create: { userId: user.id, displayName: user.name, sharingDefaults: { create: {} } },
     include: { sharingDefaults: true },
   });
-  return { user, patient: { ...patient, userId: user.id } };
+  return { user, patient: { ...patient, userId: user.id }, isDemoView: false };
 });
 
 /** Usuario profesional (o admin) + su perfil profesional. */
@@ -76,6 +93,21 @@ export async function patientForAction() {
   });
   if (!patient) throw new Error("No autorizado");
   return { ...patient, userId: session.user.id };
+}
+
+/**
+ * Como patientForAction, pero también vale para una profesional "viendo como paciente" su demo.
+ * Usalo SOLO en acciones de contenido (rueda, diario, autorregistro, temas, tareas, evaluaciones):
+ * nunca en las de cuenta, vínculos o notificaciones, que tienen que seguir rechazando a la demo.
+ */
+export async function patientForContentAction() {
+  const session = await getSession();
+  if (!session) throw new Error("No autorizado");
+  if ((session.user.role ?? "PATIENT") === "PATIENT") return patientForAction();
+  const demo = await getDemoViewPatient(session.user.id);
+  if (!demo?.user) throw new Error("No autorizado");
+  const { user: demoUser, ...patient } = demo;
+  return { ...patient, userId: demoUser.id };
 }
 
 /** Para Server Actions del lado profesional: sesión + perfil, sin redirect. */

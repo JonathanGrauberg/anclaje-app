@@ -48,7 +48,20 @@ const PATIENT_NOTIFICATIONS: NotificationPrefItem[] = [
 ];
 
 export default async function SettingsPage({ searchParams }: PageProps<"/app/ajustes">) {
-  const { user, patient } = await requirePatient();
+  const { user, patient, isDemoView } = await requirePatient();
+  if (isDemoView) {
+    // En "Ver como paciente" no mostramos ajustes de cuenta: son de la cuenta real de cada paciente.
+    return (
+      <div className="flex flex-col gap-8">
+        <PageHeader title="Ajustes" back={{ href: "/app", label: "Inicio" }} tone="night" />
+        <p className="bg-card rounded-3xl p-5 text-sm leading-relaxed">
+          Acá cada paciente elige qué se comparte por defecto con vos, los recordatorios, su
+          teléfono y los datos de su cuenta. En la paciente de ejemplo esta pantalla no está
+          disponible.
+        </p>
+      </div>
+    );
+  }
   const justLinked = (await searchParams).vinculado === "1";
   const shared = { patientId: patient.id, visibility: "SHARED" as const };
 

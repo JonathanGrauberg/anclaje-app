@@ -16,6 +16,7 @@ import { Badge, EmptyState, PageHeader } from "@/components/ui/misc";
 import { formatAppointmentShort, formatDate, formatRelative } from "@/lib/dates";
 import { getNextAppointments } from "@/lib/queries/appointments";
 import { getPatientsWithAttention, type PatientAttention } from "@/lib/queries/pro";
+import { ensureDemoPatient } from "@/lib/demo";
 import { requireProfessional } from "@/lib/session";
 import { getUiTheme } from "@/lib/ui-theme";
 import { cn } from "@/lib/utils";
@@ -25,6 +26,8 @@ export const metadata: Metadata = { title: "Pacientes" };
 export default async function ProfessionalHome({ searchParams }: PageProps<"/pro">) {
   const { professional } = await requireProfessional();
   const { baja } = await searchParams;
+  // La paciente de ejemplo se crea una sola vez, la primera vez que entra al panel.
+  await ensureDemoPatient(professional.id);
   const patients = await getPatientsWithAttention(professional.id);
   const nextAppointments = await getNextAppointments(
     professional.id,
@@ -178,12 +181,12 @@ function ProHero({
             >
               Agregar paciente
             </Link>
-            <Link
-              href="/pro/agenda"
+            <a
+              href="/demo/ver"
               className="rounded-full bg-white/50 px-5 py-3 text-sm font-semibold transition-colors hover:bg-white/70"
             >
-              Ver la agenda
-            </Link>
+              Ver la app como paciente
+            </a>
           </div>
         </div>
         <ArmchairScene className="-mr-6 w-56 shrink-0 self-end sm:w-72" />
