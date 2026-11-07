@@ -418,3 +418,7 @@ salvo que se indique lo contrario.
   días" en el hero y un contador en #probar. La fecha vive en `FREE_UNTIL` de `src/lib/launch.ts`
   (inclusive, hora de Buenos Aires); pasada la fecha, el contador desaparece solo. El link para
   difundir es `/#probar`, que lleva directo al formulario.
+- **Imagen al compartir (nov 2026):** `src/app/opengraph-image.jpg` (1200×630, ~80 KB para que
+  WhatsApp la muestre) con el consultorio, el faro 3D, el logo blanco y el lema. Es estática, sin
+  fecha, así no queda vieja cuando termine el período gratis. `metadataBase` sale de
+  `NEXT_PUBLIC_APP_URL`. Si se cambia la imagen, WhatsApp puede tardar en refrescar su caché.

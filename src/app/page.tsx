@@ -29,6 +29,15 @@ export const metadata: Metadata = {
   description:
     "La app para psicólogas y psicólogos y sus pacientes: registro emocional, diario, autorregistros, agenda, historia clínica y honorarios. Todo cifrado.",
   robots: { index: true, follow: true },
+  openGraph: {
+    type: "website",
+    locale: "es_AR",
+    siteName: "Anclaje",
+    url: "/",
+    title: "Anclaje · Un ancla entre sesión y sesión",
+    description:
+      "Lo que tus pacientes sienten en la semana, ordenado para la próxima sesión. Para psicólogas y psicólogos.",
+  },
 };
 
 const forPatients = [
