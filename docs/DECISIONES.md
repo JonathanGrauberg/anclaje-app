@@ -453,3 +453,8 @@ salvo que se indique lo contrario.
   con un bloque dorado (saludo, próximo turno, cuántos pacientes piden atención y el sillón) y
   encabezados de color en cada sección. La ficha del paciente tiene su cabecera en salvia suave.
   Las tarjetas con alerta (intensidad alta, ítem crítico) conservan el borde rojo.
+- **Landing: "Lo que ve tu paciente" (nov 2026):** casi todas las profesionales preguntan qué ve
+  el paciente. Sección con tres capturas reales de la app (inicio, rueda, próxima sesión) con la
+  paciente de ejemplo, en marco de celular; en mobile se deslizan de costado. Las capturas se
+  sacan con Playwright + Edge contra el local (390×844 a 2x, webp) y viven en `public/landing/`.
+  Si cambia el diseño, hay que volver a sacarlas.

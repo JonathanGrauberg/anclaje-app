@@ -306,6 +306,51 @@ export default async function Home() {
           </div>
         </section>
 
+        {/* Lo que ve el paciente: capturas reales de la app (cuenta de ejemplo) */}
+        <section id="app-paciente" className="scroll-mt-8 bg-[#fdf0c4] text-[#2a2416]">
+          <div className="mx-auto flex max-w-7xl flex-col gap-12 px-4 py-20 sm:px-8 md:py-28">
+            <div className="flex max-w-2xl flex-col gap-3">
+              <p className="text-sm font-semibold tracking-widest text-[#8a5a00] uppercase">
+                Lo que ve tu paciente
+              </p>
+              <h2 className="text-4xl font-extrabold tracking-[-0.035em] text-balance sm:text-5xl">
+                Así es la app en su celular
+              </h2>
+              <p className="text-lg text-[#2a2416]/80">
+                Simple, cálida y sin presión. Registra lo que siente cuando le pasa, y vos lo ves
+                ordenado en tu panel antes de la sesión. Solo lo que elige compartir.
+              </p>
+            </div>
+            <ul className="-mx-4 flex snap-x snap-mandatory gap-6 overflow-x-auto px-4 pb-4 sm:mx-0 sm:px-0 md:grid md:grid-cols-3 md:gap-8 md:overflow-visible">
+              {PATIENT_SCREENS.map((s) => (
+                <li
+                  key={s.src}
+                  className="flex w-[72vw] max-w-[300px] shrink-0 snap-center flex-col gap-4 md:w-auto md:max-w-none"
+                >
+                  <div className="mx-auto w-full max-w-[300px] rounded-[2.6rem] bg-[#1e3331] p-2.5 shadow-[0_30px_60px_-25px_rgba(30,51,49,0.55)]">
+                    <Image
+                      src={s.src}
+                      alt={s.alt}
+                      width={780}
+                      height={1688}
+                      sizes="(min-width: 768px) 300px, 72vw"
+                      className="w-full rounded-[2.1rem]"
+                    />
+                  </div>
+                  <div className="mx-auto flex max-w-[300px] flex-col gap-1">
+                    <p className="text-lg font-bold">{s.title}</p>
+                    <p className="text-[#2a2416]/80">{s.text}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <p className="text-sm text-[#2a2416]/70">
+              Capturas reales de la app, con una paciente de ejemplo. Se instala desde el navegador,
+              sin pasar por las tiendas.
+            </p>
+          </div>
+        </section>
+
         {/* Seguridad: arriba el lema y el sillón, abajo las cuatro garantías en una fila */}
         <section id="seguridad" className="scroll-mt-8 bg-[#4f786e] text-white">
           <div className="relative isolate overflow-hidden">
@@ -438,8 +483,30 @@ export default async function Home() {
   );
 }
 
+const PATIENT_SCREENS = [
+  {
+    src: "/landing/app-inicio.webp",
+    alt: "Inicio de la app del paciente: saludo, su próxima sesión y accesos a la rueda, el diario y más.",
+    title: "Su inicio",
+    text: "Ve su próxima sesión y tiene a mano todo lo que le propusiste.",
+  },
+  {
+    src: "/landing/app-rueda.webp",
+    alt: "La rueda de las emociones con seis familias: miedo, ira, asco, tristeza, felicidad y sorpresa.",
+    title: "La rueda de las emociones",
+    text: "Pone en palabras lo que siente en segundos, con la intensidad.",
+  },
+  {
+    src: "/landing/app-proxima-sesion.webp",
+    alt: "Lista de temas que la paciente quiere hablar en la próxima sesión.",
+    title: "Para la próxima sesión",
+    text: "Anota lo que quiere hablar, y vos lo ves antes de arrancar.",
+  },
+];
+
 const NAV = [
   ["#como-funciona", "Cómo funciona"],
+  ["#app-paciente", "Lo que ve tu paciente"],
   ["#seguridad", "Seguridad"],
   ["#probar", "Contacto"],
 ] as const;
