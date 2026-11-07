@@ -410,3 +410,7 @@ salvo que se indique lo contrario.
   borra su cuenta, el cobro queda sin paciente (es el registro contable de ella); un paciente sin
   la app con cobros se archiva en vez de borrarse. Por ahora no hay "pendiente de cobro" (haría
   falta marcar asistencia en los turnos).
+- **Landing con fotos (nov 2026):** hero a pantalla completa con el consultorio verde, el faro 3D y
+  la forma redondeada oscura (recursos del diseño, en `public/landing/` como WebP); tarjetas
+  "Para vos" / "Para tus pacientes" con su living; sección de seguridad con el sillón. Las fotos
+  son decorativas (`alt=""`). Los originales están en la carpeta de trabajo "Utilidades landing".
