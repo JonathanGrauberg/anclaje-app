@@ -466,3 +466,10 @@ salvo que se indique lo contrario.
 - **Barra del paciente con muesca (nov 2026):** barra verde noche flotante; la sección activa sube
   en un círculo dorado y la barra tiene un recorte (máscara radial) que lo sigue con un resorte
   (`motion`, respeta "reducir movimiento"). Debajo del círculo va el nombre de la sección.
+- **Landing: seis pantallas del paciente + "Y vos, desde tu panel" (nov 2026):** se suman
+  autorregistro, plan de calma y tareas/evaluaciones, y un bloque que explica qué controla cada
+  uno (qué se comparte, tareas, plan de calma, evaluaciones con puntaje automático, devoluciones)
+  con la captura del resultado de una evaluación. Sobre los tests decimos "puntaje automático
+  incluido" y aclaramos con asterisco que el PHQ-9 y el GAD-7 vienen con puntuación y rangos, pero
+  el texto de los ítems lo pone la profesional (no podemos publicarlo). No se promete que sea
+  parte de un plan pago o gratis hasta definir los planes.

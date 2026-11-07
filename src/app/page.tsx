@@ -7,6 +7,7 @@ import {
   FileLock2,
   HeartHandshake,
   LifeBuoy,
+  ListChecks,
   LockKeyhole,
   MessageSquareHeart,
   NotebookPen,
@@ -321,7 +322,7 @@ export default async function Home() {
                 ordenado en tu panel antes de la sesión. Solo lo que elige compartir.
               </p>
             </div>
-            <ul className="-mx-4 flex snap-x snap-mandatory gap-6 overflow-x-auto px-4 pb-4 sm:mx-0 sm:px-0 md:grid md:grid-cols-3 md:gap-8 md:overflow-visible">
+            <ul className="-mx-4 flex snap-x snap-mandatory gap-6 overflow-x-auto px-4 pb-4 sm:mx-0 sm:px-0 md:grid md:grid-cols-3 md:gap-x-8 md:gap-y-14 md:overflow-visible">
               {PATIENT_SCREENS.map((s) => (
                 <li
                   key={s.src}
@@ -346,7 +347,60 @@ export default async function Home() {
             </ul>
             <p className="text-sm text-[#2a2416]/70">
               Capturas reales de la app, con una paciente de ejemplo. Se instala desde el navegador,
-              sin pasar por las tiendas.
+              sin pasar por las tiendas. En el celular, deslizá para ver más.
+            </p>
+
+            {/* Lo que hace la profesional con todo eso */}
+            <div className="grid items-center gap-10 rounded-[2rem] bg-white/70 p-6 sm:p-10 lg:grid-cols-[1fr_1.1fr]">
+              <div className="flex flex-col gap-6">
+                <div className="flex flex-col gap-2">
+                  <p className="text-sm font-semibold tracking-widest text-[#8a5a00] uppercase">
+                    Y vos, desde tu panel
+                  </p>
+                  <h3 className="text-3xl font-extrabold tracking-[-0.03em] text-balance sm:text-4xl">
+                    Vos decidís qué le proponés. Tu paciente, qué te comparte.
+                  </h3>
+                </div>
+                <ul className="flex flex-col gap-5">
+                  {PRO_CONTROLS.map(({ icon: Icon, title, text }) => (
+                    <li key={title} className="flex gap-4">
+                      <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-[#fcc107] text-[#2a2416]">
+                        <Icon className="size-5" aria-hidden />
+                      </span>
+                      <span className="flex flex-col gap-0.5">
+                        <span className="font-bold">{title}</span>
+                        <span className="text-[#2a2416]/80">{text}</span>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <figure className="flex flex-col gap-3">
+                <div className="overflow-hidden rounded-2xl bg-[#1e3331] shadow-[0_30px_60px_-25px_rgba(30,51,49,0.55)]">
+                  <div className="flex gap-1.5 px-4 py-3" aria-hidden>
+                    <span className="size-2.5 rounded-full bg-white/30" />
+                    <span className="size-2.5 rounded-full bg-white/30" />
+                    <span className="size-2.5 rounded-full bg-white/30" />
+                  </div>
+                  <Image
+                    src="/landing/pro-evaluacion.webp"
+                    alt="Resultado de una evaluación en el panel: puntaje total, respuestas con sus puntos y aviso de ítem crítico."
+                    width={1215}
+                    height={930}
+                    sizes="(min-width: 1024px) 560px, 92vw"
+                    className="w-full"
+                  />
+                </div>
+                <figcaption className="text-sm text-[#2a2416]/70">
+                  Así te llega una evaluación respondida: el puntaje ya calculado, cada respuesta
+                  con sus puntos y un aviso si se marcó un ítem crítico.
+                </figcaption>
+              </figure>
+            </div>
+            <p className="text-sm text-[#2a2416]/70">
+              * El PHQ-9 y el GAD-7 vienen con la puntuación y los rangos ya cargados; el texto de
+              las preguntas lo copiás de la versión validada en español que uses, por sus
+              condiciones de uso.
             </p>
           </div>
         </section>
@@ -501,6 +555,52 @@ const PATIENT_SCREENS = [
     alt: "Lista de temas que la paciente quiere hablar en la próxima sesión.",
     title: "Para la próxima sesión",
     text: "Anota lo que quiere hablar, y vos lo ves antes de arrancar.",
+  },
+  {
+    src: "/landing/app-autorregistro.webp",
+    alt: "Lista de autorregistros: el pensamiento y cuánto lo creía antes y después.",
+    title: "Autorregistros",
+    text: "Paso a paso, para mirar un pensamiento: situación, emoción, evidencia y alternativa.",
+  },
+  {
+    src: "/landing/app-plan-de-calma.webp",
+    alt: "Plan de calma con un ejercicio de respiración guiada.",
+    title: "Su plan de calma",
+    text: "Respiración guiada y lo que arman juntos, para los momentos difíciles.",
+  },
+  {
+    src: "/landing/app-tareas.webp",
+    alt: "Tareas y evaluaciones que propuso la psicóloga, con comentarios del paciente.",
+    title: "Tareas y evaluaciones",
+    text: "Lo que le propusiste, a su ritmo y sin rachas. Responde los cuestionarios desde el celular.",
+  },
+];
+
+const PRO_CONTROLS = [
+  {
+    icon: Eye,
+    title: "Ves solo lo que comparte",
+    text: "La rueda y los autorregistros se comparten por defecto; el diario es privado. Tu paciente lo puede cambiar en cada registro.",
+  },
+  {
+    icon: ListChecks,
+    title: "Le asignás tareas",
+    text: "Con fecha y recursos de tu biblioteca. Ves cuáles hizo y lo que te comentó.",
+  },
+  {
+    icon: HeartHandshake,
+    title: "Arman juntos su plan de calma",
+    text: "Le cargás técnicas, frases, actividades y contactos de confianza. Lo tiene a mano cuando la cosa se pone difícil.",
+  },
+  {
+    icon: ClipboardList,
+    title: "Evaluaciones con puntaje automático",
+    text: "Armás tus cuestionarios o partís de las plantillas del PHQ-9 y GAD-7*. El puntaje, el rango y los ítems críticos se calculan solos. Incluido, sin pagar por cada test.",
+  },
+  {
+    icon: MessageSquareHeart,
+    title: "Le dejás devoluciones",
+    text: "Sobre lo que compartió, para que sepa que lo leíste.",
   },
 ];
 
