@@ -39,6 +39,16 @@ export default async function SignInPage({ searchParams }: PageProps<"/ingresar"
           entrá con tu email y contraseña.
         </p>
       )}
+      {/* Link de ingreso vencido o inválido: Better Auth vuelve con ?error=<código> */}
+      {typeof sp.error === "string" && sp.error !== "google" && (
+        <p
+          role="alert"
+          className="bg-danger-soft text-danger mx-auto mb-4 max-w-sm rounded-2xl p-4 text-sm"
+        >
+          Ese link ya no sirve: puede que haya vencido o que ya lo hayas usado. Pedí otro o entrá
+          con tu email y contraseña.
+        </p>
+      )}
       <SignInForm next={next} googleEnabled={googleEnabled} />
     </>
   );

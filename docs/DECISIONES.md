@@ -442,3 +442,9 @@ salvo que se indique lo contrario.
   nuevo. Quien prefiera el anterior puede volver con `/diseno?v=clasico` (guarda la cookie
   `anclaje-diseno=clasico` en ese navegador) y regresar con `/diseno?v=nuevo` (la borra). El
   diseño clásico queda en el código por ahora; si nadie lo usa, se puede borrar más adelante.
+- **No decimos si un email tiene cuenta (nov 2026):** al ingresar, el error es "El email o la
+  contraseña no coinciden"; al pedir link o recuperar la contraseña, el mensaje es el mismo exista
+  o no la cuenta, con la sugerencia de revisar cómo está escrito. Decir "este mail no existe"
+  dejaría averiguar quién se atiende con una psicóloga en Anclaje (dato sensible). Para que no
+  lleguen links inútiles, el link de ingreso solo se manda si el email tiene cuenta (la
+  recuperación de contraseña ya lo hacía), y un link vencido vuelve a /ingresar con un aviso.

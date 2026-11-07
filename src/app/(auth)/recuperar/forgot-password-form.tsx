@@ -28,7 +28,8 @@ export function ForgotPasswordForm() {
         {sent ? (
           <p role="status" className="bg-primary-soft text-primary rounded-xl p-3 text-sm">
             Listo: si ese email tiene cuenta, te llega un link en unos minutos. Vence en 1 hora.
-            Fijate también en la carpeta de spam.
+            Fijate también en la carpeta de spam. Si no te llega, revisá que el email esté bien
+            escrito o probá con otro.
           </p>
         ) : (
           <form

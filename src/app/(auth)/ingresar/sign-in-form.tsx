@@ -47,6 +47,7 @@ export function SignInForm({
     const { error } = await signIn.magicLink({
       email: form.getValues("email"),
       callbackURL: next ?? "/ingresar",
+      errorCallbackURL: "/ingresar",
     });
     if (error) {
       setError(
@@ -102,7 +103,8 @@ export function SignInForm({
 
         {magicSent ? (
           <p role="status" className="bg-primary-soft text-primary rounded-xl p-3 text-sm">
-            Listo: si el email tiene cuenta, te llega un link para entrar. Vence en 10 minutos.
+            Listo: si el email tiene cuenta, te llega un link para entrar. Vence en 10 minutos. Si
+            no te llega, revisá que el email esté bien escrito o probá con otro.
           </p>
         ) : (
           <Button variant="ghost" onClick={sendMagicLink} type="button">

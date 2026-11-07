@@ -171,6 +171,13 @@ export const auth = betterAuth({
       disableSignUp: true,
       expiresIn: 60 * 10,
       sendMagicLink: async ({ email, url }) => {
+        // Better Auth genera el link aunque el email no tenga cuenta (y después falla al
+        // abrirlo). Si no hay cuenta no mandamos nada; la pantalla dice lo mismo en ambos casos.
+        const exists = await prisma.user.findUnique({
+          where: { email: email.toLowerCase() },
+          select: { id: true },
+        });
+        if (!exists) return;
         await sendEmail({
           to: email,
           subject: "Tu link para entrar a Anclaje",
