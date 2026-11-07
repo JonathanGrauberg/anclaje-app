@@ -60,6 +60,46 @@
   }
 }
 
+/* Diseño en prueba ("nuevo"): fondo más claro, bloques de color grandes y bordes más redondos,
+   en la línea de la landing. Se activa con data-theme="nuevo" en el contenedor del lado paciente. */
+[data-theme="nuevo"] {
+  --background: #f7f6f2;
+  --card: #ffffff;
+  --muted: #efede6;
+  --border: #e9e5dc;
+  --radius: 1.5rem;
+  --block-sun: #fcc107;
+  --block-sun-foreground: #2a2416;
+  --block-sun-deep: #f5a524;
+  --block-sun-soft: #fdf0c4;
+  --block-sage: #a9ccc1;
+  --block-sage-foreground: #1d3a33;
+  --block-sage-soft: #dcebe5;
+  --block-forest: #4f786e;
+  --block-forest-foreground: #ffffff;
+  --block-night: #1e3331;
+  --nav-h: 4.75rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-theme="nuevo"] {
+    --background: #141a19;
+    --card: #1d2523;
+    --muted: #243030;
+    --border: #2c3836;
+    --block-sun: #e6b10f;
+    --block-sun-foreground: #201a06;
+    --block-sun-deep: #c9821a;
+    --block-sun-soft: #3a321c;
+    --block-sage: #33504a;
+    --block-sage-foreground: #d6ebe4;
+    --block-sage-soft: #22302d;
+    --block-forest: #3b6058;
+    --block-forest-foreground: #f1f7f5;
+    --block-night: #0f1918;
+  }
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -83,6 +123,16 @@
   --color-sun-soft: var(--sun-soft);
   --color-sky-soft: var(--sky-soft);
   --color-lilac-soft: var(--lilac-soft);
+  --color-block-sun: var(--block-sun);
+  --color-block-sun-foreground: var(--block-sun-foreground);
+  --color-block-sun-deep: var(--block-sun-deep);
+  --color-block-sun-soft: var(--block-sun-soft);
+  --color-block-sage: var(--block-sage);
+  --color-block-sage-foreground: var(--block-sage-foreground);
+  --color-block-sage-soft: var(--block-sage-soft);
+  --color-block-forest: var(--block-forest);
+  --color-block-forest-foreground: var(--block-forest-foreground);
+  --color-block-night: var(--block-night);
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 0.25rem);

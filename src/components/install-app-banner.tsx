@@ -99,7 +99,7 @@ export function InstallAppBanner() {
       <div
         role="region"
         aria-label="Instalar Anclaje"
-        className="bg-card fixed inset-x-4 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-40 mx-auto flex max-w-md items-center gap-3 rounded-2xl border p-3 shadow-xl sm:right-6 sm:bottom-6 sm:left-auto sm:mx-0 sm:w-96"
+        className="bg-card fixed inset-x-4 bottom-[calc(var(--nav-h,0px)+4.5rem+env(safe-area-inset-bottom))] z-40 mx-auto flex max-w-md items-center gap-3 rounded-2xl border p-3 shadow-xl sm:right-6 sm:bottom-[calc(var(--nav-h,0px)+1.5rem)] sm:left-auto sm:mx-0 sm:w-96"
       >
         <span className="bg-primary-soft flex size-11 shrink-0 items-center justify-center rounded-xl">
           <LighthouseMark className="size-8" />

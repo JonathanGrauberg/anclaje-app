@@ -58,7 +58,7 @@ export function HelpButton({ lines }: { lines: CrisisLineDTO[] }) {
       <SheetTrigger asChild>
         <button
           type="button"
-          className="bg-card/95 text-danger fixed right-4 bottom-[max(1rem,env(safe-area-inset-bottom))] z-40 inline-flex items-center gap-2 rounded-full border px-4 py-2.5 text-sm font-medium shadow-lg backdrop-blur transition-transform hover:scale-[1.03]"
+          className="bg-card/95 text-danger fixed right-4 bottom-[calc(var(--nav-h,0px)+max(1rem,env(safe-area-inset-bottom)))] z-40 inline-flex items-center gap-2 rounded-full border px-4 py-2.5 text-sm font-medium shadow-lg backdrop-blur transition-transform hover:scale-[1.03]"
           aria-label="Ayuda urgente"
         >
           <LifeBuoy className="size-5" aria-hidden />

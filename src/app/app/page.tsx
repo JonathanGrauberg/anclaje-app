@@ -11,12 +11,14 @@ import {
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { HomeNew } from "@/components/patient/home-new";
 import { formatLongDay, formatTime, greeting } from "@/lib/dates";
 import { getPatientAppointments } from "@/lib/queries/appointments";
 import { countUnreadFeedback } from "@/lib/queries/feedback";
 import { dueAssignmentsWhere } from "@/lib/queries/patient";
 import { prisma } from "@/lib/db";
 import { requirePatient } from "@/lib/session";
+import { getUiTheme } from "@/lib/ui-theme";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Inicio" };
@@ -39,6 +41,20 @@ export default async function PatientHome() {
   const nextAppointment = appointments.find((a) => a.status === "SCHEDULED");
   const name = patient.displayName ?? user.name;
   const pendingTasks = openTasks + dueAssessments;
+
+  if ((await getUiTheme()) === "nuevo") {
+    return (
+      <HomeNew
+        name={name}
+        nextAppointment={nextAppointment?.startsAt ?? null}
+        unreadFeedback={unreadFeedback}
+        pendingTopics={pendingTopics}
+        pendingTasks={pendingTasks}
+        cbtDraftId={cbtDraft?.id ?? null}
+        wheel={<WheelPreview />}
+      />
+    );
+  }
 
   const tiles = [
     {

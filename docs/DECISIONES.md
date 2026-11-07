@@ -422,3 +422,10 @@ salvo que se indique lo contrario.
   WhatsApp la muestre) con el consultorio, el faro 3D, el logo blanco y el lema. Es estática, sin
   fecha, así no queda vieja cuando termine el período gratis. `metadataBase` sale de
   `NEXT_PUBLIC_APP_URL`. Si se cambia la imagen, WhatsApp puede tardar en refrescar su caché.
+- **Diseño "nuevo" en prueba (nov 2026):** el lado paciente tiene un segundo diseño (fondo más
+  claro, bloques de color grandes en dorado/salvia/verde, bordes más redondos, dibujos 2D del
+  sillón, el cuaderno, el faro y la planta en `src/components/illustrations`, y barra de abajo con
+  la rueda en el medio). Se prende por navegador con `/diseno?v=nuevo` y se apaga con
+  `/diseno?v=clasico` (cookie `anclaje-diseno`); nadie más lo ve. Los colores son variables
+  `--block-*` en `globals.css`, con su versión oscura. Por ahora cambia el inicio y la barra; las
+  demás pantallas toman el fondo y los bordes nuevos. Si queda, se pasa a ser el diseño por defecto.
