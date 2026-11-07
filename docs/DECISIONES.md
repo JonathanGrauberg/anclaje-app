@@ -508,3 +508,14 @@ salvo que se indique lo contrario.
   ingresar y el pedido de cambiarla en Ajustes → Contraseña (`src/lib/admin-messages.ts`). Solo se
   copia al portapapeles: no se arma un link `wa.me` porque la contraseña quedaría en una URL. La vista
   previa en pantalla muestra la contraseña tapada. El mail de bienvenida sigue sin llevarla.
+- **Alta propia de profesionales (nov 2026):** "Crear cuenta" tiene dos pestañas, "Soy paciente" y
+  "Soy psicóloga/o" (`/registrarse?tipo=profesional`). La profesional carga nombre y apellido, cómo
+  la ven sus pacientes, mail, contraseña y matrícula con declaración jurada, y entra directo al
+  panel. Igual que con Google, queda "sin verificar" hasta que el admin revisa la matrícula; al admin
+  le llega un mail con cada alta. Reemplaza al "Dejanos tus datos y te damos el acceso": la landing
+  manda a crear la cuenta y el formulario de interesados queda como "¿Preferís que te escribamos?".
+  Desde /admin/interesados se le manda a cada interesado, desde Anclaje, el mail con el link para
+  crear su cuenta (o se copia el mismo mensaje para WhatsApp). Se descartó un link personal por
+  interesado: más pasos para el admin sin ganar nada (la matrícula se verifica igual).
+  El alta la crea el servidor (no el `signUp` público de Better Auth, que siempre crea pacientes) y
+  después el cliente inicia sesión con la contraseña elegida.

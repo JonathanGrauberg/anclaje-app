@@ -4,7 +4,9 @@ import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { audit } from "@/lib/audit";
 import { prisma } from "@/lib/db";
-import { appUrl, contactEmail, sendEmailQuietly } from "@/lib/email";
+import { appUrl, contactEmail, sendEmail, sendEmailQuietly } from "@/lib/email";
+import { leadSignupEmail } from "@/lib/emails";
+import { formatFreeUntil, freeDaysLeft } from "@/lib/launch";
 import { allow } from "@/lib/rate-limit";
 import { adminForAction } from "@/lib/session";
 import { leadSchema, type LeadInput } from "@/lib/validation/leads";
@@ -70,6 +72,38 @@ export async function markLeadContacted(id: string, contacted: boolean) {
     });
     if (res.count === 0) return fail("No encontramos ese interesado");
     await audit({ actorId: admin.id, action: "update", entityType: "Lead", entityId: String(id) });
+    revalidatePath("/admin/interesados");
+    return ok(undefined);
+  });
+}
+
+/** El admin le manda al interesado, desde Anclaje, el mail con el link para crear su cuenta. */
+export async function sendLeadSignupLink(id: string) {
+  return safe(async () => {
+    const admin = await adminForAction();
+    const lead = await prisma.lead.findUnique({ where: { id: String(id) } });
+    if (!lead) return fail("No encontramos ese interesado");
+    if (await prisma.user.findUnique({ where: { email: lead.email }, select: { id: true } })) {
+      return fail("Ya tiene cuenta con ese email.");
+    }
+    try {
+      await sendEmail({
+        to: lead.email,
+        replyTo: contactEmail(),
+        ...leadSignupEmail({
+          name: lead.name,
+          signupUrl: appUrl("/registrarse?tipo=profesional"),
+          freeUntil: freeDaysLeft() > 0 ? formatFreeUntil() : null,
+        }),
+      });
+    } catch {
+      return fail("No se pudo mandar el mail. Probá de nuevo en un rato.");
+    }
+    await prisma.lead.update({
+      where: { id: lead.id },
+      data: { contactedAt: lead.contactedAt ?? new Date(), signupLinkSentAt: new Date() },
+    });
+    await audit({ actorId: admin.id, action: "update", entityType: "Lead", entityId: lead.id });
     revalidatePath("/admin/interesados");
     return ok(undefined);
   });

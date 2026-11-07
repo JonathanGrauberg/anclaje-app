@@ -6,6 +6,7 @@ import { formatDateTime } from "@/lib/dates";
 import { prisma } from "@/lib/db";
 import { requireAdmin } from "@/lib/session";
 import { ContactedToggle } from "./contacted-toggle";
+import { SignupLink } from "./signup-link";
 
 export const metadata: Metadata = { title: "Interesados" };
 
@@ -14,6 +15,11 @@ export default async function LeadsPage() {
   await requireAdmin();
   const leads = await prisma.lead.findMany({ orderBy: { createdAt: "desc" }, take: 200 });
   const pending = leads.filter((l) => !l.contactedAt).length;
+  const accounts = await prisma.user.findMany({
+    where: { email: { in: leads.map((l) => l.email.toLowerCase()) } },
+    select: { email: true },
+  });
+  const withAccount = new Set(accounts.map((u) => u.email));
 
   return (
     <div className="flex flex-col gap-6">
@@ -36,6 +42,7 @@ export default async function LeadsPage() {
                     <p className="flex flex-wrap items-center gap-2 font-semibold">
                       {l.name}
                       {!l.contactedAt && <Badge>Nuevo</Badge>}
+                      {withAccount.has(l.email.toLowerCase()) && <Badge>Ya tiene cuenta</Badge>}
                     </p>
                     <p className="text-sm break-all">
                       <a href={`mailto:${l.email}`} className="text-primary hover:underline">
@@ -60,7 +67,16 @@ export default async function LeadsPage() {
                     </p>
                     {l.message && <p className="mt-1 text-sm whitespace-pre-line">{l.message}</p>}
                   </div>
-                  <ContactedToggle id={l.id} contacted={!!l.contactedAt} />
+                  <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
+                    {!withAccount.has(l.email.toLowerCase()) && (
+                      <SignupLink
+                        leadId={l.id}
+                        name={l.name}
+                        sentAt={l.signupLinkSentAt ? formatDateTime(l.signupLinkSentAt) : null}
+                      />
+                    )}
+                    <ContactedToggle id={l.id} contacted={!!l.contactedAt} />
+                  </div>
                 </CardContent>
               </Card>
             </li>

@@ -956,6 +956,8 @@ model Lead {
   message     String?
   createdAt   DateTime  @default(now())
   contactedAt DateTime?
+  /// Cuándo se le mandó el mail con el link para crear su cuenta.
+  signupLinkSentAt DateTime?
 
   @@index([createdAt])
 }

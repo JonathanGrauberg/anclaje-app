@@ -107,6 +107,26 @@ export function welcomeProfessionalEmail(a: { name: string; loginUrl: string }):
   );
 }
 
+/** A quien dejó sus datos en la landing: ya puede crear su cuenta de profesional. */
+export function leadSignupEmail(a: {
+  name: string;
+  signupUrl: string;
+  freeUntil?: string | null;
+}): EmailContent {
+  return build(
+    "Ya podés crear tu cuenta en Anclaje",
+    [
+      `Hola, ${firstName(a.name) ?? a.name}. ¡Gracias por sumarte a Anclaje!`,
+      a.freeUntil
+        ? `Ya podés crear tu cuenta. Como te sumaste antes del ${a.freeUntil}, la usás gratis para siempre.`
+        : "Ya podés crear tu cuenta.",
+      "Te lleva un minuto: tus datos, tu matrícula y una contraseña. Adentro vas a encontrar a Sofía (DEMO), una paciente de ejemplo, y el botón «Ver la app como paciente» para ver lo mismo que ven tus pacientes.",
+    ],
+    { label: "Crear mi cuenta", url: a.signupUrl },
+    "Si tenés dudas o algo no funciona, respondé este mail.",
+  );
+}
+
 /** Aviso de seguridad: cambiaron los datos o la contraseña de la cuenta. */
 export function accountChangedEmail(a: {
   name: string;

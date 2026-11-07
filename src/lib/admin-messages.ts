@@ -43,3 +43,17 @@ export function accessMessage(a: {
     "Cualquier cosa que no ande, o algo que te gustaría que tenga, escribime por acá. ¡Me sirve muchísimo!",
   ].join("\n\n");
 }
+
+/** Mensaje para WhatsApp con el link para que un interesado cree su cuenta. */
+export function signupMessage(a: { name: string; url: string; now?: Date }) {
+  const gratis =
+    freeDaysLeft(a.now) > 0
+      ? ` gratis para siempre por sumarte antes del ${formatFreeUntil()}`
+      : "";
+  return [
+    `¡Hola, ${firstName(a.name)}! Gracias por sumarte a .anclaje 🙌`,
+    `Te paso el link para que crees tu usuario${gratis}:\n${a.url}`,
+    "Te lleva un minuto: tus datos, tu matrícula y una contraseña. Adentro vas a encontrar a Sofía (DEMO), una paciente de ejemplo, y el botón «Ver la app como paciente».",
+    "Cualquier cosa, escribime por acá. ¡Me sirve muchísimo!",
+  ].join("\n\n");
+}

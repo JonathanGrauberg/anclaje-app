@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
@@ -34,8 +35,15 @@ export function LeadForm() {
         <CheckCircle2 className="text-primary size-10" aria-hidden />
         <p className="text-lg font-semibold">¡Gracias, {v.name.split(" ")[0]}!</p>
         <p className="text-muted-foreground max-w-sm">
-          Te escribimos en estos días para darte tu acceso y mostrarte cómo funciona.
+          Te escribimos en estos días para mostrarte cómo funciona. Si no querés esperar, ya podés
+          crear tu cuenta.
         </p>
+        <Link
+          href="/registrarse?tipo=profesional"
+          className="bg-primary text-primary-foreground rounded-full px-5 py-2.5 font-semibold"
+        >
+          Crear mi cuenta
+        </Link>
       </div>
     );
   }

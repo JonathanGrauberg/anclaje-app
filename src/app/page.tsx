@@ -134,7 +134,10 @@ const highlights = [
 ];
 
 const steps = [
-  { title: "Dejanos tus datos", text: "Te escribimos y te damos tu acceso profesional." },
+  {
+    title: "Creá tu cuenta",
+    text: "Tus datos, tu matrícula y una contraseña. Te lleva un minuto y entrás directo.",
+  },
   {
     title: "Sumá a tus pacientes",
     text: "Les pasás un código por WhatsApp. Quien no quiera la app, lo cargás igual para la agenda.",
@@ -207,12 +210,14 @@ export default async function Home() {
                 >
                   {panel ? "Mi panel" : "Ingresar"}
                 </Link>
-                <a
-                  href="#probar"
-                  className="hidden rounded-md bg-white px-4 py-2 text-sm font-semibold tracking-wide text-[#1e3331] uppercase transition-colors hover:bg-[#faf7f2] sm:block"
-                >
-                  Quiero probarla
-                </a>
+                {!panel && (
+                  <Link
+                    href="/registrarse?tipo=profesional"
+                    className="hidden rounded-md bg-white px-4 py-2 text-sm font-semibold tracking-wide text-[#1e3331] uppercase transition-colors hover:bg-[#faf7f2] sm:block"
+                  >
+                    Crear cuenta
+                  </Link>
+                )}
               </div>
             </nav>
           </header>
@@ -242,12 +247,12 @@ export default async function Home() {
                 honorarios en el mismo lugar.
               </p>
               <div className="flex flex-wrap gap-3">
-                <a
-                  href="#probar"
+                <Link
+                  href="/registrarse?tipo=profesional"
                   className="rounded-md bg-white px-6 py-3 font-semibold text-[#1e3331] shadow-lg transition-transform hover:-translate-y-0.5"
                 >
-                  Quiero probarla
-                </a>
+                  {daysLeft > 0 ? "Crear mi cuenta gratis" : "Crear mi cuenta"}
+                </Link>
                 <a
                   href="#como-funciona"
                   className="rounded-md border border-white/70 px-6 py-3 font-medium transition-colors hover:bg-white/10"
@@ -590,8 +595,8 @@ export default async function Home() {
                         </span>
                       </p>
                     )}
-                    <a
-                      href="#probar"
+                    <Link
+                      href="/registrarse?tipo=profesional"
                       className={
                         best
                           ? "mt-auto rounded-full bg-white px-5 py-3 text-center font-semibold text-[#1e3331] transition-transform active:scale-[0.98]"
@@ -599,7 +604,7 @@ export default async function Home() {
                       }
                     >
                       {daysLeft > 0 ? "Quiero sumarme gratis" : "Quiero este plan"}
-                    </a>
+                    </Link>
                   </li>
                 );
               })}
@@ -667,6 +672,12 @@ export default async function Home() {
                   </div>
                 </div>
               )}
+              <Link
+                href="/registrarse?tipo=profesional"
+                className="bg-primary text-primary-foreground w-fit rounded-full px-7 py-4 text-lg font-semibold shadow-lg transition-transform hover:-translate-y-0.5"
+              >
+                {daysLeft > 0 ? "Crear mi cuenta gratis" : "Crear mi cuenta"}
+              </Link>
               <ol className="flex flex-col gap-5">
                 {steps.map((s, i) => (
                   <li key={s.title} className="flex gap-4">
@@ -685,7 +696,15 @@ export default async function Home() {
                 ¿Sos paciente? Pedile a tu psicóloga o psicólogo que te invite.
               </p>
             </div>
-            <LeadForm />
+            <div className="flex flex-col gap-3">
+              <div>
+                <h3 className="text-xl font-semibold">¿Preferís que te escribamos primero?</h3>
+                <p className="text-muted-foreground text-sm">
+                  Dejanos tus datos y te contactamos para contarte cómo funciona.
+                </p>
+              </div>
+              <LeadForm />
+            </div>
           </div>
         </section>
       </main>

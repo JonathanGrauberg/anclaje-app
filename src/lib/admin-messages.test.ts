@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { accessMessage } from "./admin-messages";
+import { accessMessage, signupMessage } from "./admin-messages";
 
 const base = {
   name: "Carolina Pérez",
@@ -27,5 +27,18 @@ describe("mensaje de acceso para WhatsApp", () => {
     expect(m).toContain("La anterior ya no funciona");
     expect(m).toContain("Contraseña: abc-123");
     expect(m).not.toContain("Sofía");
+  });
+});
+
+describe("mensaje con el link para crear cuenta", () => {
+  it("saluda y pasa el link de registro", () => {
+    const m = signupMessage({
+      name: "Jesica Gómez",
+      url: "https://anclaje.webistudio.net/registrarse?tipo=profesional",
+      now: new Date("2026-11-07T15:00:00Z"),
+    });
+    expect(m).toMatch(/^¡Hola, Jesica! Gracias por sumarte a \.anclaje/);
+    expect(m).toContain("/registrarse?tipo=profesional");
+    expect(m).toContain("gratis para siempre");
   });
 });
