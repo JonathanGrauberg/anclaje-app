@@ -639,7 +639,7 @@ export default async function Home() {
                     <>
                       {" "}
                       Si te sumás hasta el {freeUntil}, la usás gratis para siempre. Después, desde{" "}
-                      {formatPesos(BASE_MONTHLY)} por mes.
+                      {formatPesos(MIN_MONTHLY)} por mes.
                     </>
                   )}
                 </p>
