@@ -535,3 +535,10 @@ salvo que se indique lo contrario.
   con y sin la app, invitaciones, turnos, tests, evaluaciones, tareas, materiales, devoluciones,
   notas e historias (solo cuántas), servicios y cobros (cuántos, nunca montos: es su ingreso). Nunca
   se muestra quiénes son los pacientes ni contenido. La demo no cuenta.
+- **SEO básico (nov 2026):** `robots.txt` deja recorrer solo la landing (bloquea `/app/`, `/pro/`,
+  `/admin/`, `/api/`, `/demo/`, `/vincular/`…, con `$` y `/` para no bloquear `/apple-icon`) y
+  apunta al `sitemap.xml`, que por ahora tiene solo la landing. La landing lleva título con lo que
+  se busca ("App para psicólogas, psicólogos y sus pacientes"), canonical y datos estructurados
+  schema.org (`SoftwareApplication` con funciones y precios en ARS, `Organization`, `WebSite`).
+  Todo toma la URL de `NEXT_PUBLIC_APP_URL` (`src/lib/site.ts`): al pasar a un dominio propio,
+  alcanza con cambiar esa variable (y `BETTER_AUTH_URL`).

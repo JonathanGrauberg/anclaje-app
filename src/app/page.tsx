@@ -31,12 +31,17 @@ import {
   planDiscount,
 } from "@/lib/launch";
 import { getSession, homeForRole, type Role } from "@/lib/session";
+import { SITE_URL } from "@/lib/site";
+
+const TITLE = "Anclaje · App para psicólogas, psicólogos y sus pacientes";
+const DESCRIPTION =
+  "Registro emocional, diario y autorregistros para tus pacientes; creador de tests con puntaje automático, turnera, historia clínica y honorarios para vos. Todo cifrado.";
 
 export const metadata: Metadata = {
-  title: { absolute: "Anclaje · Un ancla entre sesión y sesión" },
-  description:
-    "La app para psicólogas y psicólogos y sus pacientes: registro emocional, diario, autorregistros, agenda, historia clínica y honorarios. Todo cifrado.",
+  title: { absolute: TITLE },
+  description: DESCRIPTION,
   robots: { index: true, follow: true },
+  alternates: { canonical: "/" },
   openGraph: {
     type: "website",
     locale: "es_AR",
@@ -47,6 +52,66 @@ export const metadata: Metadata = {
       "Lo que tus pacientes sienten en la semana, ordenado para la próxima sesión. Para psicólogas y psicólogos.",
   },
 };
+
+/** Datos estructurados (schema.org) para que Google entienda qué es Anclaje. */
+function jsonLd() {
+  const app = {
+    "@type": "SoftwareApplication",
+    "@id": `${SITE_URL}/#app`,
+    name: "Anclaje",
+    url: `${SITE_URL}/`,
+    description: DESCRIPTION,
+    applicationCategory: "HealthApplication",
+    applicationSubCategory: "Psicoterapia",
+    operatingSystem: "Web, Android, iOS",
+    inLanguage: "es",
+    audience: { "@type": "Audience", audienceType: "Psicólogas, psicólogos y sus pacientes" },
+    featureList: [
+      "Rueda de emociones",
+      "Diario íntimo",
+      "Autorregistros",
+      "Temas para la próxima sesión",
+      "Plan de calma con respiración guiada y grounding",
+      "Botón de ayuda con líneas de crisis",
+      "Recordatorios",
+      "Creador de tests con puntaje automático",
+      "Tareas para pacientes",
+      "Turnera con recordatorios por mail y WhatsApp",
+      "Historia clínica",
+      "Honorarios y cobros",
+      "Datos cifrados",
+    ],
+    offers: {
+      "@type": "AggregateOffer",
+      priceCurrency: "ARS",
+      lowPrice: MIN_MONTHLY,
+      highPrice: Math.max(...PLANS.map((p) => p.monthly)),
+      offerCount: PLANS.length,
+    },
+    publisher: { "@id": `${SITE_URL}/#org` },
+  };
+  const org = {
+    "@type": "Organization",
+    "@id": `${SITE_URL}/#org`,
+    name: "Anclaje",
+    url: `${SITE_URL}/`,
+    logo: `${SITE_URL}/icons/icon-512.png`,
+    slogan: "Un ancla entre sesión y sesión",
+  };
+  const site = {
+    "@type": "WebSite",
+    "@id": `${SITE_URL}/#web`,
+    name: "Anclaje",
+    url: `${SITE_URL}/`,
+    inLanguage: "es",
+    publisher: { "@id": `${SITE_URL}/#org` },
+  };
+  // "<" escapado para que ningún texto pueda cerrar el <script>.
+  return JSON.stringify({ "@context": "https://schema.org", "@graph": [app, org, site] }).replace(
+    /</g,
+    "\\u003c",
+  );
+}
 
 const forPatients = [
   {
@@ -160,6 +225,7 @@ export default async function Home() {
 
   return (
     <div className="flex flex-1 flex-col">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd() }} />
       <main id="contenido" className="flex-1">
         {/* Hero: el consultorio verde, el faro y el lema */}
         <section className="relative isolate flex min-h-[100svh] flex-col overflow-hidden bg-[#2d4d47] text-white lg:min-h-[min(100svh,920px)]">
