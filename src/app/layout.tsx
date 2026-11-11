@@ -12,6 +12,8 @@ export const metadata: Metadata = {
   title: { default: "Anclaje", template: "%s · Anclaje" },
   description: "Un lugar para registrar lo que sentís y compartirlo con tu psicóloga.",
   applicationName: "Anclaje",
+  // Google Search Console (propiedad https://anclaje.webistudio.net). No es secreto.
+  verification: { google: "uncQp5acTGHPwkvzaev-cE9qD2F_INbbzjjfrXqvtuc" },
   robots: { index: false, follow: false },
   appleWebApp: { capable: true, title: "Anclaje", statusBarStyle: "default" },
   openGraph: { type: "website", locale: "es_AR", siteName: "Anclaje" },
