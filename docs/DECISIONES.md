@@ -542,3 +542,11 @@ salvo que se indique lo contrario.
   schema.org (`SoftwareApplication` con funciones y precios en ARS, `Organization`, `WebSite`).
   Todo toma la URL de `NEXT_PUBLIC_APP_URL` (`src/lib/site.ts`): al pasar a un dominio propio,
   alcanza con cambiar esa variable (y `BETTER_AUTH_URL`).
+- **Fichas repetidas (nov 2026):** si una profesional carga a alguien "sin la app" y esa persona
+  ya está vinculada con su cuenta, los turnos de la ficha sin app no le aparecen al paciente (pero
+  el recordatorio por mail sí le llega, al email del contacto). Se detecta por email del contacto
+  igual al de la cuenta, o por nombre completo igual (sin tildes ni mayúsculas, al menos dos
+  palabras), solo entre pacientes con vínculo activo con ella (`findDuplicatePatients`). Se avisa en
+  las dos fichas y con la marca "Repetido: unilo" en la lista. No se unen solas: la profesional
+  toca "Invitar a la app" en la ficha sin app y el paciente carga el código desde su cuenta (así
+  acepta él que esos datos pasen a su cuenta); `mergeManagedPatient` mueve todo y borra la ficha.

@@ -7,7 +7,12 @@ import { EmotionChip } from "@/components/emotion-chip";
 import { Button } from "@/components/ui/button";
 import { Badge, EmptyState } from "@/components/ui/misc";
 import type { ShareIntention } from "@/generated/prisma/client";
-import { findLinkedPatient, sessionTopicsWhere, sharedEmotionWhere } from "@/lib/access";
+import {
+  findDuplicatePatients,
+  findLinkedPatient,
+  sessionTopicsWhere,
+  sharedEmotionWhere,
+} from "@/lib/access";
 import { audit } from "@/lib/audit";
 import { INTENTION_LABELS, INTENTIONS } from "@/lib/constants";
 import { decrypt, decryptOptional } from "@/lib/crypto";
@@ -108,12 +113,18 @@ export default async function PatientRecordPage({
   const link = patient.links[0];
   const base = `/pro/pacientes/${patient.id}`;
   await ensureDefaultPrices(professional.id);
-  const [nextAppointments, services, special, lastServices] = await Promise.all([
+  const [nextAppointments, services, special, lastServices, duplicates] = await Promise.all([
     getNextAppointments(professional.id, [patient.id]),
     getServicePrices(professional.id),
     getPatientPrices(professional.id, patient.id),
     getLastServices(professional.id, patient.id),
+    findDuplicatePatients(professional.id),
   ]);
+  // Misma persona cargada dos veces: "sin la app" y con su cuenta vinculada.
+  const sameAsApp = withoutApp ? duplicates.get(patient.id) : undefined;
+  const sameAsManaged = withoutApp
+    ? []
+    : [...duplicates.entries()].filter(([, a]) => a.id === patient.id).map(([id]) => id);
   const nextAppointment = nextAppointments.get(patient.id);
   const specialPrices = Object.fromEntries(special);
 
@@ -156,6 +167,52 @@ export default async function PatientRecordPage({
               </>
             )}
           </p>
+        )}
+        {sameAsApp && (
+          <div
+            role="note"
+            className="bg-block-sun-soft mt-3 flex flex-col gap-1 rounded-2xl p-3 text-sm"
+          >
+            <p className="flex items-center gap-2 font-semibold">
+              <AlertTriangle className="size-4 shrink-0" aria-hidden />
+              Parece que ya tiene la app y está vinculado con vos
+            </p>
+            <p>
+              Hay otra ficha,{" "}
+              <Link
+                href={`/pro/pacientes/${sameAsApp.id}`}
+                className="text-primary font-medium underline underline-offset-2"
+              >
+                {sameAsApp.name}
+              </Link>
+              , con su cuenta. Los turnos que des acá no le aparecen en la app. Para unirlas, tocá{" "}
+              <strong>Invitar a la app</strong> y pasale el código: cuando lo cargue desde su
+              cuenta, los turnos, la historia clínica y los cobros de esta ficha pasan a esa y esta
+              se borra.
+            </p>
+          </div>
+        )}
+        {sameAsManaged.length > 0 && (
+          <div
+            role="note"
+            className="bg-block-sun-soft mt-3 flex flex-col gap-1 rounded-2xl p-3 text-sm"
+          >
+            <p className="flex items-center gap-2 font-semibold">
+              <AlertTriangle className="size-4 shrink-0" aria-hidden />
+              También lo tenés cargado sin la app
+            </p>
+            <p>
+              Los turnos que diste en{" "}
+              <Link
+                href={`/pro/pacientes/${sameAsManaged[0]}`}
+                className="text-primary font-medium underline underline-offset-2"
+              >
+                esa otra ficha
+              </Link>{" "}
+              no le aparecen en la app. Entrá ahí, tocá <strong>Invitar a la app</strong> y pasale
+              el código para unirlas. Los turnos nuevos, dalos desde esta ficha.
+            </p>
+          </div>
         )}
         {patient.isDemo && (
           <p className="bg-block-sun-soft mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl p-3 text-sm">

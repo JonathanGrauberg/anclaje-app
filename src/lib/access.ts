@@ -1,6 +1,9 @@
 import "server-only";
 import type { Prisma } from "@/generated/prisma/client";
+import { decryptOptional } from "@/lib/crypto";
 import { prisma } from "@/lib/db";
+import { matchDuplicates, type AppForMatch } from "@/lib/duplicate-patients";
+import { patientName } from "@/lib/patients";
 
 // Única fuente de verdad de "qué puede ver una profesional".
 // Solo entradas COMPARTIDAS (y terminadas) de pacientes con vínculo ACTIVO con ella.
@@ -79,4 +82,29 @@ export async function findSharedTarget(
             select,
           });
   return found?.patientId ?? null;
+}
+
+/**
+ * Fichas repetidas de esta profesional: paciente "sin la app" → paciente vinculado con la app
+ * que parece ser la misma persona (mismo email o nombre completo). Ver duplicate-patients.ts.
+ */
+export async function findDuplicatePatients(professionalId: string) {
+  const patients = await prisma.patientProfile.findMany({
+    where: linkedPatientsWhere(professionalId),
+    select: {
+      id: true,
+      userId: true,
+      displayName: true,
+      contactEnc: true,
+      user: { select: { name: true, email: true } },
+    },
+  });
+  const managed = patients
+    .filter((p) => !p.userId)
+    .map((p) => ({ id: p.id, name: patientName(p), contact: decryptOptional(p.contactEnc) }));
+  if (managed.length === 0) return new Map<string, AppForMatch>();
+  const app = patients.flatMap((p) =>
+    p.user ? [{ id: p.id, name: patientName(p), email: p.user.email }] : [],
+  );
+  return matchDuplicates(managed, app);
 }

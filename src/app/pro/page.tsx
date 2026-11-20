@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge, EmptyState, PageHeader } from "@/components/ui/misc";
 import { formatAppointmentShort, formatDate, formatRelative } from "@/lib/dates";
+import { findDuplicatePatients } from "@/lib/access";
 import { getNextAppointments } from "@/lib/queries/appointments";
 import { getPatientsWithAttention, type PatientAttention } from "@/lib/queries/pro";
 import { ensureDemoPatient } from "@/lib/demo";
@@ -29,10 +30,13 @@ export default async function ProfessionalHome({ searchParams }: PageProps<"/pro
   // La paciente de ejemplo se crea una sola vez, la primera vez que entra al panel.
   await ensureDemoPatient(professional.id);
   const patients = await getPatientsWithAttention(professional.id);
-  const nextAppointments = await getNextAppointments(
-    professional.id,
-    patients.map((p) => p.id),
-  );
+  const [nextAppointments, duplicates] = await Promise.all([
+    getNextAppointments(
+      professional.id,
+      patients.map((p) => p.id),
+    ),
+    findDuplicatePatients(professional.id),
+  ]);
   const needAttention = patients.filter(
     (p) =>
       p.criticalAssessmentAt ||
@@ -116,7 +120,11 @@ export default async function ProfessionalHome({ searchParams }: PageProps<"/pro
             <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {patients.map((p) => (
                 <li key={p.id}>
-                  <PatientCard patient={p} nextAppointment={nextAppointments.get(p.id)} />
+                  <PatientCard
+                    patient={p}
+                    nextAppointment={nextAppointments.get(p.id)}
+                    duplicate={duplicates.has(p.id)}
+                  />
                 </li>
               ))}
             </ul>
@@ -240,9 +248,12 @@ function AttentionRow({ patient: p }: { patient: PatientAttention }) {
 function PatientCard({
   patient: p,
   nextAppointment,
+  duplicate,
 }: {
   patient: PatientAttention;
   nextAppointment?: Date;
+  /** Ficha sin la app de alguien que ya está vinculado con su cuenta. */
+  duplicate?: boolean;
 }) {
   return (
     <Link href={`/pro/pacientes/${p.id}`} className="block h-full">
@@ -258,6 +269,9 @@ function PatientCard({
             <p className="flex flex-wrap items-center gap-2 text-lg font-semibold">
               {p.name}
               {p.withoutApp && <Badge>Sin la app</Badge>}
+              {duplicate && (
+                <Badge className="bg-block-sun-soft text-foreground">Repetido: unilo</Badge>
+              )}
             </p>
             <p className="text-muted-foreground text-sm">
               {p.withoutApp
