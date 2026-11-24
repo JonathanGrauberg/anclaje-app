@@ -108,18 +108,27 @@ export const getAuthorizedPayment = (id: string) =>
 
 const toDate = (v: string | null | undefined) => (v ? new Date(v) : null);
 
+const skip = (id: string, why: string) => {
+  // Sin datos personales: solo el id de MP y el motivo, para poder diagnosticarlo en los logs.
+  console.warn(`[mercadopago] suscripción ${id} sin registrar: ${why}`);
+  return null;
+};
+
 /**
  * Trae el estado de MP y lo copia a nuestra fila (la crea si es la primera vez que la vemos). Solo
- * acepta suscripciones a planes nuestros y de una profesional que existe; si se pasa
- * `professionalId`, además tiene que ser de ella. Devuelve la fila o null.
+ * acepta suscripciones a planes nuestros. La dueña es la del `external_reference`; si MP no lo
+ * devuelve, la profesional logueada que vuelve del checkout con ese id (`professionalId`) la puede
+ * reclamar, siempre que no sea ya de otra. Devuelve la fila o null.
  */
 export async function syncPreapproval(id: string, professionalId?: string) {
   const row = await prisma.subscription.findUnique({ where: { mpPreapprovalId: id } });
-  if (row && professionalId && row.professionalId !== professionalId) return null;
+  if (row && professionalId && row.professionalId !== professionalId)
+    return skip(id, "es de otra profesional");
   const p = await getPreapproval(id);
-  const owner = p.external_reference ?? null;
-  if (!owner || (row && owner !== row.professionalId)) return null;
-  if (professionalId && owner !== professionalId) return null;
+  const ref = p.external_reference || null;
+  if (row && ref && ref !== row.professionalId) return skip(id, "external_reference no coincide");
+  if (professionalId && ref && ref !== professionalId)
+    return skip(id, "external_reference de otra profesional");
 
   const status = p.status === "cancelled" ? "canceled" : p.status;
   const data = {
@@ -130,15 +139,17 @@ export async function syncPreapproval(id: string, professionalId?: string) {
   };
   if (row) return prisma.subscription.update({ where: { id: row.id }, data });
 
+  const owner = ref ?? professionalId;
+  if (!owner) return skip(id, "MP no mandó external_reference");
   const plan = p.preapproval_plan_id
     ? await prisma.mpPlan.findUnique({ where: { mpPlanId: p.preapproval_plan_id } })
     : null;
-  if (!plan) return null;
+  if (!plan) return skip(id, `plan desconocido (${p.preapproval_plan_id ?? "sin plan"})`);
   const pro = await prisma.professionalProfile.findUnique({
     where: { id: owner },
     select: { id: true },
   });
-  if (!pro) return null;
+  if (!pro) return skip(id, "la profesional no existe");
   return prisma.subscription.upsert({
     where: { mpPreapprovalId: p.id },
     create: {
