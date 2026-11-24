@@ -242,6 +242,8 @@ model ProfessionalProfile {
   demoCreatedAt        DateTime?
   /// Gratis para siempre marcado a mano por el admin (además de las que se sumaron en el lanzamiento).
   freeForever          Boolean         @default(false)
+  /// Cuenta para probar el cobro: no se le aplica el "gratis del lanzamiento" (la marca el admin).
+  billingTest          Boolean         @default(false)
   createdAt            DateTime        @default(now())
   updatedAt            DateTime        @updatedAt
 

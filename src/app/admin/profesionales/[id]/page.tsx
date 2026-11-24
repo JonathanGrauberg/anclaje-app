@@ -7,7 +7,12 @@ import { prisma } from "@/lib/db";
 import { formatPesos } from "@/lib/launch";
 import { jurisdictionName } from "@/lib/licenses";
 import { requireAdmin } from "@/lib/session";
-import { FreeForeverButton, ResetPasswordButton, VerifyButton } from "../professionals-client";
+import {
+  BillingTestButton,
+  FreeForeverButton,
+  ResetPasswordButton,
+  VerifyButton,
+} from "../professionals-client";
 import { getBilling } from "@/lib/mercadopago";
 import { isPlanId, joinedInLaunch, planById, type BillingState } from "@/lib/billing";
 import { StatGroup } from "../../stat-group";
@@ -42,6 +47,7 @@ export default async function AdminProfessionalPage({
       appointmentReminders: true,
       demoCreatedAt: true,
       freeForever: true,
+      billingTest: true,
       createdAt: true,
       user: {
         select: {
@@ -153,7 +159,12 @@ export default async function AdminProfessionalPage({
       [password && "email y contraseña", google && "Google"].filter(Boolean).join(" y ") || "—",
     ],
     ["Alta", formatDate(p.createdAt)],
-    ["Plan", planText(billing, p.freeForever) + (billingOn ? "" : " · cobro sin configurar")],
+    [
+      "Plan",
+      planText(billing, p.freeForever) +
+        (p.billingTest ? " · cuenta de prueba de cobros" : "") +
+        (billingOn ? "" : " · cobro sin configurar"),
+    ],
     ["Último ingreso", p.user.lastLoginAt ? formatRelative(p.user.lastLoginAt) : "Nunca"],
     ["Usó la app", p.user.lastActiveAt ? formatRelative(p.user.lastActiveAt) : "Nunca"],
     ["Avisos al celular", p.user._count.pushSubscriptions > 0 ? "Activados" : "No"],
@@ -174,6 +185,9 @@ export default async function AdminProfessionalPage({
             {/* Las del lanzamiento ya son gratis para siempre: el botón es para las demás. */}
             {p.user.role === "PROFESSIONAL" && (p.freeForever || !joinedInLaunch(p.createdAt)) && (
               <FreeForeverButton professionalId={p.id} name={p.displayName} value={p.freeForever} />
+            )}
+            {p.user.role === "PROFESSIONAL" && (
+              <BillingTestButton professionalId={p.id} name={p.displayName} value={p.billingTest} />
             )}
             {p.user.role === "PROFESSIONAL" && !google && (
               <ResetPasswordButton userId={p.user.id} name={p.displayName} />

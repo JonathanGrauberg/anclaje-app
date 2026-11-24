@@ -110,6 +110,19 @@ describe("billingState", () => {
     expect(planCharge("semestral")).toBe(108000);
     expect(planCharge("anual")).toBe(180000);
   });
+
+  it("la cuenta de prueba de cobros no tiene gratis ni días de prueba", () => {
+    const s = billingState({
+      createdAt: new Date("2026-11-20T12:00:00Z"),
+      freeForever: false,
+      leadInLaunch: true,
+      billingTest: true,
+      sub: null,
+      now: new Date("2026-11-24T12:00:00Z"),
+      until: UNTIL,
+    });
+    expect(s).toMatchObject({ kind: "blocked", access: false });
+  });
 });
 
 describe("firma del webhook de Mercado Pago", () => {

@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowRightLeft, BadgeCheck, Gift, KeyRound } from "lucide-react";
+import { ArrowRightLeft, BadgeCheck, CreditCard, Gift, KeyRound } from "lucide-react";
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import {
   convertPatientToProfessional,
   createProfessional,
   resetProfessionalPassword,
+  setBillingTest,
   setFreeForever,
   verifyProfessional,
 } from "@/lib/actions/admin";
@@ -193,6 +194,39 @@ export function FreeForeverButton({
     >
       <Gift aria-hidden />{" "}
       {pending ? "Guardando…" : value ? "Sacar gratis para siempre" : "Gratis para siempre"}
+    </Button>
+  );
+}
+
+/** Marca la cuenta para probar el cobro con Mercado Pago (sin gratis ni días de prueba). */
+export function BillingTestButton({
+  professionalId,
+  name,
+  value,
+}: {
+  professionalId: string;
+  name: string;
+  value: boolean;
+}) {
+  const [pending, start] = useTransition();
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      disabled={pending}
+      onClick={() => {
+        const q = value
+          ? `¿Sacar a ${name} del modo prueba de cobros?`
+          : `¿Usar la cuenta de ${name} para probar el cobro? Pierde el gratis y los días de prueba: el panel queda bloqueado hasta que pague. Usalo solo con una cuenta tuya de prueba.`;
+        if (!confirm(q)) return;
+        start(async () => {
+          const res = await setBillingTest(professionalId, !value);
+          if (!res.ok) alert(res.error);
+        });
+      }}
+    >
+      <CreditCard aria-hidden />{" "}
+      {pending ? "Guardando…" : value ? "Quitar prueba de cobros" : "Probar cobros con esta cuenta"}
     </Button>
   );
 }

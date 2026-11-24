@@ -137,15 +137,25 @@ export const getBilling = cache(
   ): Promise<{ state: BillingState; enabled: boolean; access: boolean }> => {
     const pro = await prisma.professionalProfile.findUniqueOrThrow({
       where: { id: professionalId },
-      select: { createdAt: true, freeForever: true, user: { select: { email: true, role: true } } },
+      select: {
+        createdAt: true,
+        freeForever: true,
+        billingTest: true,
+        user: { select: { email: true, role: true } },
+      },
     });
     const enabled = mpEnabled();
     if (pro.user.role === "ADMIN")
       return { state: { kind: "free", access: true }, enabled, access: true };
     const sub = await currentSubscription(professionalId);
-    let state = billingState({ createdAt: pro.createdAt, freeForever: pro.freeForever, sub });
+    let state = billingState({
+      createdAt: pro.createdAt,
+      freeForever: pro.freeForever,
+      billingTest: pro.billingTest,
+      sub,
+    });
     // Pidió el acceso por el formulario dentro del lanzamiento pero la cuenta se creó después.
-    if (state.kind === "trial" || state.kind === "blocked") {
+    if (!pro.billingTest && (state.kind === "trial" || state.kind === "blocked")) {
       const lead = await prisma.lead.findFirst({
         where: { email: { equals: pro.user.email, mode: "insensitive" } },
         orderBy: { createdAt: "asc" },

@@ -50,13 +50,15 @@ export function billingState(input: {
   freeForever: boolean;
   /** Pidió el acceso por el formulario dentro del lanzamiento y la cuenta se creó después. */
   leadInLaunch?: boolean;
+  /** Cuenta para probar el cobro: sin gratis del lanzamiento y sin días de prueba. */
+  billingTest?: boolean;
   /** La suscripción más reciente, si hay. */
   sub: SubscriptionLike | null;
   now?: Date;
   until?: string;
 }): BillingState {
-  const { createdAt, freeForever, leadInLaunch, sub, now = new Date(), until } = input;
-  if (freeForever || leadInLaunch || joinedInLaunch(createdAt, until))
+  const { createdAt, freeForever, leadInLaunch, billingTest, sub, now = new Date(), until } = input;
+  if (freeForever || (!billingTest && (leadInLaunch || joinedInLaunch(createdAt, until))))
     return { kind: "free", access: true };
 
   if (sub?.status === "authorized") return { kind: "active", access: true, sub };
@@ -69,7 +71,7 @@ export function billingState(input: {
     return { kind: "ending", access: true, until: sub.nextPaymentAt, sub };
 
   const trialEndsAt = new Date(createdAt.getTime() + TRIAL_DAYS * DAY);
-  if (now < trialEndsAt) {
+  if (!billingTest && now < trialEndsAt) {
     const daysLeft = Math.max(1, Math.ceil((trialEndsAt.getTime() - now.getTime()) / DAY));
     return { kind: "trial", access: true, trialEndsAt, daysLeft, sub };
   }

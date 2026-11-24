@@ -288,3 +288,24 @@ export async function setFreeForever(professionalId: string, value: boolean) {
     return ok(undefined);
   });
 }
+
+/** Cuenta para probar el cobro con Mercado Pago: sin gratis del lanzamiento ni días de prueba. */
+export async function setBillingTest(professionalId: string, value: boolean) {
+  return safe(async () => {
+    const admin = await adminForAction();
+    const updated = await prisma.professionalProfile.updateMany({
+      where: { id: String(professionalId) },
+      data: { billingTest: Boolean(value) },
+    });
+    if (updated.count === 0) return fail("No encontramos esa profesional");
+    await audit({
+      actorId: admin.id,
+      action: "update",
+      entityType: "Professional",
+      entityId: String(professionalId),
+      meta: { field: "billingTest", value: Boolean(value) },
+    });
+    revalidatePath(`/admin/profesionales/${professionalId}`);
+    return ok(undefined);
+  });
+}
