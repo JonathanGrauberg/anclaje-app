@@ -10,6 +10,7 @@ import { requireAdmin } from "@/lib/session";
 import {
   BillingTestButton,
   FreeForeverButton,
+  RefreshSubscriptionsButton,
   ResetPasswordButton,
   VerifyButton,
 } from "../professionals-client";
@@ -20,6 +21,12 @@ import { StatGroup } from "../../stat-group";
 export const metadata: Metadata = { title: "Profesional" };
 
 const DAY = 24 * 60 * 60 * 1000;
+const SUB_STATUS: Record<string, string> = {
+  pending: "Pendiente: no terminó de pagar en MP",
+  authorized: "Activa",
+  paused: "Pausada",
+  canceled: "Cancelada",
+};
 const DIGEST: Record<string, string> = {
   NEVER: "No",
   DAILY: "Todos los días",
@@ -135,6 +142,20 @@ export default async function AdminProfessionalPage({
   ]);
 
   const { state: billing, enabled: billingOn } = await getBilling(p.id);
+  // Intentos de suscripción (solo estado y fechas; nada de datos de pago).
+  const subs = await prisma.subscription.findMany({
+    where: { professionalId: p.id },
+    orderBy: { createdAt: "desc" },
+    take: 5,
+    select: {
+      id: true,
+      plan: true,
+      amount: true,
+      status: true,
+      createdAt: true,
+      nextPaymentAt: true,
+    },
+  });
   const google = p.user.accounts.some((a) => a.providerId === "google");
   const password = p.user.accounts.some((a) => a.providerId === "credential");
   const rows: [string, React.ReactNode][] = [
@@ -209,6 +230,35 @@ export default async function AdminProfessionalPage({
         </CardContent>
       </Card>
 
+      {subs.length > 0 && (
+        <section aria-labelledby="subs-title" className="flex flex-col gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 id="subs-title" className="text-lg font-semibold">
+              Suscripción en Mercado Pago
+            </h2>
+            <RefreshSubscriptionsButton professionalId={p.id} />
+          </div>
+          <Card>
+            <CardContent className="p-0">
+              <ul className="divide-y text-sm">
+                {subs.map((s) => (
+                  <li key={s.id} className="flex flex-wrap gap-x-4 gap-y-1 px-4 py-3">
+                    <span className="font-medium">
+                      {isPlanId(s.plan) ? planById(s.plan).label : s.plan} · {formatPesos(s.amount)}
+                    </span>
+                    <span>{SUB_STATUS[s.status] ?? s.status}</span>
+                    <span className="text-muted-foreground">
+                      empezado {formatRelative(s.createdAt)}
+                      {s.nextPaymentAt && ` · próximo débito ${formatDate(s.nextPaymentAt)}`}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        </section>
+      )}
+
       <StatGroup
         title="Pacientes"
         stats={[
@@ -274,6 +324,6 @@ function planText(b: BillingState, manual: boolean) {
     case "ending":
       return `Canceló el plan ${label}: usa el panel hasta el ${formatDate(b.until)}`;
     case "blocked":
-      return `Sin plan: terminó la prueba el ${formatDate(b.trialEndedAt)}${sub?.status === "pending" ? " (empezó a pagar y no terminó)" : ""}`;
+      return `Sin plan${b.trialEndedAt < new Date() ? `: terminó la prueba el ${formatDate(b.trialEndedAt)}` : ""}${sub?.status === "pending" ? " (empezó a pagar y no terminó)" : ""}`;
   }
 }

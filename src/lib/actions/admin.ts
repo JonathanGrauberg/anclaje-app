@@ -18,6 +18,7 @@ import {
 } from "@/lib/validation/admin";
 import { assessmentDocSchema } from "@/lib/validation/assessment";
 import { normalizeLicense } from "@/lib/licenses";
+import { syncPreapproval } from "@/lib/mercadopago";
 import { fail, firstIssue, ok, safe } from "./result";
 
 // Administración. Todas verifican rol ADMIN en el servidor y quedan en el AuditLog.
@@ -307,5 +308,32 @@ export async function setBillingTest(professionalId: string, value: boolean) {
     });
     revalidatePath(`/admin/profesionales/${professionalId}`);
     return ok(undefined);
+  });
+}
+
+/**
+ * Vuelve a consultar en Mercado Pago las suscripciones de una profesional (por si no llegó un
+ * aviso). Devuelve solo estados: nada de datos de pago.
+ */
+export async function refreshSubscriptions(professionalId: string) {
+  return safe(async () => {
+    await adminForAction();
+    const subs = await prisma.subscription.findMany({
+      where: { professionalId: String(professionalId), mpPreapprovalId: { not: null } },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+      select: { mpPreapprovalId: true },
+    });
+    if (subs.length === 0) return fail("No empezó ningún pago todavía.");
+    const errors: string[] = [];
+    for (const s of subs) {
+      try {
+        await syncPreapproval(s.mpPreapprovalId!);
+      } catch (e) {
+        errors.push((e as Error).message);
+      }
+    }
+    revalidatePath(`/admin/profesionales/${professionalId}`);
+    return errors.length ? fail(errors[0]) : ok(undefined);
   });
 }

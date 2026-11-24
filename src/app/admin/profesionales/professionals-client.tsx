@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowRightLeft, BadgeCheck, CreditCard, Gift, KeyRound } from "lucide-react";
+import { ArrowRightLeft, BadgeCheck, CreditCard, Gift, KeyRound, RefreshCw } from "lucide-react";
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import {
   convertPatientToProfessional,
   createProfessional,
   resetProfessionalPassword,
+  refreshSubscriptions,
   setBillingTest,
   setFreeForever,
   verifyProfessional,
@@ -195,6 +196,35 @@ export function FreeForeverButton({
       <Gift aria-hidden />{" "}
       {pending ? "Guardando…" : value ? "Sacar gratis para siempre" : "Gratis para siempre"}
     </Button>
+  );
+}
+
+/** Vuelve a pedirle a Mercado Pago el estado de sus suscripciones. */
+export function RefreshSubscriptionsButton({ professionalId }: { professionalId: string }) {
+  const [pending, start] = useTransition();
+  const [msg, setMsg] = useState<string | null>(null);
+  return (
+    <div className="flex flex-col gap-1">
+      <Button
+        variant="outline"
+        size="sm"
+        disabled={pending}
+        onClick={() =>
+          start(async () => {
+            setMsg(null);
+            const res = await refreshSubscriptions(professionalId);
+            setMsg(res.ok ? "Actualizado." : res.error);
+          })
+        }
+      >
+        <RefreshCw aria-hidden /> {pending ? "Consultando…" : "Consultar en Mercado Pago"}
+      </Button>
+      {msg && (
+        <p role="status" className="text-muted-foreground text-xs">
+          {msg}
+        </p>
+      )}
+    </div>
   );
 }
 
