@@ -111,7 +111,7 @@ export const getPreapproval = (id: string) =>
 export const cancelPreapproval = (id: string) =>
   mp<Preapproval>(`/preapproval/${encodeURIComponent(id)}`, {
     method: "PUT",
-    body: JSON.stringify({ status: "canceled" }),
+    body: JSON.stringify({ status: "cancelled" }), // así, con doble l, lo pide MP
   });
 
 export const getAuthorizedPayment = (id: string) =>
