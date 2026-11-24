@@ -67,8 +67,10 @@ export async function startSubscription(input: { plan: string; payerEmail: strin
       });
     } catch (e) {
       console.error("[mercadopago] no se pudo crear la suscripción", (e as Error).message);
+      // El motivo de MP (sin datos personales) ayuda a saber qué corregir, p. ej. el email.
+      const why = (e as Error).message.replace(/^Mercado Pago d+: /, "").slice(0, 160);
       return fail(
-        "No pudimos abrir Mercado Pago. Revisá el email de tu cuenta de Mercado Pago y probá de nuevo; si sigue, escribinos.",
+        `No pudimos abrir Mercado Pago. Revisá el email de tu cuenta de Mercado Pago y probá de nuevo; si sigue, escribinos. (Mercado Pago dice: ${why})`,
       );
     }
     if (!pre.init_point) return fail("Mercado Pago no devolvió el link de pago. Probá de nuevo.");
