@@ -180,10 +180,14 @@ function Status({ state, enabled, name }: { state: BillingState; enabled: boolea
     case "blocked":
       return (
         <p className={p}>
-          Terminó tu período de prueba. Para seguir usando el panel, elegí un plan.{" "}
+          {state.sub && state.sub.status !== "pending"
+            ? "Tu plan terminó."
+            : "Tus días de prueba terminaron."}{" "}
           <strong className="text-foreground">
-            Tus pacientes siguen usando la app y no se borra nada.
-          </strong>
+            No perdiste nada: tus datos y los de tus pacientes siguen acá, y ellos siguen usando la
+            app.
+          </strong>{" "}
+          Para volver a usar el panel, elegí tu plan.
         </p>
       );
   }
