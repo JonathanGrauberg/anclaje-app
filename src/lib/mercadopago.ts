@@ -1,4 +1,5 @@
 import "server-only";
+import { createHash } from "node:crypto";
 import { cache } from "react";
 import { billingState, joinedInLaunch, type BillingState, type PlanId } from "@/lib/billing";
 import { prisma } from "@/lib/db";
@@ -44,6 +45,13 @@ export type Preapproval = {
   auto_recurring?: { transaction_amount?: number } | null;
 };
 
+/** Huella del access token (no el token): identifica la cuenta de MP sin guardar el secreto. */
+const mpAccount = () =>
+  createHash("sha256")
+    .update(process.env.MP_ACCESS_TOKEN ?? "")
+    .digest("hex")
+    .slice(0, 16);
+
 type PreapprovalPlan = { id: string; init_point: string };
 
 /**
@@ -58,8 +66,13 @@ export async function mpPlanFor(input: {
   trialDays: number;
   backUrl: string;
 }) {
-  const key = { plan: input.plan, amount: input.amount, trialDays: input.trialDays };
-  const found = await prisma.mpPlan.findUnique({ where: { plan_amount_trialDays: key } });
+  const key = {
+    account: mpAccount(),
+    plan: input.plan,
+    amount: input.amount,
+    trialDays: input.trialDays,
+  };
+  const found = await prisma.mpPlan.findUnique({ where: { account_plan_amount_trialDays: key } });
   if (found) return found;
   const created = await mp<PreapprovalPlan>("/preapproval_plan", {
     method: "POST",
@@ -79,7 +92,7 @@ export async function mpPlanFor(input: {
     }),
   });
   return prisma.mpPlan.upsert({
-    where: { plan_amount_trialDays: key },
+    where: { account_plan_amount_trialDays: key },
     create: { ...key, mpPlanId: created.id, initPoint: created.init_point },
     update: {},
   });

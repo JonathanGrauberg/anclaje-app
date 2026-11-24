@@ -1049,6 +1049,9 @@ model Subscription {
 /// que alguien elige esa combinación de plan, precio y días gratis; después se reusan.
 model MpPlan {
   id        String   @id @default(cuid())
+  /// De qué cuenta de MP es (huella del access token): al pasar de prueba a producción se crean
+  /// planes nuevos en vez de reusar los de la otra cuenta.
+  account   String   @default("")
   /// "mensual" | "semestral" | "anual"
   plan      String
   /// Lo que se cobra en cada débito, en pesos enteros.
@@ -1059,5 +1062,5 @@ model MpPlan {
   initPoint String
   createdAt DateTime @default(now())
 
-  @@unique([plan, amount, trialDays])
+  @@unique([account, plan, amount, trialDays])
 }
