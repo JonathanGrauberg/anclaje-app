@@ -595,7 +595,7 @@ export default async function Home() {
               <p className="text-muted-foreground text-lg">
                 {daysLeft > 0
                   ? `Las y los profesionales que se sumen hasta el ${freeUntil} no pagan nunca: la app queda de regalo. Quien llegue después elige uno de estos planes.`
-                  : "Todo incluido, en los tres planes. Cuanto más largo, menos pagás por mes."}{" "}
+                  : "Probala 14 días gratis, sin tarjeta. Después elegís el plan: todo incluido en los tres, y cuanto más largo, menos pagás por mes."}{" "}
                 Tus pacientes usan la app sin pagar.
               </p>
             </div>
@@ -669,7 +669,7 @@ export default async function Home() {
                           : "bg-primary text-primary-foreground mt-auto rounded-full px-5 py-3 text-center font-semibold transition-transform active:scale-[0.98]"
                       }
                     >
-                      {daysLeft > 0 ? "Quiero sumarme gratis" : "Quiero este plan"}
+                      {daysLeft > 0 ? "Quiero sumarme gratis" : "Probar 14 días gratis"}
                     </Link>
                   </li>
                 );
@@ -713,6 +713,7 @@ export default async function Home() {
                       {formatPesos(MIN_MONTHLY)} por mes.
                     </>
                   )}
+                  {daysLeft === 0 && " Probala 14 días gratis, sin tarjeta."}
                 </p>
               </div>
               {daysLeft > 0 && (

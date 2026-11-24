@@ -9,6 +9,7 @@ import { prisma } from "@/lib/db";
 import { digestEmail, summarizeDigest } from "@/lib/digest";
 import { appUrl, sendEmail } from "@/lib/email";
 import { pushConfigError, pushConfigured, sendPushToUser } from "@/lib/push";
+import { syncOpenSubscriptions } from "@/lib/mercadopago";
 import { getPatientsWithAttention } from "@/lib/queries/pro";
 import { isDigestDue, isReminderDue, reminderMessage } from "@/lib/reminders";
 
@@ -83,10 +84,14 @@ async function handle(req: Request, ctx: RouteContext<"/api/cron/[job]">) {
   const { job } = await ctx.params;
   const now = new Date();
   // Recordatorio de turnos por mail: no depende de los avisos push, solo de tener SMTP.
+  // También repasa las suscripciones de MP (por si se perdió algún webhook): el plan gratis de Vercel
+  // no da para otro cron diario.
   if (job === "turnos") {
     const push = await sendAppointmentDayBeforePushes(now);
-    if (!process.env.SMTP_URL) return Response.json({ skipped: "mail sin configurar", push });
-    return Response.json({ ...(await sendAppointmentReminders(now)), push });
+    const subscriptions = await syncOpenSubscriptions(now);
+    if (!process.env.SMTP_URL)
+      return Response.json({ skipped: "mail sin configurar", push, subscriptions });
+    return Response.json({ ...(await sendAppointmentReminders(now)), push, subscriptions });
   }
   if (!NOTIFICATIONS_ENABLED) return Response.json({ skipped: "avisos apagados" });
   if (job === "recordatorios") {

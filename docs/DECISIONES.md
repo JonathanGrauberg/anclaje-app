@@ -550,3 +550,19 @@ salvo que se indique lo contrario.
   las dos fichas y con la marca "Repetido: unilo" en la lista. No se unen solas: la profesional
   toca "Invitar a la app" en la ficha sin app y el paciente carga el código desde su cuenta (así
   acepta él que esos datos pasen a su cuenta); `mergeManagedPatient` mueve todo y borra la ficha.
+- **Suscripciones con Mercado Pago (nov 2026):** quien se sumó hasta `FREE_UNTIL` (fecha de alta,
+  o la del pedido en el formulario si la cuenta se creó después) o tiene `freeForever` (lo marca el
+  admin en la ficha de la profesional) no paga nunca. El resto tiene **14 días de prueba sin tarjeta**
+  desde el alta; después, suscripción en Mercado Pago con los planes de `PLANS` (1, 6 o 12 meses,
+  débito del total del período). Se usa el "preapproval sin plan asociado" con pago pendiente: el
+  servidor crea la suscripción con `external_reference` = id de la profesional y la manda a pagar
+  a MP; si le quedan días de prueba (o de un plan cancelado) el primer débito se programa para ese
+  día (`start_date`), así no pierde días. El estado (`Subscription`) se trae siempre de la API de
+  MP: al volver a /plan y por webhook (`/api/mercadopago/webhook`, con firma `x-signature`
+  verificada si hay `MP_WEBHOOK_SECRET`); el aviso solo dispara la consulta, así que no se puede
+  falsificar un pago. Se pide el email de la cuenta de MP (por defecto el de Anclaje) porque MP lo
+  exige. Sin acceso (prueba vencida, pago pendiente, cancelado y ya pasó lo pagado) se bloquea
+  **solo el panel**: `requireProfessional` manda a /plan y `professionalForAction` rechaza las
+  acciones. Sus pacientes siguen usando la app, no se borra nada y desde /plan puede bajar las
+  historias clínicas. Si cancela, usa el panel hasta el próximo débito. El admin no ve montos de lo
+  que ella cobra; sí el plan que nos paga. Sin `MP_ACCESS_TOKEN` no se bloquea a nadie.

@@ -267,3 +267,24 @@ export async function deleteTemplate(id: string) {
     return ok(undefined);
   });
 }
+
+/** Gratis para siempre a mano (por ejemplo, alguien que se anotó fuera del formulario a tiempo). */
+export async function setFreeForever(professionalId: string, value: boolean) {
+  return safe(async () => {
+    const admin = await adminForAction();
+    const updated = await prisma.professionalProfile.updateMany({
+      where: { id: String(professionalId) },
+      data: { freeForever: Boolean(value) },
+    });
+    if (updated.count === 0) return fail("No encontramos esa profesional");
+    await audit({
+      actorId: admin.id,
+      action: "update",
+      entityType: "Professional",
+      entityId: String(professionalId),
+      meta: { field: "freeForever", value: Boolean(value) },
+    });
+    revalidatePath(`/admin/profesionales/${professionalId}`);
+    return ok(undefined);
+  });
+}

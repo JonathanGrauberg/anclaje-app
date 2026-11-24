@@ -5,6 +5,8 @@ import { cache } from "react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getDemoViewPatient } from "@/lib/demo";
+import { PlanRequiredError } from "@/lib/billing";
+import { getBilling } from "@/lib/mercadopago";
 
 export type Role = "PATIENT" | "PROFESSIONAL" | "ADMIN";
 
@@ -61,13 +63,23 @@ export const requirePatient = cache(async () => {
   return { user, patient: { ...patient, userId: user.id }, isDemoView: false };
 });
 
-/** Usuario profesional (o admin) + su perfil profesional. */
-export const requireProfessional = cache(async () => {
+/** Usuario profesional (o admin) + su perfil, sin mirar el plan. Solo para /plan. */
+export const requireProfessionalAccount = cache(async () => {
   const user = await requireUser();
   if (user.role === "PATIENT") redirect("/app");
   const professional = await prisma.professionalProfile.findUnique({ where: { userId: user.id } });
   // Quien entró con Google por primera vez todavía no cargó su matrícula.
   if (!professional) redirect(user.role === "ADMIN" ? "/admin" : "/alta-profesional");
+  return { user, professional };
+});
+
+/**
+ * Usuario profesional (o admin) + su perfil profesional. Si terminó la prueba y no tiene plan
+ * (ver src/lib/billing.ts), lo manda a /plan: el panel queda bloqueado hasta que pague.
+ */
+export const requireProfessional = cache(async () => {
+  const { user, professional } = await requireProfessionalAccount();
+  if (!(await getBilling(professional.id)).access) redirect("/plan");
   return { user, professional };
 });
 
@@ -110,15 +122,22 @@ export async function patientForContentAction() {
   return { ...patient, userId: demoUser.id };
 }
 
-/** Para Server Actions del lado profesional: sesión + perfil, sin redirect. */
-export async function professionalForAction() {
+/** Como professionalForAction pero sin mirar el plan: solo para las acciones de /plan. */
+export async function professionalAccountForAction() {
   const session = await getSession();
   if (!session || (session.user.role ?? "PATIENT") === "PATIENT") throw new Error("No autorizado");
   const professional = await prisma.professionalProfile.findUnique({
     where: { userId: session.user.id },
   });
   if (!professional) throw new Error("No autorizado");
-  return { userId: session.user.id, professional };
+  return { userId: session.user.id, email: session.user.email, professional };
+}
+
+/** Para Server Actions del lado profesional: sesión + perfil + plan al día, sin redirect. */
+export async function professionalForAction() {
+  const { userId, professional } = await professionalAccountForAction();
+  if (!(await getBilling(professional.id)).access) throw new PlanRequiredError();
+  return { userId, professional };
 }
 
 /** Para Server Actions de administración. */

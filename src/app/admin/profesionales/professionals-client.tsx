@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowRightLeft, BadgeCheck, KeyRound } from "lucide-react";
+import { ArrowRightLeft, BadgeCheck, Gift, KeyRound } from "lucide-react";
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import {
   convertPatientToProfessional,
   createProfessional,
   resetProfessionalPassword,
+  setFreeForever,
   verifyProfessional,
 } from "@/lib/actions/admin";
 import { createProfessionalSchema, type CreateProfessionalInput } from "@/lib/validation/admin";
@@ -159,6 +160,39 @@ export function VerifyButton({ professionalId, name }: { professionalId: string;
       }}
     >
       <BadgeCheck aria-hidden /> {pending ? "Guardando…" : "Marcar verificada"}
+    </Button>
+  );
+}
+
+/** Marca (o saca) "gratis para siempre" a mano. */
+export function FreeForeverButton({
+  professionalId,
+  name,
+  value,
+}: {
+  professionalId: string;
+  name: string;
+  value: boolean;
+}) {
+  const [pending, start] = useTransition();
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      disabled={pending}
+      onClick={() => {
+        const q = value
+          ? `¿Sacarle a ${name} el "gratis para siempre"? Va a tener que elegir un plan.`
+          : `¿Darle a ${name} Anclaje gratis para siempre?`;
+        if (!confirm(q)) return;
+        start(async () => {
+          const res = await setFreeForever(professionalId, !value);
+          if (!res.ok) alert(res.error);
+        });
+      }}
+    >
+      <Gift aria-hidden />{" "}
+      {pending ? "Guardando…" : value ? "Sacar gratis para siempre" : "Gratis para siempre"}
     </Button>
   );
 }

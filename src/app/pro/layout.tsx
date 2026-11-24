@@ -3,6 +3,8 @@ import { ColorModeToggle } from "@/components/color-mode-toggle";
 import { InstallAppBanner } from "@/components/install-app-banner";
 import { Logo } from "@/components/logo";
 import { SignOutButton } from "@/components/sign-out-button";
+import { formatDate } from "@/lib/dates";
+import { getBilling } from "@/lib/mercadopago";
 import { requireProfessional } from "@/lib/session";
 import { getUiTheme } from "@/lib/ui-theme";
 import { cn } from "@/lib/utils";
@@ -11,6 +13,10 @@ import { ProNav } from "./pro-nav";
 export default async function ProfessionalLayout({ children }: LayoutProps<"/pro">) {
   const [{ user, professional }, theme] = await Promise.all([requireProfessional(), getUiTheme()]);
   const isNew = theme === "nuevo";
+  const { state, enabled } = await getBilling(professional.id);
+  // Aviso de la prueba: solo si ya se cobra y no eligió plan todavía.
+  const trial =
+    enabled && state.kind === "trial" && state.sub?.status !== "authorized" ? state : null;
 
   return (
     <div
@@ -40,7 +46,23 @@ export default async function ProfessionalLayout({ children }: LayoutProps<"/pro
           </div>
         </div>
       </aside>
-      <main className="mx-auto w-full max-w-6xl flex-1 px-5 py-8 md:px-10">{children}</main>
+      <main className="mx-auto w-full max-w-6xl flex-1 px-5 py-8 md:px-10">
+        {trial && (
+          <p className="bg-sun-soft mb-6 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-2xl px-4 py-3 text-sm">
+            <span>
+              Te {trial.daysLeft === 1 ? "queda" : "quedan"}{" "}
+              <strong>
+                {trial.daysLeft} {trial.daysLeft === 1 ? "día" : "días"} de prueba
+              </strong>{" "}
+              (hasta el {formatDate(trial.trialEndsAt)}).
+            </span>
+            <Link href="/plan" className="text-primary font-semibold underline underline-offset-2">
+              Elegí tu plan
+            </Link>
+          </p>
+        )}
+        {children}
+      </main>
       <InstallAppBanner />
     </div>
   );

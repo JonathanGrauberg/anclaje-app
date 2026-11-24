@@ -1,4 +1,5 @@
 import type { z } from "zod";
+import { PlanRequiredError } from "@/lib/billing";
 
 export type ActionResult<T = undefined> = { ok: true; data: T } | { ok: false; error: string };
 
@@ -16,6 +17,7 @@ export async function safe<T>(fn: () => Promise<ActionResult<T>>): Promise<Actio
   } catch (e) {
     if (e instanceof Error && e.message === "No autorizado")
       return fail("Tu sesión venció. Volvé a ingresar.");
+    if (e instanceof PlanRequiredError) return fail(e.message);
     console.error(e);
     return fail("Algo salió mal. Probá de nuevo.");
   }

@@ -4,10 +4,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge, PageHeader } from "@/components/ui/misc";
 import { formatDate, formatRelative } from "@/lib/dates";
 import { prisma } from "@/lib/db";
-import { freeDaysLeft } from "@/lib/launch";
+import { formatPesos } from "@/lib/launch";
 import { jurisdictionName } from "@/lib/licenses";
 import { requireAdmin } from "@/lib/session";
-import { ResetPasswordButton, VerifyButton } from "../professionals-client";
+import { FreeForeverButton, ResetPasswordButton, VerifyButton } from "../professionals-client";
+import { getBilling } from "@/lib/mercadopago";
+import { isPlanId, joinedInLaunch, planById, type BillingState } from "@/lib/billing";
 import { StatGroup } from "../../stat-group";
 
 export const metadata: Metadata = { title: "Profesional" };
@@ -39,6 +41,7 @@ export default async function AdminProfessionalPage({
       digestFrequency: true,
       appointmentReminders: true,
       demoCreatedAt: true,
+      freeForever: true,
       createdAt: true,
       user: {
         select: {
@@ -125,6 +128,7 @@ export default async function AdminProfessionalPage({
     }),
   ]);
 
+  const { state: billing, enabled: billingOn } = await getBilling(p.id);
   const google = p.user.accounts.some((a) => a.providerId === "google");
   const password = p.user.accounts.some((a) => a.providerId === "credential");
   const rows: [string, React.ReactNode][] = [
@@ -149,10 +153,7 @@ export default async function AdminProfessionalPage({
       [password && "email y contraseña", google && "Google"].filter(Boolean).join(" y ") || "—",
     ],
     ["Alta", formatDate(p.createdAt)],
-    [
-      "Plan",
-      freeDaysLeft(p.createdAt) > 0 ? "Gratis para siempre (se sumó en el lanzamiento)" : "—",
-    ],
+    ["Plan", planText(billing, p.freeForever) + (billingOn ? "" : " · cobro sin configurar")],
     ["Último ingreso", p.user.lastLoginAt ? formatRelative(p.user.lastLoginAt) : "Nunca"],
     ["Usó la app", p.user.lastActiveAt ? formatRelative(p.user.lastActiveAt) : "Nunca"],
     ["Avisos al celular", p.user._count.pushSubscriptions > 0 ? "Activados" : "No"],
@@ -170,6 +171,10 @@ export default async function AdminProfessionalPage({
         action={
           <div className="flex flex-wrap gap-2">
             {!p.verifiedAt && <VerifyButton professionalId={p.id} name={p.displayName} />}
+            {/* Las del lanzamiento ya son gratis para siempre: el botón es para las demás. */}
+            {p.user.role === "PROFESSIONAL" && (p.freeForever || !joinedInLaunch(p.createdAt)) && (
+              <FreeForeverButton professionalId={p.id} name={p.displayName} value={p.freeForever} />
+            )}
             {p.user.role === "PROFESSIONAL" && !google && (
               <ResetPasswordButton userId={p.user.id} name={p.displayName} />
             )}
@@ -239,4 +244,22 @@ export default async function AdminProfessionalPage({
       />
     </div>
   );
+}
+
+/** Estado del plan en palabras, sin montos de lo que ella cobra (solo lo que nos paga). */
+function planText(b: BillingState, manual: boolean) {
+  const sub = "sub" in b ? b.sub : null;
+  const label = sub && isPlanId(sub.plan) ? planById(sub.plan).label : sub?.plan;
+  switch (b.kind) {
+    case "free":
+      return manual ? "Gratis para siempre (marcado a mano)" : "Gratis para siempre";
+    case "trial":
+      return `En prueba: quedan ${b.daysLeft} días (hasta el ${formatDate(b.trialEndsAt)})`;
+    case "active":
+      return `Plan ${label} activo · ${formatPesos(b.sub.amount)}${b.sub.nextPaymentAt ? ` · próximo débito ${formatDate(b.sub.nextPaymentAt)}` : ""}`;
+    case "ending":
+      return `Canceló el plan ${label}: usa el panel hasta el ${formatDate(b.until)}`;
+    case "blocked":
+      return `Sin plan: terminó la prueba el ${formatDate(b.trialEndedAt)}${sub?.status === "pending" ? " (empezó a pagar y no terminó)" : ""}`;
+  }
 }

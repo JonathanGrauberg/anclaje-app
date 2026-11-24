@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/misc";
 import { Badge } from "@/components/ui/misc";
 import { formatDate, formatRelative } from "@/lib/dates";
-import { freeDaysLeft } from "@/lib/launch";
+import { joinedInLaunch } from "@/lib/billing";
 import { jurisdictionName } from "@/lib/licenses";
 import { prisma } from "@/lib/db";
 import { requireAdmin } from "@/lib/session";
@@ -27,6 +27,7 @@ export default async function AdminProfessionalsPage() {
       licenseNumber: true,
       licenseJurisdiction: true,
       verifiedAt: true,
+      freeForever: true,
       createdAt: true,
       user: {
         select: {
@@ -98,7 +99,7 @@ export default async function AdminProfessionalsPage() {
                       >
                         {p.displayName}
                       </Link>
-                      {freeDaysLeft(p.createdAt) > 0 && (
+                      {(p.freeForever || joinedInLaunch(p.createdAt)) && (
                         <span className="text-muted-foreground block text-xs font-normal">
                           Gratis para siempre
                         </span>

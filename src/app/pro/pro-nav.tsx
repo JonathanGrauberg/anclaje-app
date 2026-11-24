@@ -4,6 +4,7 @@ import {
   BookOpen,
   CalendarDays,
   ClipboardList,
+  CreditCard,
   LayoutDashboard,
   MessageSquareQuote,
   Settings,
@@ -25,6 +26,7 @@ const nav = [
   { href: "/pro/biblioteca", label: "Biblioteca", icon: BookOpen },
   { href: "/pro/evaluaciones", label: "Evaluaciones", icon: ClipboardList },
   { href: "/pro/ajustes", label: "Ajustes", icon: Settings },
+  { href: "/plan", label: "Mi plan", icon: CreditCard },
 ] as { href: string | null; label: string; icon: LucideIcon }[];
 
 export function ProNav({ isAdmin = false }: { isAdmin?: boolean }) {

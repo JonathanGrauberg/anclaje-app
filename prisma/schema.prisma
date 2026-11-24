@@ -240,9 +240,12 @@ model ProfessionalProfile {
   pricesSeededAt       DateTime?
   /// Cuándo se le creó la paciente de ejemplo (una sola vez: si la borra, no vuelve).
   demoCreatedAt        DateTime?
+  /// Gratis para siempre marcado a mano por el admin (además de las que se sumaron en el lanzamiento).
+  freeForever          Boolean         @default(false)
   createdAt            DateTime        @default(now())
   updatedAt            DateTime        @updatedAt
 
+  subscriptions   Subscription[]
   links           CareLink[]
   servicePrices   ServicePrice[]
   patientPrices   PatientPrice[]
@@ -1014,4 +1017,28 @@ model Payment {
 
   @@index([professionalId, paidAt])
   @@index([patientId, paidAt])
+}
+
+/// Suscripción de una profesional en Mercado Pago (preapproval "sin plan asociado"). Una fila por
+/// intento de suscripción; vale la más reciente. El estado se copia de MP (webhook o al volver).
+model Subscription {
+  id               String              @id @default(cuid())
+  professionalId   String
+  professional     ProfessionalProfile @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  /// "mensual" | "semestral" | "anual" (ver PLANS en src/lib/launch.ts)
+  plan             String
+  /// Lo que se cobra en cada débito, en pesos enteros.
+  amount           Int
+  /// id del preapproval en Mercado Pago.
+  mpPreapprovalId  String?             @unique
+  /// Estado en MP: pending | authorized | paused | canceled
+  status           String              @default("pending")
+  /// Próximo débito según MP: hasta ahí está pago si cancela.
+  nextPaymentAt    DateTime?
+  lastPaymentAt    DateTime?
+  canceledAt       DateTime?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+
+  @@index([professionalId, createdAt])
 }
