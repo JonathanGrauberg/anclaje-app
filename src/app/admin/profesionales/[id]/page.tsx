@@ -14,7 +14,7 @@ import {
   ResetPasswordButton,
   VerifyButton,
 } from "../professionals-client";
-import { getBilling } from "@/lib/mercadopago";
+import { getBilling, mpAccount } from "@/lib/mercadopago";
 import { isPlanId, joinedInLaunch, planById, type BillingState } from "@/lib/billing";
 import { StatGroup } from "../../stat-group";
 
@@ -154,8 +154,10 @@ export default async function AdminProfessionalPage({
       status: true,
       createdAt: true,
       nextPaymentAt: true,
+      account: true,
     },
   });
+  const account = mpAccount();
   const google = p.user.accounts.some((a) => a.providerId === "google");
   const password = p.user.accounts.some((a) => a.providerId === "credential");
   const rows: [string, React.ReactNode][] = [
@@ -246,7 +248,10 @@ export default async function AdminProfessionalPage({
                     <span className="font-medium">
                       {isPlanId(s.plan) ? planById(s.plan).label : s.plan} · {formatPesos(s.amount)}
                     </span>
-                    <span>{SUB_STATUS[s.status] ?? s.status}</span>
+                    <span>
+                      {SUB_STATUS[s.status] ?? s.status}
+                      {s.account !== account && " · de otra cuenta de MP (no cuenta)"}
+                    </span>
                     <span className="text-muted-foreground">
                       empezado {formatRelative(s.createdAt)}
                       {s.nextPaymentAt && ` · próximo débito ${formatDate(s.nextPaymentAt)}`}

@@ -1033,6 +1033,9 @@ model Subscription {
   amount           Int
   /// id del preapproval en Mercado Pago.
   mpPreapprovalId  String?             @unique
+  /// De qué cuenta de MP es (huella del access token, como MpPlan.account). Solo cuentan las de la
+  /// cuenta configurada: las de prueba quedan como historial al pasar a producción.
+  account          String              @default("")
   /// Estado en MP: pending | authorized | paused | canceled
   status           String              @default("pending")
   /// Próximo débito según MP: hasta ahí está pago si cancela.

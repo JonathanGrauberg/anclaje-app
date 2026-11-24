@@ -46,7 +46,7 @@ export type Preapproval = {
 };
 
 /** Huella del access token (no el token): identifica la cuenta de MP sin guardar el secreto. */
-const mpAccount = () =>
+export const mpAccount = () =>
   createHash("sha256")
     .update(process.env.MP_ACCESS_TOKEN ?? "")
     .digest("hex")
@@ -137,6 +137,7 @@ export async function syncPreapproval(id: string, professionalId?: string) {
   const row = await prisma.subscription.findUnique({ where: { mpPreapprovalId: id } });
   if (row && professionalId && row.professionalId !== professionalId)
     return skip(id, "es de otra profesional");
+  if (row && row.account !== mpAccount()) return skip(id, "es de otra cuenta de MP");
   const p = await getPreapproval(id);
   const ref = p.external_reference || null;
   if (row && ref && ref !== row.professionalId) return skip(id, "external_reference no coincide");
@@ -170,6 +171,7 @@ export async function syncPreapproval(id: string, professionalId?: string) {
       plan: plan.plan,
       amount: plan.amount,
       mpPreapprovalId: p.id,
+      account: mpAccount(),
       ...data,
     },
     update: data,
@@ -179,7 +181,7 @@ export async function syncPreapproval(id: string, professionalId?: string) {
 /** La suscripción que cuenta: la autorizada; si no, la que sigue paga hasta el débito; si no, la última. */
 export async function currentSubscription(professionalId: string, now = new Date()) {
   const subs = await prisma.subscription.findMany({
-    where: { professionalId },
+    where: { professionalId, account: mpAccount() },
     orderBy: { createdAt: "desc" },
     take: 10,
   });
@@ -243,6 +245,7 @@ export async function syncOpenSubscriptions(now = new Date()) {
   const subs = await prisma.subscription.findMany({
     where: {
       mpPreapprovalId: { not: null },
+      account: mpAccount(),
       OR: [
         { status: { in: ["authorized", "paused"] } },
         { status: "pending", createdAt: { gte: new Date(now.getTime() - 7 * 86_400_000) } },

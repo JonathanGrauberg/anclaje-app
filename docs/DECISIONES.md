@@ -564,7 +564,9 @@ salvo que se indique lo contrario.
   la suscripción es de un plan nuestro y de una profesional que existe. El estado se trae siempre
   de la API de MP (`/api/mercadopago/webhook`, con firma `x-signature` verificada si hay
   `MP_WEBHOOK_SECRET`); el aviso solo dispara la consulta, así que no se puede falsificar un pago.
-  El débito automático no admite efectivo; un pago único por período (Checkout Pro) queda para
+  Planes y suscripciones guardan de qué cuenta de MP son (huella del token, `account`): solo
+  cuentan las de la cuenta configurada, así al pasar de prueba a producción lo de prueba queda como
+  historial. El débito automático no admite efectivo; un pago único por período (Checkout Pro) queda para
   después. Sin acceso (prueba vencida, pago pendiente, cancelado y ya pasó lo pagado) se bloquea
   **solo el panel**: `requireProfessional` manda a /plan y `professionalForAction` rechaza las
   acciones. Sus pacientes siguen usando la app, no se borra nada y desde /plan puede bajar las

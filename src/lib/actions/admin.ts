@@ -18,7 +18,7 @@ import {
 } from "@/lib/validation/admin";
 import { assessmentDocSchema } from "@/lib/validation/assessment";
 import { normalizeLicense } from "@/lib/licenses";
-import { syncPreapproval } from "@/lib/mercadopago";
+import { mpAccount, syncPreapproval } from "@/lib/mercadopago";
 import { fail, firstIssue, ok, safe } from "./result";
 
 // Administración. Todas verifican rol ADMIN en el servidor y quedan en el AuditLog.
@@ -319,12 +319,16 @@ export async function refreshSubscriptions(professionalId: string) {
   return safe(async () => {
     await adminForAction();
     const subs = await prisma.subscription.findMany({
-      where: { professionalId: String(professionalId), mpPreapprovalId: { not: null } },
+      where: {
+        professionalId: String(professionalId),
+        mpPreapprovalId: { not: null },
+        account: mpAccount(),
+      },
       orderBy: { createdAt: "desc" },
       take: 5,
       select: { mpPreapprovalId: true },
     });
-    if (subs.length === 0) return fail("No empezó ningún pago todavía.");
+    if (subs.length === 0) return fail("No empezó ningún pago con la cuenta de MP configurada.");
     const errors: string[] = [];
     for (const s of subs) {
       try {
