@@ -1044,3 +1044,20 @@ model Subscription {
 
   @@index([professionalId, createdAt])
 }
+
+/// Planes de suscripción creados en Mercado Pago (preapproval_plan). Se crean solos la primera vez
+/// que alguien elige esa combinación de plan, precio y días gratis; después se reusan.
+model MpPlan {
+  id        String   @id @default(cuid())
+  /// "mensual" | "semestral" | "anual"
+  plan      String
+  /// Lo que se cobra en cada débito, en pesos enteros.
+  amount    Int
+  /// Días sin cobro al empezar (lo que le queda de prueba o de un plan cancelado).
+  trialDays Int
+  mpPlanId  String   @unique
+  initPoint String
+  createdAt DateTime @default(now())
+
+  @@unique([plan, amount, trialDays])
+}

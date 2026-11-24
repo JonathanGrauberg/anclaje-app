@@ -2,9 +2,9 @@
 
 import { ExternalLink } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useId, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
-import { FieldError, Input, Label } from "@/components/ui/input";
+import { FieldError } from "@/components/ui/input";
 import { cancelSubscription, startSubscription } from "@/lib/actions/billing";
 import { cn } from "@/lib/utils";
 
@@ -19,16 +19,12 @@ export type PlanOption = {
 /** Elegir plan y pasar a pagar a Mercado Pago. */
 export function PlanPicker({
   plans,
-  email,
   firstChargeNote,
 }: {
   plans: PlanOption[];
-  email: string;
   firstChargeNote: string | null;
 }) {
-  const uid = useId();
   const [plan, setPlan] = useState("anual");
-  const [payerEmail, setPayerEmail] = useState(email);
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
 
@@ -39,7 +35,7 @@ export function PlanPicker({
         e.preventDefault();
         setError(null);
         start(async () => {
-          const res = await startSubscription({ plan, payerEmail });
+          const res = await startSubscription({ plan });
           if (!res.ok) return setError(res.error);
           window.location.href = res.data.url;
         });
@@ -83,29 +79,14 @@ export function PlanPicker({
         ))}
       </fieldset>
 
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor={`${uid}-mp`}>Email de tu cuenta de Mercado Pago</Label>
-        <Input
-          id={`${uid}-mp`}
-          type="email"
-          autoComplete="email"
-          required
-          value={payerEmail}
-          onChange={(e) => setPayerEmail(e.target.value)}
-          aria-describedby={`${uid}-mp-hint`}
-        />
-        <p id={`${uid}-mp-hint`} className="text-muted-foreground text-sm">
-          Si usás otro email en Mercado Pago, cambialo acá.
-        </p>
-      </div>
-
       {firstChargeNote && <p className="text-sm">{firstChargeNote}</p>}
       <FieldError>{error}</FieldError>
       <Button type="submit" size="lg" disabled={pending}>
         {pending ? "Abriendo Mercado Pago…" : "Pagar con Mercado Pago"} <ExternalLink />
       </Button>
       <p className="text-muted-foreground text-center text-xs">
-        El débito es automático en cada período. Podés cancelarlo cuando quieras desde acá.
+        En Mercado Pago elegís con qué pagar: tarjeta o dinero en cuenta. El débito es automático en
+        cada período y lo podés cancelar cuando quieras desde acá.
       </p>
     </form>
   );

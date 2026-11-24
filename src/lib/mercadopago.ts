@@ -4,8 +4,8 @@ import { billingState, joinedInLaunch, type BillingState, type PlanId } from "@/
 import { prisma } from "@/lib/db";
 import { FREE_UNTIL } from "@/lib/launch";
 
-// Suscripciones con Mercado Pago (preapproval "sin plan asociado", pago pendiente: la profesional
-// paga en la página de MP). Ver DECISIONES.md, "Suscripciones".
+// Suscripciones con Mercado Pago (preapproval "con plan asociado": la profesional paga en el
+// checkout del plan, como quiera, y MP nos avisa por webhook). Ver DECISIONES.md, "Suscripciones".
 // Variables: MP_ACCESS_TOKEN (de la app de MP; las de prueba empiezan con TEST-) y
 // MP_WEBHOOK_SECRET (clave secreta de las notificaciones). Sin MP_ACCESS_TOKEN no se cobra ni se
 // bloquea a nadie.
@@ -37,40 +37,59 @@ export type Preapproval = {
   id: string;
   status: string;
   external_reference?: string | null;
+  preapproval_plan_id?: string | null;
   init_point?: string;
   next_payment_date?: string | null;
   summarized?: { last_charged_date?: string | null } | null;
   auto_recurring?: { transaction_amount?: number } | null;
 };
 
-export function createPreapproval(input: {
-  professionalId: string;
+type PreapprovalPlan = { id: string; init_point: string };
+
+/**
+ * El plan de MP para esa combinación (lo crea la primera vez y lo guarda). Es el esquema "con plan
+ * asociado": la profesional paga en el checkout del plan, sin que le pidamos el email de su cuenta.
+ */
+export async function mpPlanFor(input: {
   plan: PlanId;
   label: string;
   months: number;
   amount: number;
-  payerEmail: string;
+  trialDays: number;
   backUrl: string;
-  startDate: Date | null;
 }) {
-  return mp<Preapproval>("/preapproval", {
+  const key = { plan: input.plan, amount: input.amount, trialDays: input.trialDays };
+  const found = await prisma.mpPlan.findUnique({ where: { plan_amount_trialDays: key } });
+  if (found) return found;
+  const created = await mp<PreapprovalPlan>("/preapproval_plan", {
     method: "POST",
     body: JSON.stringify({
       reason: `Anclaje · plan ${input.label}`,
-      external_reference: input.professionalId,
-      payer_email: input.payerEmail,
       back_url: input.backUrl,
-      status: "pending",
       auto_recurring: {
         frequency: input.months,
         frequency_type: "months",
         transaction_amount: input.amount,
         currency_id: "ARS",
         // Si todavía le quedan días de prueba (o de un plan cancelado), el primer débito es ahí.
-        ...(input.startDate ? { start_date: input.startDate.toISOString() } : {}),
+        ...(input.trialDays > 0
+          ? { free_trial: { frequency: input.trialDays, frequency_type: "days" } }
+          : {}),
       },
     }),
   });
+  return prisma.mpPlan.upsert({
+    where: { plan_amount_trialDays: key },
+    create: { ...key, mpPlanId: created.id, initPoint: created.init_point },
+    update: {},
+  });
+}
+
+/** Link al checkout del plan, marcado con la profesional (vuelve en external_reference). */
+export function planCheckoutUrl(initPoint: string, professionalId: string) {
+  const url = new URL(initPoint);
+  url.searchParams.set("external_reference", professionalId);
+  return url.toString();
 }
 
 export const getPreapproval = (id: string) =>
@@ -90,23 +109,46 @@ export const getAuthorizedPayment = (id: string) =>
 const toDate = (v: string | null | undefined) => (v ? new Date(v) : null);
 
 /**
- * Trae el estado de MP y lo copia a nuestra fila. Solo actualiza si la suscripción es nuestra
- * (la creamos nosotros y el external_reference coincide con la profesional). Devuelve la fila o null.
+ * Trae el estado de MP y lo copia a nuestra fila (la crea si es la primera vez que la vemos). Solo
+ * acepta suscripciones a planes nuestros y de una profesional que existe; si se pasa
+ * `professionalId`, además tiene que ser de ella. Devuelve la fila o null.
  */
 export async function syncPreapproval(id: string, professionalId?: string) {
   const row = await prisma.subscription.findUnique({ where: { mpPreapprovalId: id } });
-  if (!row || (professionalId && row.professionalId !== professionalId)) return null;
+  if (row && professionalId && row.professionalId !== professionalId) return null;
   const p = await getPreapproval(id);
-  if (p.external_reference !== row.professionalId) return null;
+  const owner = p.external_reference ?? null;
+  if (!owner || (row && owner !== row.professionalId)) return null;
+  if (professionalId && owner !== professionalId) return null;
+
   const status = p.status === "cancelled" ? "canceled" : p.status;
-  return prisma.subscription.update({
-    where: { id: row.id },
-    data: {
-      status,
-      nextPaymentAt: toDate(p.next_payment_date) ?? row.nextPaymentAt,
-      lastPaymentAt: toDate(p.summarized?.last_charged_date) ?? row.lastPaymentAt,
-      canceledAt: status === "canceled" ? (row.canceledAt ?? new Date()) : row.canceledAt,
+  const data = {
+    status,
+    nextPaymentAt: toDate(p.next_payment_date) ?? row?.nextPaymentAt ?? null,
+    lastPaymentAt: toDate(p.summarized?.last_charged_date) ?? row?.lastPaymentAt ?? null,
+    canceledAt: status === "canceled" ? (row?.canceledAt ?? new Date()) : (row?.canceledAt ?? null),
+  };
+  if (row) return prisma.subscription.update({ where: { id: row.id }, data });
+
+  const plan = p.preapproval_plan_id
+    ? await prisma.mpPlan.findUnique({ where: { mpPlanId: p.preapproval_plan_id } })
+    : null;
+  if (!plan) return null;
+  const pro = await prisma.professionalProfile.findUnique({
+    where: { id: owner },
+    select: { id: true },
+  });
+  if (!pro) return null;
+  return prisma.subscription.upsert({
+    where: { mpPreapprovalId: p.id },
+    create: {
+      professionalId: pro.id,
+      plan: plan.plan,
+      amount: plan.amount,
+      mpPreapprovalId: p.id,
+      ...data,
     },
+    update: data,
   });
 }
 

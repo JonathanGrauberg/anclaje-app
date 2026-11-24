@@ -24,7 +24,7 @@ const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
  * a donde se manda a quien tiene el panel bloqueado. Ver src/lib/billing.ts.
  */
 export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
-  const { user, professional } = await requireProfessionalAccount();
+  const { professional } = await requireProfessionalAccount();
   const sp = await searchParams;
 
   // Vuelta de Mercado Pago: se consulta el estado real a MP (no se confía en la URL).
@@ -35,8 +35,7 @@ export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
     );
   }
   const { state, enabled, access } = await getBilling(professional.id);
-  const sub = "sub" in state ? state.sub : null;
-  const waiting = sub?.status === "pending" && Boolean(returned);
+  const waiting = Boolean(returned) && state.kind !== "active";
 
   const plans = PLANS.map((p) => ({
     id: p.id,
@@ -107,7 +106,7 @@ export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
         )}
 
         {enabled && state.kind !== "free" && state.kind !== "active" && (
-          <PlanPicker plans={plans} email={user.email} firstChargeNote={firstChargeNote} />
+          <PlanPicker plans={plans} firstChargeNote={firstChargeNote} />
         )}
 
         {blocked && patients.length > 0 && (

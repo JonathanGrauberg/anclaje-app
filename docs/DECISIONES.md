@@ -554,14 +554,18 @@ salvo que se indique lo contrario.
   o la del pedido en el formulario si la cuenta se creó después) o tiene `freeForever` (lo marca el
   admin en la ficha de la profesional) no paga nunca. El resto tiene **14 días de prueba sin tarjeta**
   desde el alta; después, suscripción en Mercado Pago con los planes de `PLANS` (1, 6 o 12 meses,
-  débito del total del período). Se usa el "preapproval sin plan asociado" con pago pendiente: el
-  servidor crea la suscripción con `external_reference` = id de la profesional y la manda a pagar
-  a MP; si le quedan días de prueba (o de un plan cancelado) el primer débito se programa para ese
-  día (`start_date`), así no pierde días. El estado (`Subscription`) se trae siempre de la API de
-  MP: al volver a /plan y por webhook (`/api/mercadopago/webhook`, con firma `x-signature`
-  verificada si hay `MP_WEBHOOK_SECRET`); el aviso solo dispara la consulta, así que no se puede
-  falsificar un pago. Se pide el email de la cuenta de MP (por defecto el de Anclaje) porque MP lo
-  exige. Sin acceso (prueba vencida, pago pendiente, cancelado y ya pasó lo pagado) se bloquea
+  débito del total del período). Se usa el "preapproval **con plan asociado**" (como .budgets; el "sin plan" con pago pendiente
+  fallaba en las pruebas y obligaba a pedir el email de la cuenta de MP): por cada combinación de
+  plan, precio y días gratis se crea una vez un `preapproval_plan` (tabla `MpPlan`, se crea sola) y
+  la profesional va al checkout del plan con `external_reference` = su id. No se le pide ningún
+  email: paga en MP con tarjeta o dinero en cuenta. Si le quedan días de prueba (o de un plan
+  cancelado), el plan lleva esos días como `free_trial`, así no pierde días. La fila
+  `Subscription` se crea cuando MP avisa (webhook o vuelta a /plan con `preapproval_id`), y solo si
+  la suscripción es de un plan nuestro y de una profesional que existe. El estado se trae siempre
+  de la API de MP (`/api/mercadopago/webhook`, con firma `x-signature` verificada si hay
+  `MP_WEBHOOK_SECRET`); el aviso solo dispara la consulta, así que no se puede falsificar un pago.
+  El débito automático no admite efectivo; un pago único por período (Checkout Pro) queda para
+  después. Sin acceso (prueba vencida, pago pendiente, cancelado y ya pasó lo pagado) se bloquea
   **solo el panel**: `requireProfessional` manda a /plan y `professionalForAction` rechaza las
   acciones. Sus pacientes siguen usando la app, no se borra nada y desde /plan puede bajar las
   historias clínicas. Si cancela, usa el panel hasta el próximo débito. El admin no ve montos de lo
