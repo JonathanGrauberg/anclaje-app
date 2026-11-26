@@ -216,3 +216,67 @@
     animation: none !important;
   }
 }
+
+/* ─── Accesibilidad (/accesibilidad) ───────────────────────────────────────────────
+   Solo se activa si la persona lo elige: atributos data-* en <html> (ver src/lib/a11y.ts).
+   Sin ninguno, nada de esto aplica. */
+
+/* Letra más grande: todo está en rem, así que escala la app entera. */
+html[data-text="lg"] {
+  font-size: 112.5%;
+}
+html[data-text="xl"] {
+  font-size: 125%;
+}
+
+/* Letra más fácil de leer (Atkinson Hyperlegible) con más aire entre letras y renglones. */
+html[data-font="readable"] body {
+  font-family: var(--font-readable), var(--font-inter), system-ui, sans-serif;
+  letter-spacing: 0.02em;
+  word-spacing: 0.08em;
+  line-height: 1.65;
+}
+
+/* Más contraste: texto más oscuro, bordes visibles y foco grueso. */
+:root[data-contrast="high"],
+:root[data-contrast="high"] [data-theme] {
+  --foreground: #000000;
+  --card-foreground: #000000;
+  --muted-foreground: #34313a;
+  --border: #77727f;
+  --input: #5f5a67;
+  --ring: #1d3f37;
+  --primary: #2d5248;
+}
+:root[data-contrast="high"][data-mode="dark"],
+:root[data-contrast="high"][data-mode="dark"] [data-theme] {
+  --background: #000000;
+  --card: #111015;
+  --foreground: #ffffff;
+  --card-foreground: #ffffff;
+  --muted-foreground: #dcd8e3;
+  --border: #a7a2b2;
+  --input: #bdb8c7;
+  --ring: #b9ecdd;
+  --primary: #a9e0d0;
+}
+:root[data-contrast="high"] :focus-visible {
+  outline-width: 4px;
+}
+
+/* Subrayar los enlaces del texto (los botones con forma de pastilla quedan igual). */
+html[data-links="underline"] main a:not([class*="rounded"]),
+html[data-contrast="high"] main a:not([class*="rounded"]) {
+  text-decoration-line: underline;
+  text-underline-offset: 3px;
+}
+
+/* Sin animaciones (además de lo que ya hace prefers-reduced-motion del sistema). */
+html[data-motion="reduce"] *,
+html[data-motion="reduce"] *::before,
+html[data-motion="reduce"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}

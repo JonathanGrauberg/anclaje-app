@@ -12,6 +12,11 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <p className="text-muted-foreground mt-10 text-center text-xs leading-relaxed">
           Esta app no es un servicio de urgencias. Si estás en peligro ahora, llamá al 911.
         </p>
+        <p className="mt-3 text-center text-xs">
+          <a href="/accesibilidad" className="text-primary underline underline-offset-2">
+            Accesibilidad: letra más grande, más contraste y más
+          </a>
+        </p>
       </div>
     </main>
   );

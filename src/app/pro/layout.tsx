@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { A11yLink } from "@/components/a11y-link";
 import { ColorModeToggle } from "@/components/color-mode-toggle";
 import { InstallAppBanner } from "@/components/install-app-banner";
 import { Logo } from "@/components/logo";
@@ -33,6 +34,7 @@ export default async function ProfessionalLayout({ children }: LayoutProps<"/pro
             <Logo withText className="nuevo:text-white" />
           </Link>
           <div className="nuevo:[&_button]:text-white/80 nuevo:[&_button:hover]:bg-white/10 nuevo:[&_button:hover]:text-white flex items-center gap-1 md:hidden">
+            <A11yLink className="nuevo:text-white/80 nuevo:hover:bg-white/10 nuevo:hover:text-white" />
             <ColorModeToggle className="nuevo:text-white/80 nuevo:hover:bg-white/10 nuevo:hover:text-white" />
             <SignOutButton />
           </div>
@@ -43,6 +45,7 @@ export default async function ProfessionalLayout({ children }: LayoutProps<"/pro
           <div className="mt-1 flex items-center gap-1">
             <SignOutButton />
             <ColorModeToggle className="nuevo:text-white/80 nuevo:hover:bg-white/10 nuevo:hover:text-white" />
+            <A11yLink className="nuevo:text-white/80 nuevo:hover:bg-white/10 nuevo:hover:text-white" />
           </div>
         </div>
       </aside>

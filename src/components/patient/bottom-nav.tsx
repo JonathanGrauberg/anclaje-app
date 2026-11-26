@@ -1,7 +1,7 @@
 "use client";
 
 import { BookHeart, CalendarDays, House, Settings } from "lucide-react";
-import { motion, MotionConfig } from "motion/react";
+import { motion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -35,7 +35,8 @@ export function BottomNav() {
   const notchY = BUBBLE_TOP + BUBBLE / 2;
 
   return (
-    <MotionConfig reducedMotion="user">
+    // El reducedMotion lo pone A11yMotion (layout raíz): sistema o lo elegido en /accesibilidad.
+    <>
       <nav
         aria-label="Secciones"
         className="pointer-events-none fixed inset-x-0 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-30 flex justify-center"
@@ -101,6 +102,6 @@ export function BottomNav() {
           </ul>
         </div>
       </nav>
-    </MotionConfig>
+    </>
   );
 }

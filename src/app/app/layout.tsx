@@ -1,5 +1,6 @@
 import { Settings } from "lucide-react";
 import Link from "next/link";
+import { A11yLink } from "@/components/a11y-link";
 import { ColorModeToggle } from "@/components/color-mode-toggle";
 import { InstallAppBanner } from "@/components/install-app-banner";
 import { Logo } from "@/components/logo";
@@ -44,6 +45,7 @@ export default async function PatientLayout({ children }: LayoutProps<"/app">) {
             <Logo withText />
           </Link>
           <div className="flex items-center gap-1">
+            <A11yLink className="size-10" />
             <ColorModeToggle className="size-10" />
             <Link
               href="/app/ajustes"

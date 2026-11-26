@@ -587,3 +587,12 @@ salvo que se indique lo contrario.
   "Cómo lo respondió" y como marcas por pregunta: "lenta" = al menos el triple de la mediana y
   20 s, con 4 preguntas medidas o más; "cambió varias veces" = 2 o más. Son datos orientativos,
   no afectan el puntaje y el paciente no los ve. Sin límite de tiempo por ahora.
+
+- **Accesibilidad opcional (nov 2026):** página pública `/accesibilidad` (botón con el ícono de
+  accesibilidad al lado de la luna, en la app del paciente y en el panel; link en ingresar y
+  registrarse). Opciones: tamaño de letra (normal, grande 112,5 %, muy grande 125 %), más
+  contraste, letra más fácil de leer (Atkinson Hyperlegible, solo se descarga si se elige),
+  subrayar enlaces y sin animaciones (CSS + `MotionConfig` en el layout raíz). Igual que el modo
+  oscuro: se guarda en el navegador y se aplica con atributos `data-*` en `<html>` antes de
+  pintar. **Sin nada elegido la app se ve exactamente igual**: ninguna regla aplica. No hay modo
+  daltonismo aparte porque la rueda ya muestra el nombre de cada emoción además del color.

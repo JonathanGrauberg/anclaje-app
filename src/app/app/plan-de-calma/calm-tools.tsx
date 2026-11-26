@@ -1,7 +1,7 @@
 "use client";
 
 import { Pause, Play, RotateCcw } from "lucide-react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotionConfig } from "motion/react";
 import { useEffect, useReducer, useState } from "react";
 import { Button } from "@/components/ui/button";
 
@@ -21,7 +21,8 @@ export function BreathingExercise({
   title?: string;
   hint?: string | null;
 }) {
-  const reduced = useReducedMotion();
+  // Respeta el sistema y lo elegido en /accesibilidad (A11yMotion).
+  const reduced = useReducedMotionConfig();
   const [running, setRunning] = useState(false);
   const [{ phase, left, cycles }, tick] = useReducer(
     (s: BreathState, action: "tick" | "reset"): BreathState => {
