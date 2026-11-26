@@ -22,7 +22,10 @@ export async function POST(request: NextRequest) {
   const form = await request.formData().catch(() => null);
   const file = form?.get("file");
   const rawScope = form?.get("scope");
-  const scope = rawScope === "external" || rawScope === "files" ? rawScope : "resources";
+  const scope =
+    rawScope === "external" || rawScope === "files" || rawScope === "community"
+      ? rawScope
+      : "resources";
   if (!(file instanceof File))
     return NextResponse.json({ error: "Falta el archivo" }, { status: 400 });
   if (file.size > MAX_FILE_BYTES)

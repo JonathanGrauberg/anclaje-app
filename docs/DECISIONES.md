@@ -596,3 +596,14 @@ salvo que se indique lo contrario.
   oscuro: se guarda en el navegador y se aplica con atributos `data-*` en `<html>` antes de
   pintar. **Sin nada elegido la app se ve exactamente igual**: ninguna regla aplica. No hay modo
   daltonismo aparte porque la rueda ya muestra el nombre de cada emoción además del color.
+
+- **Comunidad, la biblioteca colaborativa (nov 2026):** en `/pro/comunidad` las profesionales
+  comparten material (link, PDF, imagen o texto, con fuente o cita, categoría y etiquetas). Queda
+  **en revisión** hasta que lo aprueba el admin en `/admin/comunidad` (más adelante, un rol de
+  comité: la revisión está en una sola acción, `reviewCommunityItem`). Para no publicarlo hay que
+  dejar un comentario, que ve la autora; a ella le llega un mail con el resultado y al equipo, uno
+  por cada aporte nuevo. Lo publicado lo ven todas las profesionales (no los pacientes) y cada una
+  lo puede **copiar a su Biblioteca** para asignarlo: el archivo se duplica, así borrar la copia no
+  borra el original. Al proponer se confirma que es material propio, de acceso abierto o un link a
+  la fuente, sin datos de pacientes: no se suben libros ni artículos pagos. No es contenido
+  clínico, por eso no se cifra. Los archivos van a R2 (`community/`), no a la base.

@@ -4,6 +4,7 @@ import {
   ClipboardList,
   Inbox,
   LayoutDashboard,
+  Library,
   LifeBuoy,
   ScrollText,
   Settings,
@@ -20,6 +21,7 @@ const nav = [
   { href: "/admin/interesados", label: "Interesados", icon: Inbox },
   { href: "/admin/lineas", label: "Líneas de ayuda", icon: LifeBuoy },
   { href: "/admin/plantillas", label: "Plantillas", icon: ClipboardList },
+  { href: "/admin/comunidad", label: "Comunidad", icon: Library },
   { href: "/admin/auditoria", label: "Auditoría", icon: ScrollText },
   { href: "/admin/ajustes", label: "Ajustes", icon: Settings },
 ];

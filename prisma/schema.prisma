@@ -262,6 +262,7 @@ model ProfessionalProfile {
   assignments     AssessmentAssignment[]
   externalResults ExternalResult[]
   patientFiles    PatientFile[]
+  communityItems  CommunityItem[]
   emotionOverride EmotionNodeOverride[]
   appointments    Appointment[]
   clinicalRecords ClinicalRecord[]
@@ -882,6 +883,40 @@ model PatientFile {
   createdAt      DateTime            @default(now())
 
   @@index([professionalId, patientId, createdAt])
+}
+
+/// Biblioteca colaborativa ("Comunidad"): material que proponen las profesionales y que se
+/// publica para todas recién cuando lo aprueba alguien con permiso de revisión (hoy, ADMIN).
+/// No es material clínico de pacientes: va en claro. Ver DECISIONES.md.
+enum CommunityStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model CommunityItem {
+  id          String              @id @default(cuid())
+  authorId    String
+  author      ProfessionalProfile @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  kind        ResourceKind
+  title       String
+  summary     String?
+  url         String?
+  storageKey  String?             @unique
+  bodyText    String?
+  /// Cita o fuente (autores, año, revista, DOI).
+  source      String?
+  category    String?
+  tags        String[]
+  status      CommunityStatus     @default(PENDING)
+  /// Comentario de quien revisó (se le muestra a la autora).
+  reviewNote  String?
+  reviewedAt  DateTime?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  @@index([status, createdAt])
+  @@index([authorId, createdAt])
 }
 
 // ─────────────────────────────────────────────────────────────

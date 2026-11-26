@@ -8,6 +8,7 @@ import { isValidKey, storage } from "@/lib/storage";
 // - profesional: recursos propios, y resultados externos y archivos de la ficha que cargó ella
 //   (con vínculo activo).
 // - paciente: recursos que le asignaron o que le adjuntaron en una devolución.
+// - Comunidad: cualquier profesional ve lo aprobado; la autora, lo suyo; el admin, todo.
 export async function GET(_req: NextRequest, ctx: RouteContext<"/api/files/[...key]">) {
   const key = (await ctx.params).key.join("/");
   const notFound = () => new NextResponse("No encontrado", { status: 404 });
@@ -19,7 +20,18 @@ export async function GET(_req: NextRequest, ctx: RouteContext<"/api/files/[...k
 
   let allowed = false;
   let patientId: string | null = null;
-  if (role === "PATIENT") {
+  if (key.startsWith("community/")) {
+    const item = await prisma.communityItem.findUnique({
+      where: { storageKey: key },
+      select: { status: true, author: { select: { userId: true } } },
+    });
+    const isPro = role === "PROFESSIONAL" || role === "ADMIN";
+    allowed =
+      !!item &&
+      (role === "ADMIN" ||
+        item.author.userId === session.user.id ||
+        (isPro && item.status === "APPROVED"));
+  } else if (role === "PATIENT") {
     const patient = await prisma.patientProfile.findUnique({
       where: { userId: session.user.id },
       select: { id: true },
