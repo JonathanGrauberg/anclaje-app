@@ -826,6 +826,9 @@ model AssessmentResponse {
   interpretation      String?
   criticalQuestionIds String[]
   reviewedAt          DateTime?
+  /// Veces que salió de la app (otra pestaña, otra app) mientras respondía, y cuánto tiempo.
+  awayCount           Int                   @default(0)
+  awaySeconds         Int                   @default(0)
 
   answers Answer[]
 
@@ -842,6 +845,10 @@ model Answer {
   optionIds   String[]
   textEnc     String?
   valueDate   DateTime?
+  /// Segundos con la pregunta en pantalla hasta responderla (acumulado, sin el tiempo afuera).
+  seconds     Int                @default(0)
+  /// Veces que cambió la respuesta después de la primera.
+  changes     Int                @default(0)
 
   @@unique([responseId, questionId])
 }

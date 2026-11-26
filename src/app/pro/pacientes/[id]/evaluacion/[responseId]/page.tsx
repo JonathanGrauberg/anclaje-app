@@ -1,4 +1,4 @@
-import { AlertTriangle, CheckCircle2 } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Clock } from "lucide-react";
 import { BackLink } from "@/components/back-link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -13,6 +13,7 @@ import { formatDate, formatDateTime } from "@/lib/dates";
 import { prisma } from "@/lib/db";
 import { findRange, scoredValue } from "@/lib/scoring";
 import { toScoringInput } from "@/lib/assessments/doc";
+import { formatDuration, timingSummary } from "@/lib/assessments/timing";
 import { requireProfessional } from "@/lib/session";
 import { patientName } from "@/lib/patients";
 
@@ -54,6 +55,27 @@ export default async function ResponseDetailPage({
   const subscales = (response.subscaleScores ?? []) as SubscaleScore[];
   const totalRange = findRange(doc.ranges, null, response.totalScore);
   const name = patientName(patient);
+  const timing = timingSummary(
+    response.answers.map((a) => ({
+      questionId: a.questionId,
+      seconds: a.seconds,
+      changes: a.changes,
+    })),
+  );
+  const elapsedSeconds = (response.completedAt!.getTime() - response.startedAt.getTime()) / 1000;
+  const timingLines = [
+    timing.activeSeconds !== null &&
+      `Respondiendo: ${formatDuration(timing.activeSeconds)}` +
+        (elapsedSeconds - timing.activeSeconds > 600
+          ? ` (entre que empezó y terminó pasaron ${formatDuration(elapsedSeconds)})`
+          : ""),
+    response.awayCount > 0 &&
+      `Salió de la app ${response.awayCount === 1 ? "1 vez" : `${response.awayCount} veces`} mientras respondía (${formatDuration(response.awaySeconds)} afuera)`,
+    timing.slow.size > 0 &&
+      `${timing.slow.size === 1 ? "1 pregunta le llevó" : `${timing.slow.size} preguntas le llevaron`} mucho más que el resto`,
+    timing.changed.size > 0 &&
+      `Cambió la respuesta varias veces en ${timing.changed.size === 1 ? "1 pregunta" : `${timing.changed.size} preguntas`}`,
+  ].filter(Boolean) as string[];
 
   return (
     <div className="flex max-w-3xl flex-col gap-5">
@@ -122,6 +144,25 @@ export default async function ResponseDetailPage({
         </div>
       </section>
 
+      {timingLines.length > 0 && (
+        <section
+          aria-labelledby="timing-title"
+          className="bg-card flex flex-col gap-2 rounded-2xl border p-5"
+        >
+          <h2 id="timing-title" className="flex items-center gap-2 font-semibold">
+            <Clock className="text-primary size-4" aria-hidden /> Cómo lo respondió
+          </h2>
+          <ul className="flex flex-col gap-1 text-sm">
+            {timingLines.map((l) => (
+              <li key={l}>{l}</li>
+            ))}
+          </ul>
+          <p className="text-muted-foreground text-xs">
+            Son datos orientativos: una pregunta lenta puede ser duda, malestar o una distracción.
+          </p>
+        </section>
+      )}
+
       <ol className="flex flex-col gap-2">
         {doc.questions.map((q, i) => {
           if (q.type === "INFO") {
@@ -167,6 +208,29 @@ export default async function ResponseDetailPage({
                 )}
                 {critical.has(q.key) && (
                   <Badge className="bg-danger-soft text-danger">Crítico</Badge>
+                )}
+                {a && a.seconds > 0 && (
+                  <Badge
+                    className={
+                      timing.slow.has(q.key)
+                        ? "bg-sun-soft tabular-nums"
+                        : "text-muted-foreground bg-transparent tabular-nums"
+                    }
+                  >
+                    {timing.slow.has(q.key) && "Lenta · "}
+                    {formatDuration(a.seconds)}
+                  </Badge>
+                )}
+                {a && a.changes > 0 && (
+                  <Badge
+                    className={
+                      timing.changed.has(q.key)
+                        ? "bg-sun-soft"
+                        : "text-muted-foreground bg-transparent"
+                    }
+                  >
+                    {a.changes === 1 ? "Cambió 1 vez" : `Cambió ${a.changes} veces`}
+                  </Badge>
                 )}
               </div>
             </li>

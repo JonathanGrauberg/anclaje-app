@@ -123,6 +123,8 @@ export type QuestionTypeValue = (typeof QUESTION_TYPES)[number];
 // Respuestas del paciente (guardado parcial, una por pregunta).
 export const answerSchema = z.object({
   responseId: z.string().min(1).max(40),
+  /** Segundos con la pregunta en pantalla desde el último guardado (lo mide el cliente). */
+  seconds: z.number().int().min(0).max(86_400).optional(),
   questionId: key,
   valueNumber: z.number().finite().nullable().optional(),
   optionIds: z.array(key).max(20).optional(),

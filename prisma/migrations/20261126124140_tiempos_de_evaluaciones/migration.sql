@@ -1,0 +1,7 @@
+-- AlterTable
+ALTER TABLE "Answer" ADD COLUMN     "changes" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "seconds" INTEGER NOT NULL DEFAULT 0;
+
+-- AlterTable
+ALTER TABLE "AssessmentResponse" ADD COLUMN     "awayCount" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "awaySeconds" INTEGER NOT NULL DEFAULT 0;

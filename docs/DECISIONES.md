@@ -578,3 +578,12 @@ salvo que se indique lo contrario.
   a la Biblioteca de la profesional y se le asigna (lo ve en la app); **solo para mí** queda en
   Historia → Archivos (`PatientFile`, título cifrado, solo lo ve su autora con vínculo activo, y
   cada vista se audita). Los archivos van a R2, no a la base.
+
+- **Tiempos en las evaluaciones (nov 2026):** mientras el paciente responde se registra cuánto
+  tiempo tuvo cada pregunta en pantalla (`Answer.seconds`, lo mide el cliente, tope de 30 min por
+  guardado y sin contar el tiempo afuera), cuántas veces cambió la respuesta (`Answer.changes`, lo
+  cuenta el servidor; los textos no) y cuántas veces salió de la app y por cuánto
+  (`AssessmentResponse.awayCount/awaySeconds`, con `visibilitychange`). La profesional lo ve en
+  "Cómo lo respondió" y como marcas por pregunta: "lenta" = al menos el triple de la mediana y
+  20 s, con 4 preguntas medidas o más; "cambió varias veces" = 2 o más. Son datos orientativos,
+  no afectan el puntaje y el paciente no los ve. Sin límite de tiempo por ahora.

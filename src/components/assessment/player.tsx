@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import { ArrowLeft, ArrowRight, Check, HeartHandshake } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { CrisisLineList } from "@/components/patient/help-button";
 import { Button } from "@/components/ui/button";
 import { FieldError, Input, Textarea } from "@/components/ui/input";
@@ -53,13 +53,21 @@ export function AssessmentPlayer({
   preview = false,
   onAnswer,
   onComplete,
+  onAway,
   exitHref = "/app/tareas",
 }: {
   doc: AssessmentDoc;
   initialAnswers?: PlayerAnswers;
   crisisLines?: CrisisLineDTO[];
   preview?: boolean;
-  onAnswer?: (questionId: string, answer: PlayerAnswer) => Promise<ActionRes<unknown>>;
+  /** `seconds`: tiempo con la pregunta en pantalla desde el último guardado (sin el tiempo afuera). */
+  onAnswer?: (
+    questionId: string,
+    answer: PlayerAnswer,
+    seconds: number,
+  ) => Promise<ActionRes<unknown>>;
+  /** Volvió después de salir de la app mientras respondía (otra pestaña u otra app). */
+  onAway?: (seconds: number) => void;
   onComplete?: () => Promise<ActionRes<CompleteResult>>;
   exitHref?: string;
 }) {
@@ -78,6 +86,40 @@ export function AssessmentPlayer({
   const [finishing, setFinishing] = useState(false);
   const [result, setResult] = useState<CompleteResult | null>(null);
   const timers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
+  // Tiempos: desde cuándo se cuenta en esta pantalla y segundos acumulados sin guardar.
+  const mark = useRef(0);
+  const pendingSeconds = useRef(new Map<string, number>());
+  const takeSeconds = (key: string) => {
+    const s = Math.round(pendingSeconds.current.get(key) ?? 0);
+    pendingSeconds.current.delete(key);
+    return s;
+  };
+
+  useEffect(() => {
+    mark.current = Date.now();
+  }, [index]);
+
+  // Salir de la app mientras responde: no cuenta como tiempo en la pregunta y se registra aparte.
+  const answering = index >= 0 && index < screens.length;
+  const awayHandler = useRef(onAway);
+  useEffect(() => {
+    awayHandler.current = onAway;
+  }, [onAway]);
+  useEffect(() => {
+    if (!answering) return;
+    let hiddenAt: number | null = null;
+    const onChange = () => {
+      if (document.visibilityState === "hidden") hiddenAt = Date.now();
+      else if (hiddenAt !== null) {
+        const away = Date.now() - hiddenAt;
+        mark.current += away;
+        hiddenAt = null;
+        if (away >= 1000) awayHandler.current?.(Math.round(away / 1000));
+      }
+    };
+    document.addEventListener("visibilitychange", onChange);
+    return () => document.removeEventListener("visibilitychange", onChange);
+  }, [answering]);
 
   const screen = index >= 0 && index < screens.length ? screens[index] : null;
   const canNext = !screen || screen.every((q) => !q.required || isAnswered(q, answers[q.key]));
@@ -86,8 +128,14 @@ export function AssessmentPlayer({
     setAnswers((prev) => ({ ...prev, [q.key]: a }));
     setError(null);
     if (!onAnswer) return;
+    const now = Date.now();
+    pendingSeconds.current.set(
+      q.key,
+      (pendingSeconds.current.get(q.key) ?? 0) + Math.max(0, now - mark.current) / 1000,
+    );
+    mark.current = now;
     const send = () =>
-      onAnswer(q.key, a).then((res) => {
+      onAnswer(q.key, a, takeSeconds(q.key)).then((res) => {
         if (!res.ok) setError(res.error);
       });
     clearTimeout(timers.current.get(q.key));
@@ -127,7 +175,7 @@ export function AssessmentPlayer({
       await Promise.all(
         Object.entries(answers)
           .filter(([key]) => timers.current.has(key))
-          .map(([key, a]) => onAnswer?.(key, a!)),
+          .map(([key, a]) => onAnswer?.(key, a!, takeSeconds(key))),
       );
       timers.current.clear();
       const res = await onComplete();

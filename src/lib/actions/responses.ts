@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { toScoringInput, type AnswerMap } from "@/lib/assessments/doc";
+import { MAX_SECONDS_PER_SAVE } from "@/lib/assessments/timing";
 import { getVersion, versionToDoc } from "@/lib/assessments/repo";
 import { encryptOptional } from "@/lib/crypto";
 import { prisma } from "@/lib/db";
@@ -96,9 +97,31 @@ export async function saveAnswer(input: AnswerInput) {
         break;
     }
 
+    // Tiempo y cambios: datos para la profesional, no afectan el puntaje.
+    const seconds = Math.min(a.seconds ?? 0, MAX_SECONDS_PER_SAVE);
+    const prev = await prisma.answer.findUnique({
+      where: { responseId_questionId: { responseId: response.id, questionId: q.id } },
+      select: { valueNumber: true, optionIds: true, valueDate: true, textEnc: true },
+    });
+    // Los textos se guardan mientras escribe: no cuentan como "cambió la respuesta".
+    const isText = q.type === "SHORT_TEXT" || q.type === "LONG_TEXT";
+    const changed =
+      !!prev &&
+      !isText &&
+      (prev.valueNumber !== valueNumber ||
+        prev.optionIds.slice().sort().join() !== optionIds.slice().sort().join() ||
+        (prev.valueDate?.getTime() ?? null) !== (valueDate?.getTime() ?? null));
+
     await prisma.answer.upsert({
       where: { responseId_questionId: { responseId: response.id, questionId: q.id } },
-      update: { valueNumber, optionIds, textEnc, valueDate },
+      update: {
+        valueNumber,
+        optionIds,
+        textEnc,
+        valueDate,
+        seconds: { increment: seconds },
+        ...(changed ? { changes: { increment: 1 } } : {}),
+      },
       create: {
         responseId: response.id,
         questionId: q.id,
@@ -106,7 +129,23 @@ export async function saveAnswer(input: AnswerInput) {
         optionIds,
         textEnc,
         valueDate,
+        seconds,
       },
+    });
+    return ok(undefined);
+  });
+}
+
+/** Volvió a la app después de salir mientras respondía: se suma la salida y su duración. */
+export async function trackAway(responseId: string, seconds: number) {
+  return safe(async () => {
+    const patient = await patientForContentAction();
+    const response = await ownOpenResponse(String(responseId), patient.id);
+    if (!response) return ok(undefined);
+    const s = Number.isFinite(seconds) ? Math.min(Math.max(Math.round(seconds), 0), 86_400) : 0;
+    await prisma.assessmentResponse.update({
+      where: { id: response.id },
+      data: { awayCount: { increment: 1 }, awaySeconds: { increment: s } },
     });
     return ok(undefined);
   });

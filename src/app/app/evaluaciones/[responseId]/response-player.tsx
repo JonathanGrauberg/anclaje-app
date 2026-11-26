@@ -1,7 +1,7 @@
 "use client";
 
 import { AssessmentPlayer, type PlayerAnswers } from "@/components/assessment/player";
-import { completeAssessment, saveAnswer } from "@/lib/actions/responses";
+import { completeAssessment, saveAnswer, trackAway } from "@/lib/actions/responses";
 import type { CrisisLineDTO } from "@/lib/queries/common";
 import type { AssessmentDoc } from "@/lib/validation/assessment";
 
@@ -21,7 +21,8 @@ export function ResponsePlayer({
       doc={doc}
       initialAnswers={initialAnswers}
       crisisLines={lines}
-      onAnswer={(questionId, a) => saveAnswer({ responseId, questionId, ...a })}
+      onAnswer={(questionId, a, seconds) => saveAnswer({ responseId, questionId, ...a, seconds })}
+      onAway={(seconds) => void trackAway(responseId, seconds)}
       onComplete={() => completeAssessment(responseId)}
     />
   );
