@@ -150,12 +150,22 @@ export function ResetPasswordButton({ userId, name }: { userId: string; name: st
   );
 }
 
-export function VerifyButton({ professionalId, name }: { professionalId: string; name: string }) {
+export function VerifyButton({
+  professionalId,
+  name,
+  compact = false,
+}: {
+  professionalId: string;
+  name: string;
+  /** Versión chica para la lista. */
+  compact?: boolean;
+}) {
   const [pending, start] = useTransition();
   return (
     <Button
       variant="soft"
       size="sm"
+      className={compact ? "h-7 px-2.5 text-xs [&_svg]:size-3.5" : undefined}
       disabled={pending}
       onClick={() => {
         if (!confirm(`¿Ya revisaste la matrícula de ${name} con su colegio?`)) return;
@@ -165,7 +175,8 @@ export function VerifyButton({ professionalId, name }: { professionalId: string;
         });
       }}
     >
-      <BadgeCheck aria-hidden /> {pending ? "Guardando…" : "Marcar verificada"}
+      <BadgeCheck aria-hidden />{" "}
+      {pending ? "Guardando…" : compact ? "Verificar" : "Marcar verificada"}
     </Button>
   );
 }

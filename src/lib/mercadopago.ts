@@ -179,12 +179,11 @@ export async function syncPreapproval(id: string, professionalId?: string) {
 }
 
 /** La suscripción que cuenta: la autorizada; si no, la que sigue paga hasta el débito; si no, la última. */
-export async function currentSubscription(professionalId: string, now = new Date()) {
-  const subs = await prisma.subscription.findMany({
-    where: { professionalId, account: mpAccount() },
-    orderBy: { createdAt: "desc" },
-    take: 10,
-  });
+/** La suscripción que manda: la activa, si no la cancelada que sigue vigente, si no la última. */
+function pickSubscription<T extends { status: string; nextPaymentAt: Date | null }>(
+  subs: T[],
+  now = new Date(),
+): T | null {
   return (
     subs.find((s) => s.status === "authorized") ??
     subs.find(
@@ -196,6 +195,71 @@ export async function currentSubscription(professionalId: string, now = new Date
     subs[0] ??
     null
   );
+}
+
+export async function currentSubscription(professionalId: string, now = new Date()) {
+  const subs = await prisma.subscription.findMany({
+    where: { professionalId, account: mpAccount() },
+    orderBy: { createdAt: "desc" },
+    take: 10,
+  });
+  return pickSubscription(subs, now);
+}
+
+/**
+ * Estado de cobro de muchas profesionales a la vez (para las listas del admin), con las mismas
+ * reglas que getBilling pero en tres consultas en total.
+ */
+export async function billingStates(
+  pros: {
+    id: string;
+    createdAt: Date;
+    freeForever: boolean;
+    billingTest: boolean;
+    accessBlocked: boolean;
+    email: string;
+    role: string;
+  }[],
+): Promise<Map<string, BillingState>> {
+  const now = new Date();
+  const ids = pros.map((p) => p.id);
+  const [subs, leads] = await Promise.all([
+    prisma.subscription.findMany({
+      where: { professionalId: { in: ids }, account: mpAccount() },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.lead.findMany({ select: { email: true, createdAt: true } }),
+  ]);
+  const launchLeads = new Set(
+    leads
+      .filter((l) => joinedInLaunch(l.createdAt, FREE_UNTIL))
+      .map((l) => l.email.trim().toLowerCase()),
+  );
+  const out = new Map<string, BillingState>();
+  for (const p of pros) {
+    if (p.role === "ADMIN") {
+      out.set(p.id, { kind: "free", access: true });
+      continue;
+    }
+    const state = billingState({
+      createdAt: p.createdAt,
+      freeForever: p.freeForever,
+      billingTest: p.billingTest,
+      accessBlocked: p.accessBlocked,
+      sub: pickSubscription(
+        subs.filter((s) => s.professionalId === p.id),
+        now,
+      ),
+      now,
+    });
+    // Igual que getBilling: pidió el acceso en el lanzamiento y la cuenta se creó después.
+    const lead =
+      !p.billingTest &&
+      (state.kind === "trial" || state.kind === "blocked") &&
+      launchLeads.has(p.email.trim().toLowerCase());
+    out.set(p.id, lead ? { kind: "free", access: true } : state);
+  }
+  return out;
 }
 
 /** Estado de cobro de una profesional (por request). Sin MP configurado, nadie queda bloqueado. */
