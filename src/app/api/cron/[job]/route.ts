@@ -10,6 +10,7 @@ import { digestEmail, summarizeDigest } from "@/lib/digest";
 import { appUrl, sendEmail } from "@/lib/email";
 import { pushConfigError, pushConfigured, sendPushToUser } from "@/lib/push";
 import { syncOpenSubscriptions } from "@/lib/mercadopago";
+import { purgeUnconfirmedRequests } from "@/lib/public-profile";
 import { getPatientsWithAttention } from "@/lib/queries/pro";
 import { isDigestDue, isReminderDue, reminderMessage } from "@/lib/reminders";
 
@@ -89,9 +90,15 @@ async function handle(req: Request, ctx: RouteContext<"/api/cron/[job]">) {
   if (job === "turnos") {
     const push = await sendAppointmentDayBeforePushes(now);
     const subscriptions = await syncOpenSubscriptions(now);
+    const requests = await purgeUnconfirmedRequests(now);
     if (!process.env.SMTP_URL)
-      return Response.json({ skipped: "mail sin configurar", push, subscriptions });
-    return Response.json({ ...(await sendAppointmentReminders(now)), push, subscriptions });
+      return Response.json({ skipped: "mail sin configurar", push, subscriptions, requests });
+    return Response.json({
+      ...(await sendAppointmentReminders(now)),
+      push,
+      subscriptions,
+      requests,
+    });
   }
   if (!NOTIFICATIONS_ENABLED) return Response.json({ skipped: "avisos apagados" });
   if (job === "recordatorios") {

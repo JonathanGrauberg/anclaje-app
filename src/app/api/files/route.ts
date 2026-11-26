@@ -23,7 +23,10 @@ export async function POST(request: NextRequest) {
   const file = form?.get("file");
   const rawScope = form?.get("scope");
   const scope =
-    rawScope === "external" || rawScope === "files" || rawScope === "community"
+    rawScope === "external" ||
+    rawScope === "files" ||
+    rawScope === "community" ||
+    rawScope === "avatars"
       ? rawScope
       : "resources";
   if (!(file instanceof File))
@@ -35,6 +38,13 @@ export async function POST(request: NextRequest) {
   const type = sniffType(data);
   if (!type)
     return NextResponse.json({ error: "Solo se aceptan PDF, PNG, JPG o WEBP" }, { status: 415 });
+
+  // La foto de perfil es pública: solo imagen y liviana (el navegador ya la achica).
+  if (scope === "avatars" && (type === "application/pdf" || data.length > 2 * 1024 * 1024))
+    return NextResponse.json(
+      { error: "La foto tiene que ser una imagen de hasta 2 MB" },
+      { status: 415 },
+    );
 
   const key = newStorageKey(scope, type);
   await storage().put(key, data, type);

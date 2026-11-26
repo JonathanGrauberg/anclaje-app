@@ -620,3 +620,21 @@ salvo que se indique lo contrario.
   historias clínicas desde /plan. No se le ofrece pagar.
 - No hay plan "free" limitado: 14 días de prueba con todo y después pago. Un free con todo hace que
   nadie pase al pago, y uno recortado no alcanza para conocer la app.
+
+## Perfil público, foto y solicitudes de turno (2026-11-26)
+
+- Cada profesional puede armar su página pública en **Mi perfil** (`/profesionales/{slug}`): foto,
+  título, presentación, enfoques, a quiénes atiende, idiomas, formación (línea de tiempo), ciudad,
+  dirección y teléfono opcionales, cobertura. Apagado por defecto: lo activa ella.
+- Se ve solo si está activado, la matrícula está **verificada** y tiene acceso al panel (si no, le
+  llegarían pedidos que no puede ver). Nunca se muestra nada de sus pacientes, tests ni registros.
+  Es información que ella elige publicar, así que no va cifrada; entra al sitemap para Google.
+- La foto se achica en el navegador (cuadrada, 480 px, WEBP) y se guarda en R2 (`avatars/`). Es
+  pública solo si el perfil está activo; si no, la ve únicamente ella.
+- "Pedir turno" manda una **solicitud**, no reserva horario. Quien la manda confirma su mail con un
+  link (vence en 3 días; las no confirmadas se borran en el cron diario de `turnos`). Recién ahí le
+  llega a la profesional un mail sin el nombre de la persona, y aparece en **Solicitudes** con un
+  contador en el menú. Datos de contacto y mensaje cifrados. Desde ahí: "Agregar como paciente"
+  (crea la ficha sin la app con nombre y contacto), "Ya la contacté" o "Borrar".
+- Anti-spam: campo trampa, límite por IP, por mail y por profesional, y la confirmación del mail.
+- El formulario no pide motivo de consulta: no hace falta para pedir turno y es un dato sensible.

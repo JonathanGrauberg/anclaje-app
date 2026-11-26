@@ -5,6 +5,8 @@ import {
   CalendarDays,
   ClipboardList,
   CreditCard,
+  Globe,
+  Inbox,
   LayoutDashboard,
   Library,
   MessageSquareQuote,
@@ -23,6 +25,8 @@ const nav = [
   { href: "/pro/agenda", label: "Agenda", icon: CalendarDays },
   { href: "/pro/honorarios", label: "Honorarios", icon: Wallet },
   { href: "/pro/invitaciones", label: "Agregar paciente", icon: UserPlus },
+  { href: "/pro/solicitudes", label: "Solicitudes", icon: Inbox },
+  { href: "/pro/perfil-publico", label: "Mi perfil", icon: Globe },
   { href: "/pro/respuestas-rapidas", label: "Respuestas rápidas", icon: MessageSquareQuote },
   { href: "/pro/biblioteca", label: "Biblioteca", icon: BookOpen },
   { href: "/pro/comunidad", label: "Comunidad", icon: Library },
@@ -31,7 +35,14 @@ const nav = [
   { href: "/plan", label: "Mi plan", icon: CreditCard },
 ] as { href: string | null; label: string; icon: LucideIcon }[];
 
-export function ProNav({ isAdmin = false }: { isAdmin?: boolean }) {
+export function ProNav({
+  isAdmin = false,
+  newRequests = 0,
+}: {
+  isAdmin?: boolean;
+  /** Solicitudes de turno sin atender: se muestra el número en el menú. */
+  newRequests?: number;
+}) {
   const pathname = usePathname();
   const items = isAdmin
     ? [...nav, { href: "/admin", label: "Administración", icon: ShieldCheck }]
@@ -69,6 +80,12 @@ export function ProNav({ isAdmin = false }: { isAdmin?: boolean }) {
             )}
           >
             <Icon className="size-4" aria-hidden /> {label}
+            {href === "/pro/solicitudes" && newRequests > 0 && (
+              <span className="bg-sun text-foreground ml-auto rounded-full px-2 text-xs font-semibold tabular-nums">
+                {newRequests}
+                <span className="sr-only"> nuevas</span>
+              </span>
+            )}
           </Link>
         ),
       )}

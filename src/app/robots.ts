@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/site";
 
-// Solo la landing es pública. Lo demás es la app (con datos privados): que los buscadores ni la
+// Solo la landing y los perfiles públicos (/profesionales/…) son para buscadores. Lo demás es la app (con datos privados): que los buscadores ni la
 // recorran. Igual, esas pantallas también llevan noindex por si alguien enlaza una.
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -18,6 +18,7 @@ export default function robots(): MetadataRoute.Robots {
         "/alta-profesional",
         "/diseno",
         "/offline",
+        "/turno",
       ]
         .flatMap((p) => [`${p}$`, `${p}/`])
         .concat("/api/"),

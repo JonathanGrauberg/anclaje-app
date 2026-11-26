@@ -246,9 +246,41 @@ model ProfessionalProfile {
   billingTest          Boolean         @default(false)
   /// Sin acceso al panel, puesto a mano por el admin (gana sobre todo lo demás; no borra nada).
   accessBlocked        Boolean         @default(false)
+
+  // Perfil público (opcional, lo activa ella). Es información que ELLA elige publicar: no va
+  // cifrada porque se muestra a cualquiera. Nunca incluye nada de sus pacientes.
+  publicProfile        Boolean         @default(false)
+  /// Dirección del perfil: /profesionales/{slug}.
+  slug                 String?         @unique
+  /// Foto en R2 (avatars/…), pública.
+  photoKey             String?
+  /// Una línea: "Psicóloga clínica · Adultos y adolescentes".
+  headline             String?
+  bio                  String?
+  approaches           String[]        @default([])
+  /// A quiénes atiende: "Adultos", "Adolescentes", "Parejas"…
+  audiences            String[]        @default([])
+  languages            String[]        @default([])
+  /// Formación: [{ title, institution?, year? }], en el orden que ella elija.
+  education            Json            @default("[]")
+  city                 String?
+  /// Código de provincia (mismo formato que licenseJurisdiction).
+  province             String?
+  address              String?
+  publicPhone          String?
+  /// Mostrar el teléfono como botón de WhatsApp.
+  whatsapp             Boolean         @default(false)
+  inPerson             Boolean         @default(true)
+  online               Boolean         @default(true)
+  /// Obras sociales o "Particular", en texto libre.
+  coverage             String?
+  /// Mostrar el botón "Pedir turno".
+  acceptsRequests      Boolean         @default(true)
+
   createdAt            DateTime        @default(now())
   updatedAt            DateTime        @updatedAt
 
+  appointmentRequests AppointmentRequest[]
   subscriptions   Subscription[]
   links           CareLink[]
   servicePrices   ServicePrice[]
@@ -1128,4 +1160,40 @@ model MpPlan {
   createdAt DateTime @default(now())
 
   @@unique([account, plan, amount, trialDays])
+}
+
+// ─────────────────────────────────────────────────────────────
+// Solicitudes de turno desde el perfil público
+// ─────────────────────────────────────────────────────────────
+
+/// UNCONFIRMED: falta que quien la mandó confirme su mail (no le llega a la profesional).
+enum AppointmentRequestStatus {
+  UNCONFIRMED
+  NEW
+  CONTACTED
+  ACCEPTED
+}
+
+/// Alguien que vio el perfil público pidió turno. Los datos de contacto van cifrados: que una
+/// persona busque psicóloga ya es un dato sensible.
+model AppointmentRequest {
+  id             String                   @id @default(cuid())
+  professionalId String
+  professional   ProfessionalProfile      @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  nameEnc        String
+  emailEnc       String
+  phoneEnc       String?
+  messageEnc     String?
+  /// IN_PERSON, ONLINE o null (le da igual).
+  modality       AppointmentModality?
+  status         AppointmentRequestStatus @default(UNCONFIRMED)
+  /// sha256 del token del link de confirmación (el token en sí solo viaja en el mail).
+  tokenHash      String                   @unique
+  confirmedAt    DateTime?
+  /// Si la aceptó como paciente, la ficha que se creó.
+  patientId      String?
+  createdAt      DateTime                 @default(now())
+  updatedAt      DateTime                 @updatedAt
+
+  @@index([professionalId, status])
 }

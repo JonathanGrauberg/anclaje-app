@@ -5,6 +5,7 @@ import { InstallAppBanner } from "@/components/install-app-banner";
 import { Logo } from "@/components/logo";
 import { SignOutButton } from "@/components/sign-out-button";
 import { formatDate } from "@/lib/dates";
+import { prisma } from "@/lib/db";
 import { getBilling } from "@/lib/mercadopago";
 import { requireProfessional } from "@/lib/session";
 import { getUiTheme } from "@/lib/ui-theme";
@@ -14,7 +15,10 @@ import { ProNav } from "./pro-nav";
 export default async function ProfessionalLayout({ children }: LayoutProps<"/pro">) {
   const [{ user, professional }, theme] = await Promise.all([requireProfessional(), getUiTheme()]);
   const isNew = theme === "nuevo";
-  const { state, enabled } = await getBilling(professional.id);
+  const [{ state, enabled }, newRequests] = await Promise.all([
+    getBilling(professional.id),
+    prisma.appointmentRequest.count({ where: { professionalId: professional.id, status: "NEW" } }),
+  ]);
   // Aviso de la prueba: solo si ya se cobra y no eligió plan todavía.
   const trial =
     enabled && state.kind === "trial" && state.sub?.status !== "authorized" ? state : null;
@@ -39,7 +43,7 @@ export default async function ProfessionalLayout({ children }: LayoutProps<"/pro
             <SignOutButton />
           </div>
         </div>
-        <ProNav isAdmin={user.role === "ADMIN"} />
+        <ProNav isAdmin={user.role === "ADMIN"} newRequests={newRequests} />
         <div className="nuevo:[&_button]:text-white/80 nuevo:[&_button:hover]:bg-white/10 nuevo:[&_button:hover]:text-white hidden px-5 py-6 md:block">
           <p className="text-sm font-medium">{professional.displayName}</p>
           <div className="mt-1 flex items-center gap-1">

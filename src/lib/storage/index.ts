@@ -53,7 +53,7 @@ const KEY_RE = /^[a-z]+\/[a-f0-9]{32}\.(pdf|png|jpg|webp)$/;
 export const isValidKey = (key: string) => KEY_RE.test(key);
 
 export function newStorageKey(
-  scope: "resources" | "external" | "files" | "community",
+  scope: "resources" | "external" | "files" | "community" | "avatars",
   type: AllowedType,
 ) {
   return `${scope}/${randomBytes(16).toString("hex")}.${ALLOWED_TYPES[type]}`;
