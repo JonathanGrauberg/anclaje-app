@@ -123,6 +123,27 @@ describe("billingState", () => {
     });
     expect(s).toMatchObject({ kind: "blocked", access: false });
   });
+
+  it("sin acceso a mano gana sobre el gratis y sobre un plan activo", () => {
+    const base = { createdAt: dec(5), now: dec(30), until: UNTIL, accessBlocked: true };
+    expect(billingState({ ...base, freeForever: true, sub: null })).toEqual({
+      kind: "suspended",
+      access: false,
+    });
+    expect(
+      billingState({
+        ...base,
+        freeForever: false,
+        sub: {
+          plan: "mensual",
+          amount: 20000,
+          status: "authorized",
+          nextPaymentAt: null,
+          createdAt: dec(6),
+        },
+      }),
+    ).toMatchObject({ kind: "suspended" });
+  });
 });
 
 describe("firma del webhook de Mercado Pago", () => {

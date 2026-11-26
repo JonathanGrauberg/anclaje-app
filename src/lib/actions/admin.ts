@@ -11,7 +11,9 @@ import { appUrl, contactEmail, sendEmailQuietly } from "@/lib/email";
 import { accountToProfessionalEmail, welcomeProfessionalEmail } from "@/lib/emails";
 import { adminForAction } from "@/lib/session";
 import {
+  ACCESS_MODES,
   createProfessionalSchema,
+  type AccessMode,
   crisisLineSchema,
   type CreateProfessionalInput,
   type CrisisLineInput,
@@ -269,13 +271,23 @@ export async function deleteTemplate(id: string) {
   });
 }
 
-/** Gratis para siempre a mano (por ejemplo, alguien que se anotó fuera del formulario a tiempo). */
-export async function setFreeForever(professionalId: string, value: boolean) {
+/**
+ * Acceso de una profesional, a mano: "según su pago" (lo normal), VIP/cortesía (gratis con todo),
+ * prueba de cobros (sin gratis ni días de prueba) o sin acceso al panel. Son excluyentes.
+ */
+export async function setAccessMode(professionalId: string, mode: AccessMode) {
   return safe(async () => {
     const admin = await adminForAction();
+    const parsed = z.enum(ACCESS_MODES).safeParse(mode);
+    if (!parsed.success) return fail("Opción inválida");
+    const m = parsed.data;
     const updated = await prisma.professionalProfile.updateMany({
-      where: { id: String(professionalId) },
-      data: { freeForever: Boolean(value) },
+      where: { id: String(professionalId), user: { role: "PROFESSIONAL" } },
+      data: {
+        freeForever: m === "VIP",
+        billingTest: m === "BILLING_TEST",
+        accessBlocked: m === "BLOCKED",
+      },
     });
     if (updated.count === 0) return fail("No encontramos esa profesional");
     await audit({
@@ -283,30 +295,10 @@ export async function setFreeForever(professionalId: string, value: boolean) {
       action: "update",
       entityType: "Professional",
       entityId: String(professionalId),
-      meta: { field: "freeForever", value: Boolean(value) },
+      meta: { field: "accessMode", value: m },
     });
     revalidatePath(`/admin/profesionales/${professionalId}`);
-    return ok(undefined);
-  });
-}
-
-/** Cuenta para probar el cobro con Mercado Pago: sin gratis del lanzamiento ni días de prueba. */
-export async function setBillingTest(professionalId: string, value: boolean) {
-  return safe(async () => {
-    const admin = await adminForAction();
-    const updated = await prisma.professionalProfile.updateMany({
-      where: { id: String(professionalId) },
-      data: { billingTest: Boolean(value) },
-    });
-    if (updated.count === 0) return fail("No encontramos esa profesional");
-    await audit({
-      actorId: admin.id,
-      action: "update",
-      entityType: "Professional",
-      entityId: String(professionalId),
-      meta: { field: "billingTest", value: Boolean(value) },
-    });
-    revalidatePath(`/admin/profesionales/${professionalId}`);
+    revalidatePath("/admin/profesionales");
     return ok(undefined);
   });
 }

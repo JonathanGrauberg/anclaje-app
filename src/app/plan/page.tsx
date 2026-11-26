@@ -105,9 +105,12 @@ export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
           </Card>
         )}
 
-        {enabled && state.kind !== "free" && state.kind !== "active" && (
-          <PlanPicker plans={plans} firstChargeNote={firstChargeNote} />
-        )}
+        {enabled &&
+          state.kind !== "free" &&
+          state.kind !== "active" &&
+          state.kind !== "suspended" && (
+            <PlanPicker plans={plans} firstChargeNote={firstChargeNote} />
+          )}
 
         {blocked && patients.length > 0 && (
           <section aria-labelledby="hc-title" className="flex flex-col gap-3">
@@ -188,6 +191,16 @@ function Status({ state, enabled, name }: { state: BillingState; enabled: boolea
             app.
           </strong>{" "}
           Para volver a usar el panel, elegí tu plan.
+        </p>
+      );
+    case "suspended":
+      return (
+        <p className={p}>
+          Tu acceso al panel está pausado.{" "}
+          <strong className="text-foreground">
+            Tus datos y los de tus pacientes siguen acá, y ellos siguen usando la app.
+          </strong>{" "}
+          Si creés que es un error, escribinos.
         </p>
       );
   }

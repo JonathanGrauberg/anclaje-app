@@ -209,6 +209,7 @@ export const getBilling = cache(
         createdAt: true,
         freeForever: true,
         billingTest: true,
+        accessBlocked: true,
         user: { select: { email: true, role: true } },
       },
     });
@@ -220,6 +221,7 @@ export const getBilling = cache(
       createdAt: pro.createdAt,
       freeForever: pro.freeForever,
       billingTest: pro.billingTest,
+      accessBlocked: pro.accessBlocked,
       sub,
     });
     // Pidió el acceso por el formulario dentro del lanzamiento pero la cuenta se creó después.
@@ -232,7 +234,9 @@ export const getBilling = cache(
       if (lead && joinedInLaunch(lead.createdAt, FREE_UNTIL))
         state = { kind: "free", access: true };
     }
-    return { state, enabled, access: state.access || !enabled };
+    // Sin MP configurado nadie queda bloqueado por pago, pero el corte manual vale igual.
+    const access = state.kind === "suspended" ? false : state.access || !enabled;
+    return { state, enabled, access };
   },
 );
 

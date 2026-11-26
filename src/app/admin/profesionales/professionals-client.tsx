@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowRightLeft, BadgeCheck, CreditCard, Gift, KeyRound, RefreshCw } from "lucide-react";
+import { ArrowRightLeft, BadgeCheck, KeyRound, RefreshCw } from "lucide-react";
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -11,11 +11,15 @@ import {
   createProfessional,
   resetProfessionalPassword,
   refreshSubscriptions,
-  setBillingTest,
-  setFreeForever,
+  setAccessMode,
   verifyProfessional,
 } from "@/lib/actions/admin";
-import { createProfessionalSchema, type CreateProfessionalInput } from "@/lib/validation/admin";
+import {
+  ACCESS_MODES,
+  createProfessionalSchema,
+  type AccessMode,
+  type CreateProfessionalInput,
+} from "@/lib/validation/admin";
 import { JURISDICTIONS } from "@/lib/licenses";
 import { TempPassword } from "../temp-password";
 
@@ -166,39 +170,6 @@ export function VerifyButton({ professionalId, name }: { professionalId: string;
   );
 }
 
-/** Marca (o saca) "gratis para siempre" a mano. */
-export function FreeForeverButton({
-  professionalId,
-  name,
-  value,
-}: {
-  professionalId: string;
-  name: string;
-  value: boolean;
-}) {
-  const [pending, start] = useTransition();
-  return (
-    <Button
-      variant="outline"
-      size="sm"
-      disabled={pending}
-      onClick={() => {
-        const q = value
-          ? `¿Sacarle a ${name} el "gratis para siempre"? Va a tener que elegir un plan.`
-          : `¿Darle a ${name} Anclaje gratis para siempre?`;
-        if (!confirm(q)) return;
-        start(async () => {
-          const res = await setFreeForever(professionalId, !value);
-          if (!res.ok) alert(res.error);
-        });
-      }}
-    >
-      <Gift aria-hidden />{" "}
-      {pending ? "Guardando…" : value ? "Sacar gratis para siempre" : "Gratis para siempre"}
-    </Button>
-  );
-}
-
 /** Vuelve a pedirle a Mercado Pago el estado de sus suscripciones. */
 export function RefreshSubscriptionsButton({ professionalId }: { professionalId: string }) {
   const [pending, start] = useTransition();
@@ -228,36 +199,71 @@ export function RefreshSubscriptionsButton({ professionalId }: { professionalId:
   );
 }
 
-/** Marca la cuenta para probar el cobro con Mercado Pago (sin gratis ni días de prueba). */
-export function BillingTestButton({
+const ACCESS_LABEL: Record<AccessMode, { label: string; hint: string }> = {
+  AUTO: {
+    label: "Según su pago",
+    hint: "Lo normal: gratis si se sumó en el lanzamiento; si no, 14 días de prueba y después su plan.",
+  },
+  VIP: {
+    label: "VIP / cortesía",
+    hint: "Gratis para siempre, con todo. Para conocidas o testers.",
+  },
+  BILLING_TEST: {
+    label: "Prueba de cobros",
+    hint: "Sin gratis ni días de prueba: el panel se bloquea hasta que pague. Solo cuentas tuyas.",
+  },
+  BLOCKED: {
+    label: "Sin acceso",
+    hint: "No entra al panel. No se borra nada y sus pacientes siguen usando la app.",
+  },
+};
+
+/** Acceso al panel elegido a mano por el admin (excluyente). */
+export function AccessSelect({
   professionalId,
   name,
   value,
 }: {
   professionalId: string;
   name: string;
-  value: boolean;
+  value: AccessMode;
 }) {
   const [pending, start] = useTransition();
+  const [error, setError] = useState<string | null>(null);
   return (
-    <Button
-      variant="ghost"
-      size="sm"
-      disabled={pending}
-      onClick={() => {
-        const q = value
-          ? `¿Sacar a ${name} del modo prueba de cobros?`
-          : `¿Usar la cuenta de ${name} para probar el cobro? Pierde el gratis y los días de prueba: el panel queda bloqueado hasta que pague. Usalo solo con una cuenta tuya de prueba.`;
-        if (!confirm(q)) return;
-        start(async () => {
-          const res = await setBillingTest(professionalId, !value);
-          if (!res.ok) alert(res.error);
-        });
-      }}
-    >
-      <CreditCard aria-hidden />{" "}
-      {pending ? "Guardando…" : value ? "Quitar prueba de cobros" : "Probar cobros con esta cuenta"}
-    </Button>
+    <div className="flex flex-col gap-1">
+      <label className="flex items-center gap-2 text-sm">
+        <span className="font-medium">Acceso</span>
+        <select
+          value={value}
+          disabled={pending}
+          onChange={(e) => {
+            const next = e.target.value as AccessMode;
+            if (
+              !confirm(`¿Pasar a ${name} a "${ACCESS_LABEL[next].label}"?
+
+${ACCESS_LABEL[next].hint}`)
+            ) {
+              e.target.value = value;
+              return;
+            }
+            start(async () => {
+              setError(null);
+              const res = await setAccessMode(professionalId, next);
+              if (!res.ok) setError(res.error);
+            });
+          }}
+          className="border-input bg-card rounded-full border px-3 py-1.5 text-sm"
+        >
+          {ACCESS_MODES.map((m) => (
+            <option key={m} value={m}>
+              {ACCESS_LABEL[m].label}
+            </option>
+          ))}
+        </select>
+      </label>
+      {error && <FieldError>{error}</FieldError>}
+    </div>
   );
 }
 

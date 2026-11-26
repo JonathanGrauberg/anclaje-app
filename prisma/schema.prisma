@@ -244,6 +244,8 @@ model ProfessionalProfile {
   freeForever          Boolean         @default(false)
   /// Cuenta para probar el cobro: no se le aplica el "gratis del lanzamiento" (la marca el admin).
   billingTest          Boolean         @default(false)
+  /// Sin acceso al panel, puesto a mano por el admin (gana sobre todo lo demás; no borra nada).
+  accessBlocked        Boolean         @default(false)
   createdAt            DateTime        @default(now())
   updatedAt            DateTime        @updatedAt
 

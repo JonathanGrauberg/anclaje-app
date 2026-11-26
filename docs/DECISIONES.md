@@ -607,3 +607,16 @@ salvo que se indique lo contrario.
   borra el original. Al proponer se confirma que es material propio, de acceso abierto o un link a
   la fuente, sin datos de pacientes: no se suben libros ni artículos pagos. No es contenido
   clínico, por eso no se cifra. Los archivos van a R2 (`community/`), no a la base.
+
+## Acceso elegido a mano por el admin (2026-11-26)
+
+- En la ficha de cada profesional, un selector "Acceso" con cuatro opciones excluyentes:
+  **Según su pago** (lo normal: gratis si se sumó en el lanzamiento; si no, 14 días de prueba y
+  después su plan), **VIP / cortesía** (gratis para siempre, con todo: conocidas, testers),
+  **Prueba de cobros** (sin gratis ni días de prueba, para probar Mercado Pago con cuentas propias)
+  y **Sin acceso** (corta el panel a mano).
+- "Sin acceso" gana sobre todo (incluso un plan pago o el gratis) y vale aunque Mercado Pago no esté
+  configurado. No borra nada: sus pacientes siguen usando la app y ella puede descargar las
+  historias clínicas desde /plan. No se le ofrece pagar.
+- No hay plan "free" limitado: 14 días de prueba con todo y después pago. Un free con todo hace que
+  nadie pase al pago, y uno recortado no alcanza para conocer la app.

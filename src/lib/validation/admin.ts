@@ -39,3 +39,13 @@ export const auditFilterSchema = z.object({
   action: z.enum(["view", "create", "update", "delete", "export"]).optional().catch(undefined),
   entity: z.string().trim().max(60).optional().catch(undefined),
 });
+
+/** Acceso de una profesional elegido por el admin (ver setAccessMode). */
+export const ACCESS_MODES = ["AUTO", "VIP", "BILLING_TEST", "BLOCKED"] as const;
+export type AccessMode = (typeof ACCESS_MODES)[number];
+export const accessModeOf = (p: {
+  freeForever: boolean;
+  billingTest: boolean;
+  accessBlocked: boolean;
+}): AccessMode =>
+  p.accessBlocked ? "BLOCKED" : p.freeForever ? "VIP" : p.billingTest ? "BILLING_TEST" : "AUTO";

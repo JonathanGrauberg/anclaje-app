@@ -37,6 +37,8 @@ export async function startSubscription(input: { plan: string }) {
     const planId = parsed.data.plan as Parameters<typeof planById>[0];
 
     const { state } = await getBilling(professional.id);
+    if (state.kind === "suspended")
+      return fail("Tu acceso al panel está pausado. Escribinos para reactivarlo.");
     if (state.kind === "free") return fail("Tu cuenta es gratis para siempre: no tenés que pagar.");
     if (state.kind === "active")
       return fail("Ya tenés un plan activo. Para cambiarlo, primero cancelá el actual.");

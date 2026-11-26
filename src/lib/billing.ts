@@ -43,7 +43,9 @@ export type BillingState =
     }
   | { kind: "active"; access: true; sub: SubscriptionLike }
   | { kind: "ending"; access: true; until: Date; sub: SubscriptionLike }
-  | { kind: "blocked"; access: false; trialEndedAt: Date; sub: SubscriptionLike | null };
+  | { kind: "blocked"; access: false; trialEndedAt: Date; sub: SubscriptionLike | null }
+  /** El admin le cortó el acceso a mano (gana sobre el pago y el gratis). */
+  | { kind: "suspended"; access: false };
 
 export function billingState(input: {
   createdAt: Date;
@@ -52,12 +54,15 @@ export function billingState(input: {
   leadInLaunch?: boolean;
   /** Cuenta para probar el cobro: sin gratis del lanzamiento y sin días de prueba. */
   billingTest?: boolean;
+  /** Sin acceso puesto a mano por el admin. */
+  accessBlocked?: boolean;
   /** La suscripción más reciente, si hay. */
   sub: SubscriptionLike | null;
   now?: Date;
   until?: string;
 }): BillingState {
   const { createdAt, freeForever, leadInLaunch, billingTest, sub, now = new Date(), until } = input;
+  if (input.accessBlocked) return { kind: "suspended", access: false };
   if (freeForever || (!billingTest && (leadInLaunch || joinedInLaunch(createdAt, until))))
     return { kind: "free", access: true };
 

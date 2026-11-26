@@ -8,15 +8,15 @@ import { formatPesos } from "@/lib/launch";
 import { jurisdictionName } from "@/lib/licenses";
 import { requireAdmin } from "@/lib/session";
 import {
-  BillingTestButton,
-  FreeForeverButton,
+  AccessSelect,
   RefreshSubscriptionsButton,
   ResetPasswordButton,
   VerifyButton,
 } from "../professionals-client";
 import { getBilling, mpAccount } from "@/lib/mercadopago";
-import { isPlanId, joinedInLaunch, planById, type BillingState } from "@/lib/billing";
+import { isPlanId, planById, type BillingState } from "@/lib/billing";
 import { StatGroup } from "../../stat-group";
+import { accessModeOf } from "@/lib/validation/admin";
 
 export const metadata: Metadata = { title: "Profesional" };
 
@@ -55,6 +55,7 @@ export default async function AdminProfessionalPage({
       demoCreatedAt: true,
       freeForever: true,
       billingTest: true,
+      accessBlocked: true,
       createdAt: true,
       user: {
         select: {
@@ -205,12 +206,8 @@ export default async function AdminProfessionalPage({
         action={
           <div className="flex flex-wrap gap-2">
             {!p.verifiedAt && <VerifyButton professionalId={p.id} name={p.displayName} />}
-            {/* Las del lanzamiento ya son gratis para siempre: el botón es para las demás. */}
-            {p.user.role === "PROFESSIONAL" && (p.freeForever || !joinedInLaunch(p.createdAt)) && (
-              <FreeForeverButton professionalId={p.id} name={p.displayName} value={p.freeForever} />
-            )}
             {p.user.role === "PROFESSIONAL" && (
-              <BillingTestButton professionalId={p.id} name={p.displayName} value={p.billingTest} />
+              <AccessSelect professionalId={p.id} name={p.displayName} value={accessModeOf(p)} />
             )}
             {p.user.role === "PROFESSIONAL" && !google && (
               <ResetPasswordButton userId={p.user.id} name={p.displayName} />
@@ -321,7 +318,11 @@ function planText(b: BillingState, manual: boolean) {
   const label = sub && isPlanId(sub.plan) ? planById(sub.plan).label : sub?.plan;
   switch (b.kind) {
     case "free":
-      return manual ? "Gratis para siempre (marcado a mano)" : "Gratis para siempre";
+      return manual
+        ? "VIP / cortesía: gratis, con todo"
+        : "Gratis para siempre (se sumó en el lanzamiento)";
+    case "suspended":
+      return "Sin acceso al panel (cortado a mano)";
     case "trial":
       return `En prueba: quedan ${b.daysLeft} días (hasta el ${formatDate(b.trialEndsAt)})`;
     case "active":

@@ -28,6 +28,8 @@ export default async function AdminProfessionalsPage() {
       licenseJurisdiction: true,
       verifiedAt: true,
       freeForever: true,
+      billingTest: true,
+      accessBlocked: true,
       createdAt: true,
       user: {
         select: {
@@ -99,9 +101,9 @@ export default async function AdminProfessionalsPage() {
                       >
                         {p.displayName}
                       </Link>
-                      {(p.freeForever || joinedInLaunch(p.createdAt)) && (
+                      {accessNote(p) && (
                         <span className="text-muted-foreground block text-xs font-normal">
-                          Gratis para siempre
+                          {accessNote(p)}
                         </span>
                       )}
                       {p.user.role === "ADMIN" && (
@@ -175,4 +177,17 @@ export default async function AdminProfessionalsPage() {
       </section>
     </div>
   );
+}
+
+/** Aclaración de acceso en la lista (lo elegido a mano gana sobre el gratis del lanzamiento). */
+function accessNote(p: {
+  freeForever: boolean;
+  billingTest: boolean;
+  accessBlocked: boolean;
+  createdAt: Date;
+}) {
+  if (p.accessBlocked) return "Sin acceso";
+  if (p.freeForever) return "VIP / cortesía";
+  if (p.billingTest) return "Prueba de cobros";
+  return joinedInLaunch(p.createdAt) ? "Gratis para siempre" : null;
 }
