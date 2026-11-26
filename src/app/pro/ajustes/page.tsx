@@ -22,6 +22,11 @@ const PRO_NOTIFICATIONS: NotificationPrefItem[] = [
     hint: "Cuando avisa desde la app que no va a un turno.",
   },
   {
+    kind: "appointmentRequest",
+    label: "Te pidieron turno",
+    hint: "Cuando alguien te pide turno desde tu perfil público y confirma su mail.",
+  },
+  {
     kind: "patientLinked",
     label: "Invitación aceptada",
     hint: "Cuando un paciente acepta tu invitación.",

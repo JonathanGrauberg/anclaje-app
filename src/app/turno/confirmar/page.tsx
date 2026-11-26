@@ -5,7 +5,9 @@ import { after } from "next/server";
 import { Logo } from "@/components/logo";
 import { prisma } from "@/lib/db";
 import { appUrl, sendEmailQuietly } from "@/lib/email";
+import { notifyProfessional } from "@/lib/notify";
 import { hashToken } from "@/lib/public-profile";
+import { pushMessages } from "@/lib/push-messages";
 
 export const metadata: Metadata = { title: "Confirmar solicitud" };
 export const dynamic = "force-dynamic";
@@ -24,6 +26,7 @@ async function confirm(token: string) {
       id: true,
       status: true,
       createdAt: true,
+      professionalId: true,
       professional: { select: { displayName: true, user: { select: { email: true } } } },
     },
   });
@@ -34,7 +37,10 @@ async function confirm(token: string) {
     where: { id: r.id, status: "UNCONFIRMED" },
     data: { status: "NEW", confirmedAt: new Date() },
   });
-  if (updated.count === 1)
+  if (updated.count === 1) {
+    after(() =>
+      notifyProfessional(r.professionalId, "appointmentRequest", pushMessages.appointmentRequest()),
+    );
     after(() =>
       sendEmailQuietly(
         {
@@ -50,6 +56,7 @@ async function confirm(token: string) {
         "aviso de solicitud de turno",
       ),
     );
+  }
   return { done: r.professional.displayName };
 }
 

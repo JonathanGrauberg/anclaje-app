@@ -14,7 +14,8 @@ export type NotifyKind =
   | "feedback"
   | "assignments"
   | "patientCancelled"
-  | "patientLinked";
+  | "patientLinked"
+  | "appointmentRequest";
 
 export const NOTIFY_DEFAULTS: Record<NotifyKind, boolean> = {
   appointmentDayBefore: true,
@@ -24,6 +25,7 @@ export const NOTIFY_DEFAULTS: Record<NotifyKind, boolean> = {
   assignments: true,
   patientCancelled: true,
   patientLinked: true,
+  appointmentRequest: true,
 };
 
 const TURNOS = "/app/turnos";
@@ -90,6 +92,11 @@ export const pushMessages = {
     title: "Invitación aceptada",
     body: "Un paciente aceptó tu invitación y ya está en tu lista.",
     url: "/pro",
+  }),
+  appointmentRequest: (): PushMessage => ({
+    title: "Te pidieron turno",
+    body: "Alguien te pidió turno desde tu perfil. Tocá para ver sus datos.",
+    url: "/pro/solicitudes",
   }),
   // Aviso de seguridad: no se puede apagar. `url` lleva a cambiar o recuperar la contraseña.
   accountChanged: (change: "profile" | "password", url: string): PushMessage => ({

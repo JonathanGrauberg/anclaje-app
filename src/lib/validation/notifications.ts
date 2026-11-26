@@ -29,7 +29,11 @@ export const PATIENT_NOTIFY_KINDS = [
   "feedback",
   "assignments",
 ] as const;
-export const PRO_NOTIFY_KINDS = ["patientCancelled", "patientLinked"] as const;
+export const PRO_NOTIFY_KINDS = [
+  "patientCancelled",
+  "patientLinked",
+  "appointmentRequest",
+] as const;
 
 export const notificationPrefSchema = z.object({
   kind: z.enum([...PATIENT_NOTIFY_KINDS, ...PRO_NOTIFY_KINDS]),

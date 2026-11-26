@@ -1017,6 +1017,7 @@ model NotificationPrefs {
   // Profesional
   patientCancelled     Boolean @default(true) // un paciente avisó que no va
   patientLinked        Boolean @default(true) // un paciente aceptó la invitación
+  appointmentRequest   Boolean @default(true) // alguien pidió turno desde el perfil público
 }
 
 /// Turno de sesión. Lo crea la profesional; el paciente lo ve y puede avisar que no va.

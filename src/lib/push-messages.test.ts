@@ -17,6 +17,7 @@ const all = (now: Date) => {
     pushMessages.assessment(),
     pushMessages.patientCancelled(d, "2026-11-05", now),
     pushMessages.patientLinked(),
+    pushMessages.appointmentRequest(),
     pushMessages.test(false),
     pushMessages.accountChanged("profile", "/app/ajustes#contrasena"),
     pushMessages.accountChanged("password", "/recuperar"),
