@@ -33,6 +33,7 @@ import { AssessmentsPanel } from "./assessments-panel";
 import { ClinicalRecordForm } from "./clinical-record-form";
 import { CopingEditor } from "./coping-editor";
 import { GiveAppointment } from "./give-appointment";
+import { PatientFilesList, UploadFile } from "./upload-file";
 import { ManagedPatientActions } from "./managed-patient-actions";
 import { NotesPanel } from "./notes-panel";
 import { TasksPanel } from "./tasks-panel";
@@ -229,6 +230,7 @@ export default async function PatientRecordPage({
         )}
         <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
           <GiveAppointment patient={{ id: patient.id, name, withoutApp }} />
+          <UploadFile patient={{ id: patient.id, name, withoutApp }} />
           <RegisterPayment
             patients={[{ id: patient.id, name }]}
             services={services}
@@ -483,13 +485,18 @@ async function HistoryTab({
   patientId: string;
 }) {
   // Solo la historia de esta profesional: nadie más (ni el paciente, ni el admin) la ve.
-  const [record, notes] = await Promise.all([
+  const [record, notes, files] = await Promise.all([
     prisma.clinicalRecord.findUnique({
       where: { professionalId_patientId: { professionalId, patientId } },
     }),
     prisma.clinicalNote.findMany({
       where: { professionalId, patientId },
       orderBy: { createdAt: "desc" },
+    }),
+    prisma.patientFile.findMany({
+      where: { professionalId, patientId },
+      orderBy: { createdAt: "desc" },
+      take: 100,
     }),
   ]);
   const text = (v: string | null | undefined) => decryptOptional(v) ?? "";
@@ -523,6 +530,20 @@ async function HistoryTab({
             plan: text(record?.planEnc),
             emergencyContact: text(record?.emergencyContactEnc),
           }}
+        />
+      </section>
+
+      <section aria-labelledby="hc-archivos" className="flex flex-col gap-3">
+        <h2 id="hc-archivos" className="text-lg font-semibold">
+          Archivos
+        </h2>
+        <PatientFilesList
+          files={files.map((f) => ({
+            id: f.id,
+            title: decrypt(f.titleEnc),
+            storageKey: f.storageKey,
+            date: formatDate(f.createdAt),
+          }))}
         />
       </section>
 

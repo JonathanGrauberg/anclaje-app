@@ -261,6 +261,7 @@ model ProfessionalProfile {
   assessments     Assessment[]
   assignments     AssessmentAssignment[]
   externalResults ExternalResult[]
+  patientFiles    PatientFile[]
   emotionOverride EmotionNodeOverride[]
   appointments    Appointment[]
   clinicalRecords ClinicalRecord[]
@@ -303,6 +304,7 @@ model PatientProfile {
   assignments         AssessmentAssignment[]
   responses           AssessmentResponse[]
   externalResults     ExternalResult[]
+  files               PatientFile[]
   invitationsUsed     Invitation[]           @relation("InvitationUsedBy")
   invitationsFor      Invitation[]           @relation("InvitationTarget")
   appointments        Appointment[]
@@ -857,6 +859,22 @@ model ExternalResult {
   storageKey     String?
   notesEnc       String?
   createdAt      DateTime            @default(now())
+}
+
+/// Archivo privado de la ficha (informe, estudio, consentimiento firmado…). Solo lo ve quien lo
+/// subió, con vínculo activo. Los archivos para el paciente van a la Biblioteca (Resource).
+model PatientFile {
+  id             String              @id @default(cuid())
+  patientId      String
+  patient        PatientProfile      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  professionalId String
+  professional   ProfessionalProfile @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  /// Título cifrado (puede decir algo clínico: "informe neurológico").
+  titleEnc       String
+  storageKey     String              @unique
+  createdAt      DateTime            @default(now())
+
+  @@index([professionalId, patientId, createdAt])
 }
 
 // ─────────────────────────────────────────────────────────────

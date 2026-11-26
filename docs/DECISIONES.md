@@ -572,3 +572,9 @@ salvo que se indique lo contrario.
   acciones. Sus pacientes siguen usando la app, no se borra nada y desde /plan puede bajar las
   historias clínicas. Si cancela, usa el panel hasta el próximo débito. El admin no ve montos de lo
   que ella cobra; sí el plan que nos paga. Sin `MP_ACCESS_TOKEN` no se bloquea a nadie.
+
+- **Subir archivo desde la ficha (nov 2026):** botón "Subir archivo" arriba en la ficha del
+  paciente (en el celular abre cámara, galería o archivos). Dos destinos: **para el paciente** va
+  a la Biblioteca de la profesional y se le asigna (lo ve en la app); **solo para mí** queda en
+  Historia → Archivos (`PatientFile`, título cifrado, solo lo ve su autora con vínculo activo, y
+  cada vista se audita). Los archivos van a R2, no a la base.

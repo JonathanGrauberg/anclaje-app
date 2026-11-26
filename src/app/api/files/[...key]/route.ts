@@ -5,7 +5,8 @@ import { getSession } from "@/lib/session";
 import { isValidKey, storage } from "@/lib/storage";
 
 // Descarga/visualización de un archivo, con chequeo de permisos en el servidor:
-// - profesional: recursos propios y resultados externos que cargó ella (con vínculo activo).
+// - profesional: recursos propios, y resultados externos y archivos de la ficha que cargó ella
+//   (con vínculo activo).
 // - paciente: recursos que le asignaron o que le adjuntaron en una devolución.
 export async function GET(_req: NextRequest, ctx: RouteContext<"/api/files/[...key]">) {
   const key = (await ctx.params).key.join("/");
@@ -62,6 +63,27 @@ export async function GET(_req: NextRequest, ctx: RouteContext<"/api/files/[...k
             action: "view",
             entityType: "ExternalResultFile",
             entityId: ext.id,
+            patientId,
+          });
+        }
+        const pf = ext
+          ? null
+          : await prisma.patientFile.findFirst({
+              where: {
+                storageKey: key,
+                professionalId: pro.id,
+                patient: { links: { some: { professionalId: pro.id, status: "ACTIVE" } } },
+              },
+              select: { id: true, patientId: true },
+            });
+        if (pf) {
+          allowed = true;
+          patientId = pf.patientId;
+          await audit({
+            actorId: session.user.id,
+            action: "view",
+            entityType: "PatientFile",
+            entityId: pf.id,
             patientId,
           });
         }
