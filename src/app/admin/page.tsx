@@ -104,7 +104,7 @@ async function getUsageStats() {
     prisma.user.count({ where: { pushSubscriptions: { some: {} } } }),
     prisma.lead.count(),
     prisma.lead.count({ where: { signupLinkSentAt: { not: null } } }),
-    prisma.lead.findMany({ select: { email: true } }),
+    prisma.lead.findMany({ select: { email: true, signupLinkSentAt: true, contactedAt: true } }),
     prisma.professionalProfile.findMany({
       where: { user: pro },
       orderBy: { createdAt: "desc" },
@@ -141,6 +141,14 @@ async function getUsageStats() {
   const leadsWithAccount = leadSet.length
     ? await prisma.user.count({ where: { email: { in: leadSet }, role: { not: "PATIENT" } } })
     : 0;
+  // Las que todavía esperan algo de vos: sin cuenta, sin el mail de alta y sin contactar.
+  const leadAccounts = leadSet.length
+    ? await prisma.user.findMany({ where: { email: { in: leadSet } }, select: { email: true } })
+    : [];
+  const hasAccount = new Set(leadAccounts.map((u) => u.email.toLowerCase()));
+  const leadsPending = leadEmails.filter(
+    (l) => !l.signupLinkSentAt && !l.contactedAt && !hasAccount.has(l.email.trim().toLowerCase()),
+  ).length;
 
   // Altas por mes (los últimos 6), separadas por rol.
   const months: { key: string; patients: number; pros: number }[] = [];
@@ -177,7 +185,7 @@ async function getUsageStats() {
       payments,
     },
     notifications: { reminders, pushUsers },
-    leads: { total: leads, mailed: leadsMailed, withAccount: leadsWithAccount },
+    leads: { total: leads, mailed: leadsMailed, withAccount: leadsWithAccount, pending: leadsPending },
     recentPros,
     communityPending,
     plans,
@@ -206,13 +214,13 @@ export default async function AdminHome() {
           ? "1 aporte de la Comunidad para revisar"
           : `${s.communityPending} aportes de la Comunidad para revisar`,
     },
-    s.leads.total - s.leads.mailed > 0 && {
+    s.leads.pending > 0 && {
       href: "/admin/interesados",
       icon: Inbox,
       text:
-        s.leads.total - s.leads.mailed === 1
-          ? "1 interesada sin el mail de alta"
-          : `${s.leads.total - s.leads.mailed} interesadas sin el mail de alta`,
+        s.leads.pending === 1
+          ? "1 interesada para escribirle"
+          : `${s.leads.pending} interesadas para escribirles`,
     },
   ].filter(Boolean) as { href: string; icon: typeof ShieldAlert; text: string }[];
 
